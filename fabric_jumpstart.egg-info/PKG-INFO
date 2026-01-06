@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: fabric-jumpstart
+Version: 0.1.4b0
+Summary: Jumpstart Microsoft Fabric demos leveraging fabric-cicd with yaml-driven deployment.
+Home-page: https://github.com/fabric-jumpstart
+License: MIT
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+License-File: LICENSE

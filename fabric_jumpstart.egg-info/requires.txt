@@ -1,0 +1,3 @@
+requests
+pyyaml
+fabric-cicd>=0.1.33

@@ -2,15 +2,17 @@ from setuptools import setup, find_packages
 
 setup(
     name="fabric-jumpstart",
-    version="0.1.4b",
+    version="0.1.4c",
     description="Jumpstart Microsoft Fabric demos leveraging fabric-cicd with yaml-driven deployment.",
     license="MIT",
     url="https://github.com/fabric-jumpstart",
-    packages=find_packages(),
+    packages=find_packages(include=['fabric_jumpstart*']),
     include_package_data=True,
     install_requires=["requests", "pyyaml", "fabric-cicd>=0.1.33"],
     python_requires=">=3.8",
-    package_data={"fabric_jumpstart": ["yml_templates/*.yml"]},
+    package_data={
+        "": ["*.yml", "*.json", "*.kql", "*.py", "*.ipynb", "*.pbir", "*.pbism", "*.tmdl", ".platform", ".schedules", "*.abf"],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

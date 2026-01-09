@@ -1,0 +1,135 @@
+find_replace:
+  # Workspace ID matching group 1 of regex pattern to be replaced
+  - find_value: \#\s*META\s+"default_workspace_id":\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+    replace_value:
+      _ALL_: "$workspace.$id" # workspace ID (dynamic)
+    is_regex: "true"
+    item_type: "Notebook" # filter on notebook files
+  
+  # Workspace ID direct replacement
+  - find_value: 63b564e3-bc45-46b0-aa00-31e28a727076
+    replace_value:
+      _ALL_: "$workspace.$id" # workspace GUID (dynamic)
+    is_regex: "false"
+    item_type: "Notebook" # filter on notebook files
+
+  # Workspace ID variable replacement
+  - find_value: $workspaceId
+    replace_value:
+      _ALL_: "$workspace.$id" # workspace ID (dynamic)
+    is_regex: "false"
+    item_type: "Notebook" # filter on notebook files
+
+  # Eventhouse GUID matching group 1 of regex pattern to be replaced
+  - find_value: \#\s*META\s+"default_eventhouse":\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+    replace_value:
+      _ALL_: "$items.Eventhouse.Spark Monitoring.Eventhouse.$id" # eventhouse GUID (dynamic)
+    is_regex: "true"
+    item_type: "Notebook" # filter on notebook files
+
+  # Eventhouse GUID direct replacement
+  - find_value: 61e0280c-4975-8bf6-4e6d-cc748ab5be27
+    replace_value:
+      _ALL_: "$items.Eventhouse.Spark Monitoring.Eventhouse.$id" # eventhouse GUID (dynamic)
+    is_regex: "false"
+
+  # KQL Database GUID matching group 1 of regex pattern to be replaced
+  - find_value: \#\s*META\s+"default_kql_database":\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+    replace_value:
+      _ALL_: "$items.KQLDatabase.Spark Monitoring.KQLDatabase.$id" # KQL database GUID (dynamic)
+    is_regex: "true"
+    item_type: "Notebook" # filter on notebook files
+
+  # KQL Database GUID direct replacement
+  - find_value: 3e46dcfb-d099-b0ef-4861-4603e64229bd
+    replace_value:
+      _ALL_: "$items.KQLDatabase.Spark Monitoring.KQLDatabase.$id" # KQL database GUID (dynamic)
+    is_regex: "false"
+
+  # Eventstream GUID matching group 1 of regex pattern to be replaced  
+  - find_value: \#\s*META\s+"default_eventstream":\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+    replace_value:
+      _ALL_: "$items.Eventstream.SparkMonitoring.Eventstream.$id" # eventstream GUID (dynamic)
+    is_regex: "true"
+    item_type: "Notebook" # filter on notebook files
+
+  # Eventstream GUID direct replacement
+  - find_value: 3d2fdfb1-601b-8f71-4e11-34ed0a2c79aa
+    replace_value:
+      _ALL_: "$items.Eventstream.SparkMonitoring.Eventstream.$id" # eventstream GUID (dynamic)
+    is_regex: "false"
+
+  # Notebook GUID direct replacement
+  - find_value: 9b7cc66d-40b7-8a6f-4a38-2bcdda7eb24a
+    replace_value:
+      _ALL_: "$items.Notebook.Spark Monitoring Recommedations.Notebook.$id" # notebook GUID (dynamic)
+    is_regex: "false"
+    item_type: "DataPipeline" # filter on data pipeline files
+    item_name: ["SparkLensPipeline.DataPipeline"] # filter on specific data pipeline files
+
+  # Data Pipeline GUID direct replacement
+  - find_value: 599af237-f1cc-863d-481e-22001aacb285
+    replace_value:
+      _ALL_: "$items.DataPipeline.SparkLensPipeline.DataPipeline.$id" # data pipeline GUID (dynamic)
+    is_regex: "false"
+
+  # Data Pipeline ID variable replacement
+  - find_value: $dataPipelineId
+    replace_value:
+      _ALL_: "$items.DataPipeline.SparkLensPipeline.DataPipeline.$id" # data pipeline GUID (dynamic)
+    is_regex: "false"
+    item_type: "Notebook" # filter on notebook files
+
+  # KQL Dashboard GUID direct replacement
+  - find_value: 94b0dac6-cc63-8c9d-4a4b-40404f12bf39
+    replace_value:
+      _ALL_: "$items.KQLDashboard.Spark Monitoring.KQLDashboard.$id" # KQL dashboard GUID (dynamic)
+    is_regex: "false"
+
+  # Kusto Query URI replacement
+  - find_value: $kustoQueryUri
+    replace_value:
+      _ALL_: "$items.Eventhouse.Spark Monitoring.Eventhouse.$kustoQueryUri" # kusto query URI (dynamic)
+    is_regex: "false"
+    item_type: "DataPipeline" # filter on data pipeline files
+    item_name: ["SparkLensPipeline.DataPipeline"] # filter on specific data pipeline files
+
+  # Kusto Ingest URI replacement
+  - find_value: $kustoIngestUri
+    replace_value:
+      _ALL_: "$items.Eventhouse.Spark Monitoring.Eventhouse.$kustoIngestUri" # kusto ingest URI (dynamic)
+    is_regex: "false"
+    item_type: "DataPipeline" # filter on data pipeline files
+    item_name: ["SparkLensPipeline.DataPipeline"] # filter on specific data pipeline files
+
+  # Eventstream destination itemName replacement
+  - find_value: \s+"itemName":\s*"([^"]*Spark Monitoring\.KQLDatabase[^"]*)"
+    replace_value:
+      _ALL_: "$items.KQLDatabase.Spark Monitoring.KQLDatabase.$name" # KQL database name (dynamic)
+    is_regex: "true"
+    item_type: "Eventstream" # filter on eventstream files
+    item_name: ["SparkMonitoring.Eventstream"] # filter on specific eventstream files
+
+  # Data Pipeline activity itemName replacement
+  - find_value: \s+"itemName":\s*"([^"]*Spark Monitoring Recommedations\.Notebook[^"]*)"
+    replace_value:
+      _ALL_: "$items.Notebook.Spark Monitoring Recommedations.Notebook.$name" # notebook name (dynamic)
+    is_regex: "true"
+    item_type: "DataPipeline" # filter on data pipeline files
+    item_name: ["SparkLensPipeline.DataPipeline"] # filter on specific data pipeline files
+
+  # KQL Dashboard datasource itemName replacement
+  - find_value: \s+"itemName":\s*"([^"]*Spark Monitoring\.KQLDatabase[^"]*)"
+    replace_value:
+      _ALL_: "$items.KQLDatabase.Spark Monitoring.KQLDatabase.$name" # KQL database name (dynamic)
+    is_regex: "true"
+    item_type: "KQLDashboard" # filter on KQL dashboard files
+    item_name: ["Spark Monitoring.KQLDashboard"] # filter on specific dashboard files
+
+  # KQL Queryset database name replacement (fix for the earlier error)
+  - find_value: "Spark Monitoring"
+    replace_value:
+      _ALL_: "Spark Monitoring.KQLDatabase" # correct database name (dynamic)
+    is_regex: "false"
+    item_type: "KQLQueryset" # filter on KQL queryset files
+

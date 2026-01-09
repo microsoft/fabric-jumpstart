@@ -10,8 +10,8 @@ import fabric_jumpstart
 # Browse available demos
 fabric_jumpstart.library()
 
-# Install a demo into your Fabric workspace (YAML driven)
-fabric_jumpstart.install(name="spark-rti-monitoring", workspace_name="YourWorkspaceName")
+# Install a demo into your Fabric workspace (requires workspace ID)
+fabric_jumpstart.install(name="spark-rti-monitoring", workspace_id="your-workspace-id-here")
 ```
 
 ## Add your own demos

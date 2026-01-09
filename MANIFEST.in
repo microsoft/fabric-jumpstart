@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+recursive-include fabric_jumpstart/yml_templates *.yml
+recursive-include fabric_jumpstart/demo_artifacts *
+global-exclude __pycache__
+global-exclude *.py[co]

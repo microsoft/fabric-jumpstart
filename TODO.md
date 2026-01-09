@@ -8,18 +8,4 @@
 - support workspace_name or id like semantic link?
 - Deploy all jumpstarts to root folder in workspace? 
 - Make `workspace` support ID or NAME
-
-
-# Discuss with Anu
-- uv
-- Registry Structure
-- Unlisted Jumpstarts (need to adhere to same quality, not listed because of being scoped for specific purposes... i.e. Analytics Roadshow Lab)
-- Local vs Remote Jumpstarts
-- YAML Schema Validation -> any point in filtering registry from list if unit tests are validating (probably not)
-    - if NOT, pydantic moves to `test` dependency group and validate schema moves to test module
-- IF ran w/in Fabric Notebook, not specifying a `workspace` will deploy within the current workspace
-
-
-
-# Key process things
-- dynamic links
+- move yaml validation to test module: pydantic moves to `test` dependency group and validate schema moves to test module

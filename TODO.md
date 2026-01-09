@@ -2,6 +2,7 @@
 - HTML: filter by scenario or workload
 - HTML: render Jumpstart with NEW icon if date_added is within X days (i.e. 30 days)
 - HTML: sort Jumpstarts by NEW first
+- HTML: install command that gets rendered should use the actual name of the module if aliased (i.e. `jumpstart`, `fab_jump`)
 - visualize `items_in_scope`: can a graph be built to viz the resources that would be deployed?
 - validate scenario and workload tags (needs to adhere to a known list)
 - unit test to validate schema and fail if schema is wrong

@@ -20,6 +20,9 @@ Jumpstarts with the `include_in_listing: False` config won't show up when listin
 Source code should be self-documenting where possible.
 - Notebooks should self contain robust instructions via markdown. Do not reference instructions in Word documents OR in markdown files from source repositories.
 
+## Jumpstart Ownership
+- Each Jumpstart will be owned by a mail enabled security group (i.e. `fabricjumpstart.spark-structured-streaming@microsoft.com`).That group will have at least two owners.
+- The group will be automatically notificed if the nightly Jumpstart CI build fails. The owners are expected to remediate any code changes ASAP as Jumpstarts with failing test cases (deployment or post-deployment solution validation) will automatically be excluded from what is published to PyPi to limit the possibility of users executing Jumpstarts that are known to be in a failing state.
 
 
 

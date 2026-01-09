@@ -1,0 +1,16 @@
+# Requirements
+- this will be similar to the dbdemos python library. it renders HTML in the Notebook cell output to browse installable solutions.
+    - see this local project for an example: C:\Users\milescole\source\dbdemos\fabric_demos
+- I want it to have a UI theme that is the same as Arc Jumpstart: https://jumpstart.azure.com/ see the grid of options after "Explore The Arc Jumpstart universe"
+    - do NOT just copy the theme from C:\Users\milescole\source\dbdemos\fabric_demos , this was copying Databricks. Use the Jumpstart theme HTML as we are expanding that brand.
+- It should default to listing Jumpstarts cateagorized by `solution_tag` from the `registry`.
+- It should allow toggling to viewing Jumpstarts by `workload_tag` from the `registry`.
+- It should use the `jumpstart._registry` from the core.py module as data input.
+- A NEW jumpstart is any that has been created in the last 60 days (from the registry `date_added`)
+- Jumpstarts should be sorted in the list by NEW first, and then sorted alphabetical by jumpstart `id`.
+- NEW Jumpstarts should show a NEW callout to identify it as such.
+- Each Jumpstart box should
+    - render an image (`preview_image` from registry), with fallback to generic background.
+    - `name` of Jumpstart
+    - `description` of Jumpstart
+    - code to install `jumpstart.install(<id>)`. it sould reference the name or alias of the class instance. i.e. if the `from fabric_jumpstart import jumpstart as js` should render as `js.install()`

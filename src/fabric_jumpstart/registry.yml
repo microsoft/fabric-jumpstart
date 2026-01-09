@@ -1,0 +1,94 @@
+jumpstarts: 
+
+  # ═══════════════════════════════════════════════════════════════
+  # SPARK STRUCTURED STREAMING
+  # ═══════════════════════════════════════════════════════════════
+  - id: spark-structured-streaming
+    name: "Spark Structured Streaming"
+    description: "Jumpstart for Spark Structured Streaming"
+    date_added: "1/8/2026"
+    include_in_listing: True
+    workload_tags: ["Data Engineeringing"]
+    scenario_tags: ["Streaming"]
+    preview_image: "assets/image-example.png"
+    source:
+      workspace_path: "src/"
+    items_in_scope: 
+      - Lakehouse
+      - Warehouse
+      - Notebook
+      - SparkJobDefinition 
+      - Environment
+    feature_flags:
+      - enable_lakehouse_unpublish
+    test_suite: ""
+
+  # ═══════════════════════════════════════════════════════════════
+  # ANALYTICS ROADSHOW LAB
+  # ═══════════════════════════════════════════════════════════════
+  - id: analytics-roadshow-lab
+    name: "Analytics Roadshow Lab"
+    description: "Jumpstart for Analytics Roadshow Lab"
+    date_added: "1/8/2026"
+    include_in_listing: False
+    workload_tags: ["Data Engineering", "Data Warehouse"]
+    scenario_tags: ["Streaming", "Modeling"]
+    preview_image: "assets/image-example.png"
+    source:
+      repo_url: "https://github.com/microsoft/fabric-analytics-roadshow-lab.git/"
+      repo_ref: "initial-version-prep"
+      workspace_path: "workspace/"
+    items_in_scope: 
+      - Lakehouse
+      - Warehouse
+      - Notebook
+      - SparkJobDefinition 
+      - Environment
+    feature_flags:
+      - enable_lakehouse_unpublish
+    test_suite: ""
+
+  # ═══════════════════════════════════════════════════════════════
+  # SAMPLE TEST
+  # ═══════════════════════════════════════════════════════════════
+  - id: sample-test
+    name: "Sample Test"
+    description: "Jumpstart for Spark Structured Streaming - monorepo"
+    date_added: "1/8/2026"
+    include_in_listing: False
+    workload_tags: ["Test"]
+    scenario_tags: ["Test"]
+    preview_image: "assets/image-example.png"
+    source:
+      workspace_path: "src/"
+    items_in_scope:
+    feature_flags:
+      - enable_lakehouse_unpublish
+    test_suite: ""
+
+  # ═══════════════════════════════════════════════════════════════
+  # SPARK RTI MONITORING
+  # ═══════════════════════════════════════════════════════════════
+  - id: spark-rti-monitoring
+    name: "Spark RTI Monitoring"
+    description: "Jumpstart for Spark RTI Monitoring"
+    date_added: "9/1/2026"
+    include_in_listing: True
+    workload_tags: ["Data Engineering", "Real Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    preview_image: "assets/image-example.png"
+    source:
+      repo_url: "https://github.com/microsoft/fabric-toolbox.git"
+      repo_ref: "f09cb09d26ab317f50a9d97bb833009834661541"
+      workspace_path: "monitoring/fabric-spark-monitoring/src/"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - KQLQueryset
+      - Environment
+      - DataPipeline
+      - Report
+      - SemanticModel

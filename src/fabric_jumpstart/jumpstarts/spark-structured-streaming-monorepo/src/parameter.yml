@@ -1,0 +1,55 @@
+find_replace:
+  # lakehouse GUID matching group 1 of regex pattern to be replaced
+  - find_value: \#\s*META\s+"default_lakehouse":\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+    replace_value:
+      _ALL_: "$items.Lakehouse.SalesAndLogisticsLH.$id" # lakehouse GUID (dynamic)
+    is_regex: "true"
+    item_type: "Notebook" # filter on notebook files
+    item_name: ["1_ExploreData"] # filter on specific notebook files
+  # workspace ID matching group 1 of regex pattern to be replaced
+  - find_value: \#\s*META\s+"default_lakehouse_workspace_id":\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+    replace_value:
+      _ALL_: "$workspace.$id" # workspace ID (dynamic)
+    is_regex: "true"
+    item_type: "Notebook" # filter on notebook files
+  # lakehouse GUID in known_lakehouses array
+  - find_value: a7c7038f-32a5-45b6-a126-4d3c0ebdf019
+    replace_value:
+      _ALL_: "$items.Lakehouse.SalesAndLogisticsLH.$id" # lakehouse GUID (dynamic)
+    item_type: "Notebook" # filter on notebook files
+
+  # Spark Job Definition
+  - find_value: \s+"defaultLakehouseArtifactId":\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+    replace_value:
+      _ALL_: "$items.Lakehouse.SalesAndLogisticsLH.$id" # lakehouse GUID (dynamic)
+    is_regex: "true"
+    item_type: "SparkJobDefinition" # filter on notebook files
+    item_name: ["StreamBronzeAndSilver"] # filter on specific notebook files
+
+  # Update SJD URL in Notebook Markdown
+  - find_value: $sparkJobDefinitionId
+    replace_value:
+      _ALL_: "$items.SparkJobDefinition.StreamBronzeAndSilver.$id" # SJD GUID (dynamic)
+    is_regex: "false"
+    item_type: "Notebook" # filter on notebook files
+    item_name: ["1_ExploreData"] # filter on specific notebook files
+
+  - find_value: $workspaceId
+    replace_value:
+      _ALL_: "$workspace.$id" # workspace ID (dynamic)
+    is_regex: "false"
+    item_type: "Notebook" # filter on notebook files
+    item_name: ["1_ExploreData"] # filter on specific notebook files
+
+  # warehouse GUID matching group 1 of regex pattern to be replaced
+  - find_value: \#\s*META\s+"default_warehouse":\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+    replace_value:
+      _ALL_: "$items.Warehouse.SalesAndLogisticsWH.$id" # warehouse GUID (dynamic)
+    is_regex: "true"
+    item_type: "Notebook" # filter on notebook files
+    item_name: ["2_ModelData"] # filter on specific notebook files
+  # warehouse GUID in known_warehouses array
+  - find_value: e0b59438-dd1e-aef5-4826-ec248fd6e79b
+    replace_value:
+      _ALL_: "$items.Lakehouse.SalesAndLogisticsWH.$id" # lakehouse GUID (dynamic)
+    item_type: "Notebook" # filter on notebook files

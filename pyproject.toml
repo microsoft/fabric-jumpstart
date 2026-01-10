@@ -7,12 +7,18 @@ name = "fabric-jumpstart"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = "==3.12.12"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "fabric-cicd", # temporary until fabric_cicd-0.1.34 is released for SJD / Fabric Auth support
     "pydantic>=2.12.5",
     "pyyaml>=6.0.3",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fabric_jumpstart"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/fabric_jumpstart/ui_assets" = "fabric_jumpstart/ui_assets"
 
 [tool.uv.sources]
 fabric-cicd = { path = "fabric_cicd-0.1.33-py3-none-any.whl" }

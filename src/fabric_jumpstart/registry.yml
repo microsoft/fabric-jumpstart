@@ -8,7 +8,7 @@ jumpstarts:
     description: "Jumpstart for Spark Structured Streaming"
     date_added: "1/8/2026"
     include_in_listing: True
-    workload_tags: ["Data Engineeringing"]
+    workload_tags: ["Data Engineering"]
     scenario_tags: ["Streaming"]
     preview_image: "assets/image-example.png"
     source:
@@ -31,7 +31,7 @@ jumpstarts:
     name: "Analytics Roadshow Lab"
     description: "Jumpstart for Analytics Roadshow Lab"
     date_added: "1/8/2026"
-    include_in_listing: False
+    include_in_listing: True
     workload_tags: ["Data Engineering", "Data Warehouse"]
     scenario_tags: ["Streaming", "Modeling"]
     preview_image: "assets/image-example.png"
@@ -75,7 +75,7 @@ jumpstarts:
   - id: spark-rti-monitoring
     name: "Spark RTI Monitoring"
     description: "Jumpstart for Spark RTI Monitoring"
-    date_added: "9/1/2026"
+    date_added: "9/1/2025"
     include_in_listing: True
     workload_tags: ["Data Engineering", "Real Time Intelligence"]
     scenario_tags: ["Monitoring"]
@@ -97,3 +97,57 @@ jumpstarts:
       - SemanticModel
     test_suite: ""
     owner_email: "fabricjumpstart.spark-rti-monitoring@microsoft.com"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Example - TO DELETE LATER
+  # ═══════════════════════════════════════════════════════════════
+  - id: metadata-driven-pipelines
+    name: "Metadata Driven Pipelines"
+    description: "Jumpstart for Metadata Driven Pipelines"
+    date_added: "9/1/2025"
+    include_in_listing: True
+    workload_tags: ["Data Factory", "SQL Database"]
+    scenario_tags: ["Data Integration"]
+    preview_image: "assets/image-example.png"
+    source:
+      workspace_path: "src/"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - KQLQueryset
+      - Environment
+      - DataPipeline
+      - Report
+      - SemanticModel
+    test_suite: ""
+    owner_email: ""
+
+  # ═══════════════════════════════════════════════════════════════
+  # Example - TO DELETE LATER
+  # ═══════════════════════════════════════════════════════════════
+  - id: materialized-lake-views
+    name: "Materialized Lake Views"
+    description: "Jumpstart for Materialized Lake Views"
+    date_added: "9/1/2025"
+    include_in_listing: True
+    workload_tags: ["Data Engineering"]
+    scenario_tags: ["Batch Processing"]
+    preview_image: "assets/image-example.png"
+    source:
+      workspace_path: "src/"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - KQLQueryset
+      - Environment
+      - DataPipeline
+      - Report
+      - SemanticModel
+    test_suite: ""
+    owner_email: ""

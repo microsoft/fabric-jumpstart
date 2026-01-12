@@ -347,27 +347,27 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
                 button.dataset.originalContent = button.innerHTML;
             }
             
-            // Try modern clipboard API first, fallback to legacy method
+            // Use execCommand-based fallback only (Clipboard API is blocked in Fabric)
             const copyText = () => {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    return navigator.clipboard.writeText(text);
-                } else {
-                    // Fallback for environments without clipboard API
-                    const textarea = document.createElement('textarea');
-                    textarea.value = text;
-                    textarea.style.position = 'fixed';
-                    textarea.style.opacity = '0';
-                    document.body.appendChild(textarea);
-                    textarea.select();
+                return new Promise((resolve, reject) => {
                     try {
-                        document.execCommand('copy');
+                        const textarea = document.createElement('textarea');
+                        textarea.value = text;
+                        textarea.style.position = 'fixed';
+                        textarea.style.opacity = '0';
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        const ok = document.execCommand('copy');
                         document.body.removeChild(textarea);
-                        return Promise.resolve();
+                        if (ok) {
+                            resolve();
+                        } else {
+                            reject(new Error('execCommand returned false'));
+                        }
                     } catch (err) {
-                        document.body.removeChild(textarea);
-                        return Promise.reject(err);
+                        reject(err);
                     }
-                }
+                });
             };
             
             copyText().then(() => {
@@ -475,9 +475,9 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name):
                         <div class="jumpstart-description">{j['description']}</div>
                         <div class="jumpstart-install">
                             <code>{install_code}</code>
-                            <button class="copy-btn" data-code="{install_code_plain}" onclick="copyToClipboard(this); return false;">
+                            <span class="copy-btn" role="button" tabindex="0" data-code="{install_code_plain}" onclick="copyToClipboard(this)">
                                 ''' + _COPY_ICON_SVG + '''
-                            </button>
+                            </span>
                         </div>
                     </div>
                 </div>

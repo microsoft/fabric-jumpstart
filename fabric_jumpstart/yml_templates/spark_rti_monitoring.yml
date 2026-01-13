@@ -1,7 +1,0 @@
-core:
-  workspace: ""
-  repository_directory: "."
-  items:
-    - type: Notebook
-      name: fabric-spark-monitoring-setup
-      path: fabric-spark-monitoring-setup.ipynb

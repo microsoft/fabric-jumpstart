@@ -1,0 +1,64 @@
+name: "[Bug]"
+description: "Report a defect"
+labels:
+  - "type: bug"
+body:
+  - type: markdown
+    attributes:
+      value: "Provide enough detail to reproduce and verify the fix."
+  - type: input
+    id: title
+    attributes:
+      label: Bug title
+      placeholder: "Install fails when workspace_id missing"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is happening and what you expected instead
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps
+      placeholder: "1) ...\n2) ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Attach or paste relevant output
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      placeholder: "fabric-jumpstart 0.1.1, commit abc123"
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - blocker
+        - critical
+        - major
+        - minor
+        - trivial
+    validations:
+      required: true

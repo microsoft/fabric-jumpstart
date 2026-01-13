@@ -1,0 +1,51 @@
+name: "[Feature]"
+description: "Request a new capability or enhancement"
+labels:
+  - "type: feature"
+body:
+  - type: markdown
+    attributes:
+      value: "Tell us the problem and the desired outcome."
+  - type: input
+    id: title
+    attributes:
+      label: Feature title
+      placeholder: "Add XYZ toggle to jumpstart list"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What user problem are we addressing?
+      placeholder: "Users cannot filter jumpstarts by workload"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the change, UX, and scope
+      placeholder: "Add workload filter pills to the list view..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      placeholder: "Keep status quo; add search only; move to docs"
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact / users
+      placeholder: "Who benefits and how success is measured"
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / risks
+      placeholder: "Data source availability, preview features"
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: "- Filter works across Scenario/Workload views\n- Docs updated"

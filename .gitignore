@@ -1,17 +1,10 @@
-# Python build and install folders
-dist/
-build/
-*.egg-info/
+# Python-generated files
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.env
-.env
-*.venv
-venv/
-ENV/
-env/
-env.bak/
-.ipynb_checkpoints
-.vscode/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv

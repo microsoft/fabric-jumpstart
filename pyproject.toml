@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fabric-jumpstart"
+version = "0.1.1"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fabric-cicd", # temporary until fabric_cicd-0.1.34 is released for SJD / Fabric Auth support
+    "pydantic>=2.12.5",
+    "pyyaml>=6.0.3",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fabric_jumpstart"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/fabric_jumpstart/ui_assets" = "fabric_jumpstart/ui_assets"
+
+[tool.uv.sources]
+fabric-cicd = { path = "fabric_cicd-0.1.34-py3-none-any.whl" }
+
+[dependency-groups]
+dev = [
+    {include-group = "lint"},
+    {include-group = "test"},
+    "make>=0.1.6.post2",
+]
+lint = [
+    "ruff>=0.14.10",
+]
+test = [
+    "pytest>=9.0.2",
+]

@@ -6,3 +6,6 @@
 - Deploy all jumpstarts to root folder in workspace? 
 - Make `workspace` support ID or NAME
 - move yaml validation to test module: pydantic moves to `test` dependency group and validate schema moves to test module
+- add all Fabric Items within a folder to containerize the solution
+- add user info about estimated deployment time
+- add user info about estimated time to go through jumpstart

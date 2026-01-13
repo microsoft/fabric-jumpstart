@@ -5,7 +5,7 @@ jumpstarts:
   # ═══════════════════════════════════════════════════════════════
   - id: spark-structured-streaming
     name: "Spark Structured Streaming"
-    description: "Jumpstart for Spark Structured Streaming"
+    description: "Learn Spark Structured Streaming on a fully packaged streaming lakehouse demo."
     date_added: "1/8/2026"
     include_in_listing: True
     workload_tags: ["Data Engineering"]
@@ -23,13 +23,15 @@ jumpstarts:
       - enable_lakehouse_unpublish
     test_suite: ""
     owner_email: "fabricjumpstart.spark-structured-streaming@microsoft.com"
+    minutes_to_deploy: 8
+    minutes_to_complete_jumpstart: 120
 
   # ═══════════════════════════════════════════════════════════════
   # ANALYTICS ROADSHOW LAB
   # ═══════════════════════════════════════════════════════════════
   - id: analytics-roadshow-lab
     name: "Analytics Roadshow Lab"
-    description: "Jumpstart for Analytics Roadshow Lab"
+    description: "Explore the power of Fabric Spark and Data Warehouse on streaming industrial sales and shipment data."
     date_added: "1/8/2026"
     include_in_listing: True
     workload_tags: ["Data Engineering", "Data Warehouse"]
@@ -49,13 +51,15 @@ jumpstarts:
       - enable_lakehouse_unpublish
     test_suite: ""
     owner_email: "fabricjumpstart.analytics-roadshow-lab@microsoft.com"
+    minutes_to_deploy: 8
+    minutes_to_complete_jumpstart: 120
 
   # ═══════════════════════════════════════════════════════════════
   # SAMPLE TEST
   # ═══════════════════════════════════════════════════════════════
   - id: sample-test
     name: "Sample Test"
-    description: "Jumpstart for Spark Structured Streaming - monorepo"
+    description: "This is a sample description for a test jumpstart."
     date_added: "1/8/2026"
     include_in_listing: False
     workload_tags: ["Test"]
@@ -68,13 +72,15 @@ jumpstarts:
       - enable_lakehouse_unpublish
     test_suite: ""
     owner_email: "fabricjumpstart.sample-test@microsoft.com"
+    minutes_to_deploy: 8
+    minutes_to_complete_jumpstart: 120
 
   # ═══════════════════════════════════════════════════════════════
   # SPARK RTI MONITORING
   # ═══════════════════════════════════════════════════════════════
   - id: spark-rti-monitoring
     name: "Spark RTI Monitoring"
-    description: "Jumpstart for Spark RTI Monitoring"
+    description: "Empower your Spark workloads with real-time monitoring using Fabric Real Time Intelligence. This jumpstart provides a comprehensive setup to monitor Spark jobs, track performance metrics, and visualize data streams in real-time dashboards."
     date_added: "9/1/2025"
     include_in_listing: True
     workload_tags: ["Data Engineering", "Real Time Intelligence"]
@@ -97,6 +103,8 @@ jumpstarts:
       - SemanticModel
     test_suite: ""
     owner_email: "fabricjumpstart.spark-rti-monitoring@microsoft.com"
+    minutes_to_deploy: 8
+    minutes_to_complete_jumpstart: 120
 
   # ═══════════════════════════════════════════════════════════════
   # Example - TO DELETE LATER
@@ -124,6 +132,8 @@ jumpstarts:
       - SemanticModel
     test_suite: ""
     owner_email: ""
+    minutes_to_deploy: 8
+    minutes_to_complete_jumpstart: 120
 
   # ═══════════════════════════════════════════════════════════════
   # Example - TO DELETE LATER
@@ -151,3 +161,34 @@ jumpstarts:
       - SemanticModel
     test_suite: ""
     owner_email: ""
+    minutes_to_deploy: 8
+    minutes_to_complete_jumpstart: 120
+
+  # ═══════════════════════════════════════════════════════════════
+  # Example - TO DELETE LATER
+  # ═══════════════════════════════════════════════════════════════
+  - id: semantic-link
+    name: "Semantic Link"
+    description: "Jumpstart for Semantic Link"
+    date_added: "9/1/2025"
+    include_in_listing: True
+    workload_tags: ["Power BI"]
+    scenario_tags: ["Modeling"]
+    preview_image: "assets/image-example.png"
+    source:
+      workspace_path: "src/"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - KQLQueryset
+      - Environment
+      - DataPipeline
+      - Report
+      - SemanticModel
+    test_suite: ""
+    owner_email: ""
+    minutes_to_deploy: 8
+    minutes_to_complete_jumpstart: 120

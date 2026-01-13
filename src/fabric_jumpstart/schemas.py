@@ -7,9 +7,11 @@ from pydantic import BaseModel, field_validator
 VALID_WORKLOAD_TAGS = [
     "Data Engineering",
     "Data Warehouse",
+    "Data Science",
     "Real Time Intelligence",
     "Data Factory",
     "SQL Database",
+    "Power BI",
     "Test",
 ]
 
@@ -24,28 +26,36 @@ VALID_SCENARIO_TAGS = [
 
 WORKLOAD_COLOR_MAP = {
     "Data Engineering": {
-        "primary": "#117865", 
-        "secondary": "#0C695A"
+        "primary": "#1fb6ef", 
+        "secondary": "#096bbc"
     },
     "Data Warehouse": {
-        "primary": "#117865", 
-        "secondary": "#0C695A"
+        "primary": "#1fb6ef", 
+        "secondary": "#096bbc"
+    },
+    "Data Science": {
+        "primary": "#1fb6ef", 
+        "secondary": "#096bbc"
     },
     "Real Time Intelligence": {
-        "primary": "#117865", 
-        "secondary": "#0C695A"
+        "primary": "#fa4e56", 
+        "secondary": "#a41836"
     },
     "Data Factory": {
-        "primary": "#117865", 
+        "primary": "#239C6E", 
         "secondary": "#0C695A"
     },
     "SQL Database": {
-        "primary": "#117865", 
-        "secondary": "#0C695A"
+        "primary": "#7e5ca7", 
+        "secondary": "#633e8f"
     },
     "Test": {
         "primary": "#117865", 
         "secondary": "#0C695A"
+    },
+    "Power BI": {
+        "primary": "#ffe642", 
+        "secondary": "#e2c718"
     },
 }
 

@@ -1,6 +1,7 @@
 """UI rendering functions for Fabric Jumpstart."""
 
 import base64
+import html
 from functools import lru_cache
 from pathlib import Path
 
@@ -27,6 +28,8 @@ WORKLOAD_ICON_MAP = {
     "Real Time Intelligence": "real_time_intelligence_24_color.svg",
     "Data Factory": "data_factory_24_color.svg",
     "SQL Database": "databases_24_color.svg",
+    "Power BI": "power_bi_24_color.svg",
+    "Data Science": "data_science_24_color.svg",
     "Test": "app_development_24_color.svg",
 }
 
@@ -104,8 +107,16 @@ def _resolve_preview_image(jumpstart) -> str:
     return ''
 
 
-def _resolve_workload_colors(jumpstart):
-    """Return primary/secondary colors for the card based on the first workload tag."""
+def _resolve_workload_colors(jumpstart, category_tag=None, group_by="scenario"):
+    """Return primary/secondary colors for the card based on grouping context.
+
+    - Scenario view: use the card's first workload tag.
+    - Workload view: use the workload category key for consistent coloring.
+    """
+    if group_by == "workload" and category_tag:
+        colors = WORKLOAD_COLOR_MAP.get(category_tag, DEFAULT_WORKLOAD_COLORS)
+        return colors["primary"], colors["secondary"]
+
     workload_tags = jumpstart.get("workload_tags") or []
     primary_tag = workload_tags[0] if workload_tags else None
     colors = WORKLOAD_COLOR_MAP.get(primary_tag, DEFAULT_WORKLOAD_COLORS)
@@ -303,21 +314,21 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             position: absolute;
             inset: 0;
             background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%);
-            z-index: 1;
+            z-index: 0;
             pointer-events: none;
         }
         .jumpstart-image .preview-img {
             position: absolute;
-            top: 50%;
+            bottom: 0;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             width: 88%;
-            height: 78%;
+            height: 86%;
             object-fit: cover;
-            object-position: center;
+            object-position: top center;
             border-radius: 3px;
             box-shadow: 0 8px 18px rgba(0,0,0,0.18);
-            z-index: 0;
+            z-index: 1;
         }
         .jumpstart-new-badge {
             position: absolute;
@@ -388,6 +399,11 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             line-height: 1.6;
             margin-bottom: 20px;
             flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .jumpstart-install {
             font-family: 'Consolas', 'Courier New', monospace;
@@ -395,7 +411,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             padding: 12px 16px;
             background: #f3f2f1;
             border-radius: 2px;
-            border-left: 3px solid var(--accent-primary, #117865);
+            border-left: 3px solid var(--accent-secondary, #0C695A);
             cursor: pointer;
             transition: background 0.2s;
             position: relative;
@@ -407,7 +423,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             opacity: 1;
         }
         .jumpstart-install code {
-            color: var(--accent-primary, #117865);
+            color: var(--accent-secondary, #0C695A);
             background: transparent;
             font-family: inherit;
         }
@@ -439,7 +455,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             pointer-events: none;
         }
         .copy-btn.copied svg {
-            fill: var(--accent-primary, #117865);
+            fill: var(--accent-secondary, #0C695A);
         }
         .view-container {
             display: none;
@@ -585,32 +601,32 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
     html_parts.append('''
         <div class="view-toggle">
             <div class="toggle-group">
-                <button class="active" onclick="toggleView('scenario', this)">Scenario</button>
-                <button onclick="toggleView('workload', this)">Workload</button>
+                <button class="active" onclick="toggleView('workload', this)">Workload</button>
+                <button onclick="toggleView('scenario', this)">Scenario</button>
             </div>
         </div>
     ''')
     
     # Tag filter buttons - Scenario tags
-    html_parts.append('<div id="scenario-tags" class="tag-filters tag-filter-row">')
+    html_parts.append('<div id="scenario-tags" class="tag-filters tag-filter-row" style="display: none;">')
     for tag in scenario_tags:
         html_parts.append(f'<button class="tag-filter-btn" onclick="filterByTag(\'{tag}\', \'scenario\', this)">{tag}</button>')
     html_parts.append('</div>')
     
     # Tag filter buttons - Workload tags
-    html_parts.append('<div id="workload-tags" class="tag-filters tag-filter-row" style="display: none;">')
+    html_parts.append('<div id="workload-tags" class="tag-filters tag-filter-row">')
     for tag in workload_tags:
         html_parts.append(f'<button class="tag-filter-btn" onclick="filterByTag(\'{tag}\', \'workload\', this)">{tag}</button>')
     html_parts.append('</div>')
     
     # Scenario view
-    html_parts.append('<div id="scenario-view" class="view-container active">')
-    html_parts.append(_render_grouped_jumpstarts(grouped_scenario, instance_name))
+    html_parts.append('<div id="scenario-view" class="view-container">')
+    html_parts.append(_render_grouped_jumpstarts(grouped_scenario, instance_name, group_by="scenario"))
     html_parts.append('</div>')
     
     # Workload view
-    html_parts.append('<div id="workload-view" class="view-container">')
-    html_parts.append(_render_grouped_jumpstarts(grouped_workload, instance_name))
+    html_parts.append('<div id="workload-view" class="view-container active">')
+    html_parts.append(_render_grouped_jumpstarts(grouped_workload, instance_name, group_by="workload"))
     html_parts.append('</div>')
     
     html_parts.append('</div>')
@@ -618,15 +634,22 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
     return ''.join(html_parts)
 
 
-def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name):
+def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scenario"):
     """Render HTML for grouped jumpstarts with Arc Jumpstart styling."""
     html_parts = []
     
     for category, jumpstarts_list in sorted(grouped_jumpstarts.items()):
+        section_primary, section_secondary = _resolve_workload_colors(
+            jumpstarts_list[0] if jumpstarts_list else {},
+            category_tag=category,
+            group_by=group_by,
+        )
+        # In workload view tint the EXPLORE label with the darker secondary accent.
+        section_color_attr = f' style="color: {section_secondary};"' if group_by == "workload" else ''
         html_parts.append(f'''
             <div class="category-section">
-                <div class="category-label">EXPLORE</div>
-                <h2 class="category-title">{category}</h2>
+                <div class="category-label"{section_color_attr}>EXPLORE</div>
+            <h2 class="category-title">{category}</h2>
                 <div class="jumpstart-grid">
         ''')
         
@@ -634,7 +657,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name):
             # Generate card HTML
             new_badge = '<div class="jumpstart-new-badge">NEW</div>' if j.get('is_new') else ''
 
-            accent_primary, accent_secondary = _resolve_workload_colors(j)
+            accent_primary, accent_secondary = _resolve_workload_colors(j, category_tag=category, group_by=group_by)
             accent_style = f' style="--accent-primary: {accent_primary}; --accent-secondary: {accent_secondary};"'
 
             preview_src = _resolve_preview_image(j)
@@ -645,11 +668,16 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name):
                 f'<div class="workload-chip" title="{tag}" aria-label="{tag}"><span class="workload-icon"><img src="{data_uri}" alt="{tag} icon"/></span></div>'
                 for tag, data_uri in workload_badges
             )
+
+            description_text = j.get('description', '')
+            description_title = html.escape(description_text, quote=True)
             
             install_code = (
-                f"<span style='color: #605e5c'>{instance_name}</span>."
-                f"<span style='color: var(--accent-primary, #117865)'>install</span>"
-                f"(<span style='color: #a31515'>'{j['id']}'</span>)"
+                f"<span style='color: #096bbc'>{instance_name}</span>."
+                f"<span style='color: #605e5c'>install</span>"
+                f"<span style='color: #0431fa'>(</span>"
+                f"<span style='color: #a31515'>'{j['id']}'</span>"
+                f"<span style='color: #0431fa'>)</span>"
             )
             install_code_plain = f"{instance_name}.install('{j['id']}')"
             
@@ -658,7 +686,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name):
                     <div class="jumpstart-image">{preview_img_html}{new_badge}<div class="workload-ribbon">{workload_badges_html}</div></div>
                     <div class="jumpstart-content">
                         <div class="jumpstart-name">{j['name']}</div>
-                        <div class="jumpstart-description">{j['description']}</div>
+                        <div class="jumpstart-description" title="{description_title}">{description_text}</div>
                         <div class="jumpstart-install">
                             <code>{install_code}</code>
                             <span class="copy-btn" role="button" tabindex="0" data-code="{install_code_plain}" onclick="copyToClipboard(this)">

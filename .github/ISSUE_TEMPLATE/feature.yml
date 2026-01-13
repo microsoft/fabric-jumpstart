@@ -1,9 +1,8 @@
 name: "Feature"
 description: "Request a new capability or enhancement to the Jumpstart framework or an existing Jumpstart"
 title: "[Feature]: "
-labels:
-  - "Feature-Request"
-  - "Needs-Triage"
+labels: ["Feature-Request", "Needs-Triage"]
+projects: ["microsoft/2147"]
 body:
   - type: markdown
     attributes:
@@ -51,3 +50,11 @@ body:
     attributes:
       label: Acceptance criteria
       placeholder: "- Filter works across Scenario/Workload views\n- Docs updated"
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct and Licensing
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Azure/fabric-jumpstart/blob/main/CODE_OF_CONDUCT.md) and the project's [MIT license](https://github.com/microsoft/fabric-jumpstart/blob/main/LICENSE-CODE).
+      options:
+        - label: I agree to follow this project's Code of Conduct and Licensing terms.
+          required: true

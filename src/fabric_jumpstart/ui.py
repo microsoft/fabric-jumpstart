@@ -1,11 +1,14 @@
 """UI rendering functions for Fabric Jumpstart."""
 
+import base64
+from functools import lru_cache
 from pathlib import Path
 
 from .schemas import DEFAULT_WORKLOAD_COLORS, WORKLOAD_COLOR_MAP
 
 # Load copy icon SVG once at module level
-_copy_icon_path = Path(__file__).parent / 'ui_assets' / 'copy-icon.svg'
+_assets_path = Path(__file__).parent / 'ui_assets'
+_copy_icon_path = _assets_path / 'copy-icon.svg'
 try:
     with open(_copy_icon_path, 'r', encoding='utf-8') as f:
         _COPY_ICON_SVG = f.read()
@@ -17,12 +20,108 @@ except FileNotFoundError:
     _COPY_ICON_SVG = '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><rect width="16" height="16" fill="currentColor"/></svg>'
 
 
+# Map workload tags to icon filenames stored in ui_assets
+WORKLOAD_ICON_MAP = {
+    "Data Engineering": "data_engineering_24_color.svg",
+    "Data Warehouse": "data_warehouse_24_color.svg",
+    "Real Time Intelligence": "real_time_intelligence_24_color.svg",
+    "Data Factory": "data_factory_24_color.svg",
+    "SQL Database": "databases_24_color.svg",
+    "Test": "app_development_24_color.svg",
+}
+
+DEFAULT_WORKLOAD_ICON = WORKLOAD_ICON_MAP.get("Data Engineering")
+
+
+@lru_cache(maxsize=32)
+def _load_svg(filename: str) -> str:
+    """Load an SVG from ui_assets with simple caching."""
+    if not filename:
+        return ''
+    svg_path = _assets_path / filename
+    try:
+        return svg_path.read_text(encoding='utf-8').strip()
+    except FileNotFoundError:
+        return ''
+
+
+def _svg_to_data_uri(svg_text: str) -> str:
+    """Convert raw SVG text to a data URI to avoid ID/gradient collisions when inlined."""
+    if not svg_text:
+        return ''
+    encoded = base64.b64encode(svg_text.encode('utf-8')).decode('ascii')
+    return f"data:image/svg+xml;base64,{encoded}"
+
+
+def _guess_mime(path: Path) -> str:
+    """Minimal mime guess based on file extension."""
+    suffix = path.suffix.lower()
+    if suffix in {'.jpg', '.jpeg'}:
+        return 'image/jpeg'
+    if suffix == '.gif':
+        return 'image/gif'
+    if suffix == '.svg':
+        return 'image/svg+xml'
+    return 'image/png'
+
+
+@lru_cache(maxsize=64)
+def _load_preview_image_data(path: Path) -> str:
+    """Return a data URI for a preview image file if it exists, else empty string."""
+    if not path.is_file():
+        return ''
+    mime = _guess_mime(path)
+    encoded = base64.b64encode(path.read_bytes()).decode('ascii')
+    return f"data:{mime};base64,{encoded}"
+
+
+def _resolve_preview_image(jumpstart) -> str:
+    """Resolve preview image to a data URI or external URL."""
+    preview_path = jumpstart.get("preview_image")
+    if not preview_path:
+        return ''
+
+    if preview_path.startswith(("http://", "https://", "data:")):
+        return preview_path
+
+    candidates = []
+    try:
+        candidates.append(Path(__file__).parent / 'jumpstarts' / jumpstart['id'] / preview_path)
+    except KeyError:
+        pass
+
+    preview_path_obj = Path(preview_path)
+    if preview_path_obj.is_absolute():
+        candidates.append(preview_path_obj)
+    else:
+        candidates.append(Path(__file__).parent / preview_path)
+
+    for candidate in candidates:
+        data_uri = _load_preview_image_data(candidate.resolve())
+        if data_uri:
+            return data_uri
+
+    return ''
+
+
 def _resolve_workload_colors(jumpstart):
     """Return primary/secondary colors for the card based on the first workload tag."""
     workload_tags = jumpstart.get("workload_tags") or []
     primary_tag = workload_tags[0] if workload_tags else None
     colors = WORKLOAD_COLOR_MAP.get(primary_tag, DEFAULT_WORKLOAD_COLORS)
     return colors["primary"], colors["secondary"]
+
+
+def _build_workload_badges(workload_tags):
+    """Return a list of (label, svg_content) tuples for the workload tags."""
+    tags = workload_tags or ["Unspecified"]
+    badges = []
+    for tag in tags:
+        filename = WORKLOAD_ICON_MAP.get(tag, DEFAULT_WORKLOAD_ICON)
+        svg_content = _load_svg(filename)
+        data_uri = _svg_to_data_uri(svg_content)
+        badges.append((tag, data_uri))
+    return badges
 
 
 def render_jumpstart_list(grouped_scenario, grouped_workload, instance_name):
@@ -197,6 +296,28 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: visible;
+        }
+        .jumpstart-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .jumpstart-image .preview-img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 88%;
+            height: 78%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 3px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+            z-index: 0;
         }
         .jumpstart-new-badge {
             position: absolute;
@@ -210,9 +331,46 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            z-index: 2;
+        }
+        .workload-ribbon {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 0;
+            transform: translateY(33%);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            align-items: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            z-index: 2;
+        }
+        .workload-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 6px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            cursor: default;
+            pointer-events: auto;
+        }
+        .workload-chip .workload-icon svg,
+        .workload-chip .workload-icon img {
+            width: 20px;
+            height: 20px;
+            display: block;
         }
         .jumpstart-content {
-            padding: 24px;
+            padding: 36px 24px 24px 24px;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -478,6 +636,15 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name):
 
             accent_primary, accent_secondary = _resolve_workload_colors(j)
             accent_style = f' style="--accent-primary: {accent_primary}; --accent-secondary: {accent_secondary};"'
+
+            preview_src = _resolve_preview_image(j)
+            preview_img_html = f'<img class="preview-img" src="{preview_src}" alt="{j["name"]} preview"/>' if preview_src else ''
+
+            workload_badges = _build_workload_badges(j.get("workload_tags"))
+            workload_badges_html = ''.join(
+                f'<div class="workload-chip" title="{tag}" aria-label="{tag}"><span class="workload-icon"><img src="{data_uri}" alt="{tag} icon"/></span></div>'
+                for tag, data_uri in workload_badges
+            )
             
             install_code = (
                 f"<span style='color: #605e5c'>{instance_name}</span>."
@@ -488,7 +655,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name):
             
             html_parts.append(f'''
                 <div class="jumpstart-card"{accent_style}>
-                    <div class="jumpstart-image">{new_badge}</div>
+                    <div class="jumpstart-image">{preview_img_html}{new_badge}<div class="workload-ribbon">{workload_badges_html}</div></div>
                     <div class="jumpstart-content">
                         <div class="jumpstart-name">{j['name']}</div>
                         <div class="jumpstart-description">{j['description']}</div>

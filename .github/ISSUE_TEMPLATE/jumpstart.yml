@@ -1,0 +1,71 @@
+name: "[Jumpstart] New Jumpstart"
+description: "Propose a new Fabric Jumpstart package"
+labels:
+  - "type: jumpstart"
+body:
+  - type: markdown
+    attributes:
+      value: "Please provide enough detail to scope, build, and review this jumpstart."
+  - type: input
+    id: title
+    attributes:
+      label: Jumpstart title
+      description: Short, user-facing name
+      placeholder: "Contoso Real-Time Analytics"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One- or two-sentence overview of the jumpstart
+      placeholder: "Accelerates ingestion, streaming, and dashboarding for logistics events."
+    validations:
+      required: true
+  - type: dropdown
+    id: solution_type
+    attributes:
+      label: Solution type
+      description: Select the jumpstart category
+      options:
+        - tutorial
+        - accelerator
+        - demo
+    validations:
+      required: true
+  - type: checkboxes
+    id: workloads
+    attributes:
+      label: Workloads involved
+      description: Select all applicable workloads
+      options:
+        - label: Data Engineering
+        - label: Data Warehouse
+        - label: Data Science
+        - label: Real Time Intelligence
+        - label: Data Factory
+        - label: SQL Database
+        - label: Power BI
+        - label: Other (describe below)
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed description
+      description: What this jumpstart does; key features and benefits
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why this jumpstart is needed; target persona and scenario
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Fabric items, libraries, data sources, external services
+      placeholder: "- Requires Workspace features X\n- Depends on library Y>=1.2\n- Needs demo storage account"

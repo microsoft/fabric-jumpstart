@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from .schemas import DEFAULT_WORKLOAD_COLORS, WORKLOAD_COLOR_MAP
+
 # Load copy icon SVG once at module level
 _copy_icon_path = Path(__file__).parent / 'ui_assets' / 'copy-icon.svg'
 try:
@@ -13,6 +15,14 @@ try:
 except FileNotFoundError:
     # Fallback to a simple rectangle if file not found
     _COPY_ICON_SVG = '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><rect width="16" height="16" fill="currentColor"/></svg>'
+
+
+def _resolve_workload_colors(jumpstart):
+    """Return primary/secondary colors for the card based on the first workload tag."""
+    workload_tags = jumpstart.get("workload_tags") or []
+    primary_tag = workload_tags[0] if workload_tags else None
+    colors = WORKLOAD_COLOR_MAP.get(primary_tag, DEFAULT_WORKLOAD_COLORS)
+    return colors["primary"], colors["secondary"]
 
 
 def render_jumpstart_list(grouped_scenario, grouped_workload, instance_name):
@@ -53,7 +63,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             margin-bottom: 40px;
         }
         .jumpstart-label {
-            color: #0067b6;
+            color: #117865;
             font-size: 16px;
             font-weight: 600;
             text-transform: uppercase;
@@ -101,7 +111,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             border-right: none;
         }
         .toggle-group button.active {
-            background: linear-gradient(135deg, #0067b6 0%, #005a9e 100%);
+            background: linear-gradient(135deg, #117865 0%, #0C695A 100%);
             color: white;
         }
         .toggle-group button:hover:not(.active) {
@@ -131,7 +141,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             border-color: #8a8886;
         }
         .tag-filter-btn.active {
-            background: linear-gradient(135deg, #0067b6 0%, #005a9e 100%);
+            background: linear-gradient(135deg, #117865 0%, #0C695A 100%);
             color: white;
             border-color: transparent;
         }
@@ -143,7 +153,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             display: none;
         }
         .category-label {
-            color: #0067b6;
+            color: #117865;
             font-size: 16px;
             font-weight: 600;
             text-transform: uppercase;
@@ -172,6 +182,8 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             display: flex;
             flex-direction: column;
             position: relative;
+            --accent-primary: #117865;
+            --accent-secondary: #0C695A;
         }
         .jumpstart-card:hover {
             box-shadow: 0 6.4px 14.4px 0 rgba(0,0,0,.132), 0 1.2px 3.6px 0 rgba(0,0,0,.108);
@@ -181,7 +193,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             width: 100%;
             height: 160px;
             position: relative;
-            background: linear-gradient(135deg, #0067b6 0%, #106ebe 100%);
+            background: linear-gradient(135deg, var(--accent-primary, #117865) 0%, var(--accent-secondary, #0C695A) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -190,7 +202,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             position: absolute;
             top: 12px;
             right: 12px;
-            background: #107c10;
+            background: #212121; <!-- var(--accent-primary, #117865) -->
             color: white;
             padding: 4px 12px;
             border-radius: 2px;
@@ -225,7 +237,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             padding: 12px 16px;
             background: #f3f2f1;
             border-radius: 2px;
-            border-left: 3px solid #0067b6;
+            border-left: 3px solid var(--accent-primary, #117865);
             cursor: pointer;
             transition: background 0.2s;
             position: relative;
@@ -237,7 +249,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             opacity: 1;
         }
         .jumpstart-install code {
-            color: #0067b6;
+            color: var(--accent-primary, #117865);
             background: transparent;
             font-family: inherit;
         }
@@ -269,7 +281,7 @@ def _generate_html(grouped_scenario, grouped_workload, scenario_tags, workload_t
             pointer-events: none;
         }
         .copy-btn.copied svg {
-            fill: #107c10;
+            fill: var(--accent-primary, #117865);
         }
         .view-container {
             display: none;
@@ -463,12 +475,19 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name):
         for j in jumpstarts_list:
             # Generate card HTML
             new_badge = '<div class="jumpstart-new-badge">NEW</div>' if j.get('is_new') else ''
+
+            accent_primary, accent_secondary = _resolve_workload_colors(j)
+            accent_style = f' style="--accent-primary: {accent_primary}; --accent-secondary: {accent_secondary};"'
             
-            install_code = f"<span style='color: #605e5c'>{instance_name}</span>.<span style='color: #0067b6'>install</span>(<span style='color: #a31515'>'{j['id']}'</span>)"
+            install_code = (
+                f"<span style='color: #605e5c'>{instance_name}</span>."
+                f"<span style='color: var(--accent-primary, #117865)'>install</span>"
+                f"(<span style='color: #a31515'>'{j['id']}'</span>)"
+            )
             install_code_plain = f"{instance_name}.install('{j['id']}')"
             
             html_parts.append(f'''
-                <div class="jumpstart-card">
+                <div class="jumpstart-card"{accent_style}>
                     <div class="jumpstart-image">{new_badge}</div>
                     <div class="jumpstart-content">
                         <div class="jumpstart-name">{j['name']}</div>

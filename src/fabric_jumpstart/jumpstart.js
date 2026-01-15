@@ -357,6 +357,8 @@ function applyFilters() {
 
     const viewFilterValue = filters[viewType];
 
+    let anyVisible = false;
+
     const sections = view.querySelectorAll('.category-section');
     sections.forEach(section => {
         const sectionCategory = section.dataset.category || '';
@@ -377,8 +379,28 @@ function applyFilters() {
             }
         });
 
-        section.classList.toggle('hidden', !sectionMatches || visibleCards === 0);
+        const hideSection = !sectionMatches || visibleCards === 0;
+        section.classList.toggle('hidden', hideSection);
+        if (!hideSection) {
+            anyVisible = true;
+        }
     });
+
+    const container = getJumpstartRoot();
+    let notice = container ? container.querySelector('.empty-notice') : null;
+    if (!anyVisible) {
+        if (!notice && container) {
+            notice = document.createElement('div');
+            notice.className = 'empty-notice';
+            notice.textContent = 'No jumpstarts match the current filters.';
+            container.appendChild(notice);
+        }
+        if (notice) {
+            notice.style.display = 'block';
+        }
+    } else if (notice) {
+        notice.style.display = 'none';
+    }
 }
 
 function copyToClipboard(button) {

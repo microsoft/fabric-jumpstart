@@ -300,16 +300,40 @@
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
-    background: #f7f7f7;
-    color: #797979;
-    border: 1px solid #e3e2e1;
+    background: #e6f4ef;
+    color: #0C695A;
+    border: 1px solid #b8e0d2;
     width: fit-content;
-    margin-bottom: 12px;
+    margin: 0;
     letter-spacing: 0.1px;
 }
 
+.duration-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #eef6ff;
+    color: #0f4f8f;
+    border: 1px solid #d5e8ff;
+    width: fit-content;
+    margin: 0;
+    letter-spacing: 0.1px;
+}
+
+.meta-pills {
+    display: flex !important;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+    min-height: 24px;
+}
 .category-section {
-    margin-bottom: 60px;
+    margin-bottom: 56px;
 }
 .category-section.hidden {
     display: none;
@@ -332,7 +356,8 @@
 .jumpstart-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    gap: 24px;
+    margin-bottom: 16px;
 }
 .jumpstart-card {
     background: #ffffff;
@@ -528,4 +553,15 @@
 }
 .view-container.active {
     display: block;
+}
+
+.empty-notice {
+    margin: 24px 0 40px 0;
+    padding: 14px 16px;
+    border: 1px dashed #c8c6c4;
+    border-radius: 6px;
+    background: #f8f8f8;
+    color: #605e5c;
+    font-size: 14px;
+    font-weight: 600;
 }

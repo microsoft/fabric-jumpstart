@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 VALID_WORKLOAD_TAGS = [
     "Data Engineering",
@@ -121,6 +121,8 @@ class JumpstartSource(BaseModel):
 
 class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""
+    model_config = ConfigDict(extra="ignore")
+
     id: str
     name: str
     description: str
@@ -134,6 +136,8 @@ class Jumpstart(BaseModel):
     items_in_scope: Optional[List[str]] = None
     feature_flags: Optional[List[str]] = None
     test_suite: Optional[str] = None
+    minutes_to_complete_jumpstart: Optional[int] = None
+    minutes_to_deploy: Optional[int] = None
 
     @field_validator("workload_tags")
     @classmethod
@@ -156,3 +160,16 @@ class Jumpstart(BaseModel):
                 f"Unknown jumpstart_type: {value}. Allowed values: {allowed_display}."
             )
         return value
+
+    @field_validator("minutes_to_complete_jumpstart", "minutes_to_deploy", mode="before")
+    @classmethod
+    def coerce_minutes(cls, value):
+        if value in (None, ""):
+            return None
+        try:
+            minutes = int(value)
+        except (TypeError, ValueError):
+            raise ValueError("Duration fields must be integers if provided")
+        if minutes < 0:
+            raise ValueError("Duration fields must be non-negative")
+        return minutes

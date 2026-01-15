@@ -53,7 +53,7 @@ DEFAULT_WORKLOAD_ICON = WORKLOAD_ICON_MAP.get("Data Engineering")
 TYPE_EMOJI_MAP = {
     "Accelerator": "🚀",
     "Demo": "▶️",
-    "Tutorial": "📖",
+    "Tutorial": "📓",
 }
 
 
@@ -97,6 +97,19 @@ def _load_preview_image_data(path: Path) -> str:
     mime = _guess_mime(path)
     encoded = base64.b64encode(path.read_bytes()).decode('ascii')
     return f"data:{mime};base64,{encoded}"
+
+
+def _format_duration_label(minutes) -> str:
+    """Return formatted duration text like "⏱ 120 min"."""
+    if minutes is None or minutes == '':
+        return ''
+    try:
+        minutes_int = int(minutes)
+    except (TypeError, ValueError):
+        safe_text = html.escape(str(minutes), quote=True)
+        return safe_text
+
+    return f"⏱ {minutes_int} min"
 
 
 def _format_type_label(type_value: str) -> str:
@@ -321,6 +334,25 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
                 else ''
             )
 
+            minutes_raw = j.get('minutes_to_complete_jumpstart')
+            duration_label = _format_duration_label(minutes_raw)
+            duration_aria = html.escape(
+                f"Duration: {minutes_raw if minutes_raw not in (None, '') else 'Unspecified'} minutes",
+                quote=True,
+            )
+            duration_callout = (
+                f'<div class="duration-pill" aria-label="{duration_aria}">{duration_label}</div>'
+                if duration_label
+                else ''
+            )
+
+            meta_pills = ''.join([pill for pill in [type_callout, duration_callout] if pill])
+            meta_block = (
+                f'<div class="meta-pills" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">{meta_pills}</div>'
+                if meta_pills
+                else ''
+            )
+
             workload_badges = _build_workload_badges(j.get("workload_tags"))
             workload_badges_html = ''.join(
                 f'<div class="workload-chip" title="{tag}" aria-label="{tag}"><span class="workload-icon"><img src="{data_uri}" alt="{tag} icon"/></span></div>'
@@ -347,7 +379,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
                 <div class="jumpstart-card"{accent_style} data-type="{type_value}" data-workloads="{workloads_value}" data-scenarios="{scenarios_value}">
                     <div class="jumpstart-image">{preview_img_html}{new_badge}<div class="workload-ribbon">{workload_badges_html}</div></div>
                     <div class="jumpstart-content">
-                        {type_callout}
+                        {meta_block}
                         <div class="jumpstart-name">{card_name}</div>
                         <div class="jumpstart-description" title="{description_title}">{description_text}</div>
                         <div class="jumpstart-install">

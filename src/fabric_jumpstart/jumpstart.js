@@ -1,0 +1,473 @@
+const FILTER_LABELS = { type: 'Type', workload: 'Workload', scenario: 'Scenario' };
+
+window.jumpstartFilters = {
+    activeView: 'workload',
+    values: { type: null, workload: null, scenario: null },
+    active: []
+};
+window.jumpstartData = window.jumpstartData || [];
+
+let jumpstartUIBound = false;
+
+function initJumpstartUI() {
+    if (jumpstartUIBound) {
+        return;
+    }
+    
+    const addBtn = document.getElementById('add-filter-btn');
+    const menu = document.getElementById('filter-menu');
+    
+    if (addBtn) {
+        // Clear any existing state
+        addBtn.disabled = false;
+        addBtn.removeAttribute('disabled');
+        addBtn.removeAttribute('aria-disabled');
+        addBtn.style.pointerEvents = 'auto';
+        addBtn.style.cursor = 'pointer';
+        addBtn.style.opacity = '1'; // Ensure it's visible
+        addBtn.tabIndex = 0;
+        
+        // Remove any existing event listeners to prevent duplicates
+        addBtn.replaceWith(addBtn.cloneNode(true));
+        const newAddBtn = document.getElementById('add-filter-btn');
+        
+        newAddBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Add filter button clicked'); // Debug log
+            toggleFilterMenu();
+        });
+        
+        // Also handle keyboard navigation
+        newAddBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFilterMenu();
+            }
+        });
+    }
+
+    if (menu) {
+        menu.dataset.open = 'false';
+        menu.style.display = 'none';
+    }
+
+    // Initialize data if not already present
+    if (!window.jumpstartData || !window.jumpstartData.length) {
+        collectData();
+    }
+
+    jumpstartUIBound = true;
+    console.log('Jumpstart UI initialized'); // Debug log
+}
+
+function getJumpstartRoot() {
+    const containers = document.querySelectorAll('.jumpstart-container');
+    return containers.length ? containers[containers.length - 1] : null;
+}
+
+function collectData() {
+    const container = getJumpstartRoot();
+    if (!container) {
+        console.warn('No jumpstart container found');
+        return;
+    }
+    const cards = container.querySelectorAll('.jumpstart-card');
+    window.jumpstartData = Array.from(cards).map(card => ({
+        type: card.dataset.type || '',
+        workloads: (card.dataset.workloads || '').split('|').filter(Boolean),
+        scenarios: (card.dataset.scenarios || '').split('|').filter(Boolean),
+    }));
+    console.log('Collected data:', window.jumpstartData.length, 'cards');
+}
+
+function getAvailableOptions(kind) {
+    const data = window.jumpstartData || [];
+    const filters = window.jumpstartFilters.values;
+
+    // Deduplicate data by creating unique entries based on type+workloads+scenarios
+    const seen = new Set();
+    const uniqueData = data.filter(item => {
+        const key = item.type + '|' + item.workloads.join(',') + '|' + item.scenarios.join(',');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    const filtered = uniqueData.filter(item => {
+        // Apply all active filters EXCEPT the one we're computing options for
+        if (kind !== 'type' && filters.type && item.type !== filters.type) return false;
+        if (kind !== 'workload' && filters.workload && !item.workloads.includes(filters.workload)) return false;
+        if (kind !== 'scenario' && filters.scenario && !item.scenarios.includes(filters.scenario)) return false;
+        return true;
+    });
+
+    let values = [];
+    if (kind === 'type') {
+        values = filtered.map(i => i.type);
+    } else if (kind === 'workload') {
+        values = filtered.flatMap(i => i.workloads);
+    } else if (kind === 'scenario') {
+        values = filtered.flatMap(i => i.scenarios);
+    }
+    return Array.from(new Set(values.filter(Boolean))).sort();
+}
+
+function toggleView(viewType, clickedButton) {
+    window.jumpstartFilters.activeView = viewType;
+
+    document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+    const viewEl = document.getElementById(viewType + '-view');
+    if (viewEl) {
+        viewEl.classList.add('active');
+    }
+
+    document.querySelectorAll('.tag-filter-row').forEach(row => {
+        row.style.display = 'none';
+    });
+    const tagRow = document.getElementById(viewType + '-tags');
+    if (tagRow) {
+        tagRow.style.display = 'flex';
+    }
+
+    filterByTag(null, viewType);
+
+    document.querySelectorAll('.toggle-group button').forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', 'false');
+    });
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+        clickedButton.setAttribute('aria-pressed', 'true');
+    } else {
+        const activeBtn = document.querySelector('.toggle-group button[data-view="' + viewType + '"]');
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+            activeBtn.setAttribute('aria-pressed', 'true');
+        }
+    }
+
+}
+
+function filterByTag(tag, viewType, clickedButton) {
+    const view = document.getElementById(viewType + '-view');
+    const tagButtons = document.querySelectorAll('#' + viewType + '-tags .tag-filter-btn');
+
+    if (!view) {
+        return;
+    }
+
+    const togglingOff = Boolean(clickedButton && clickedButton.classList.contains('active'));
+    if (togglingOff) {
+        tagButtons.forEach(btn => btn.classList.remove('active'));
+        view.querySelectorAll('.category-section').forEach(section => section.classList.remove('hidden'));
+        window.jumpstartFilters.values[viewType] = null;
+        applyFilters();
+        return;
+    }
+
+    tagButtons.forEach(btn => btn.classList.remove('active'));
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+    }
+
+    const normalizedTag = tag ? tag.trim() : '';
+    const sections = view.querySelectorAll('.category-section');
+    sections.forEach(section => {
+        const titleEl = section.querySelector('.category-title');
+        const sectionTag = (section.dataset.category || (titleEl ? titleEl.textContent : '') || '').trim();
+        const hidden = Boolean(tag !== null && sectionTag !== normalizedTag);
+        section.classList.toggle('hidden', hidden);
+    });
+
+    window.jumpstartFilters.values[viewType] = tag || null;
+    applyFilters();
+}
+
+function toggleFilterMenu() {
+    const menu = document.getElementById('filter-menu');
+    const addBtn = document.getElementById('add-filter-btn');
+    
+    if (!menu || !addBtn) {
+        console.error('Filter menu or add button not found');
+        return;
+    }
+    
+    const isOpen = menu.dataset.open === 'true';
+    menu.dataset.open = isOpen ? 'false' : 'true';
+    menu.style.display = menu.dataset.open === 'true' ? 'block' : 'none';
+    addBtn.setAttribute('aria-expanded', menu.dataset.open);
+    
+    console.log('Menu toggled, open:', menu.dataset.open); // Debug log
+    
+    // Ensure data is collected
+    if (!window.jumpstartData || !window.jumpstartData.length) {
+        collectData();
+    }
+    
+    renderFilterMenu();
+}
+
+function closeFilterMenu() {
+    const menu = document.getElementById('filter-menu');
+    const addBtn = document.getElementById('add-filter-btn');
+    if (menu) {
+        menu.dataset.open = 'false';
+        menu.style.display = 'none';
+    }
+    if (addBtn) {
+        addBtn.setAttribute('aria-expanded', 'false');
+    }
+}
+
+function addFilter(kind) {
+    if (!window.jumpstartFilters.active.includes(kind)) {
+        window.jumpstartFilters.active.push(kind);
+    }
+    const options = getAvailableOptions(kind);
+    window.jumpstartFilters.values[kind] = options.length ? options[0] : null;
+    renderFilters();
+    applyFilters();
+    closeFilterMenu();
+}
+
+function removeFilter(kind) {
+    window.jumpstartFilters.active = window.jumpstartFilters.active.filter(k => k !== kind);
+    window.jumpstartFilters.values[kind] = null;
+    renderFilters();
+    applyFilters();
+}
+
+function updateFilter(kind, value) {
+    window.jumpstartFilters.values[kind] = value || null;
+    renderFilters();
+    applyFilters();
+}
+
+function renderFilterMenu() {
+    const menu = document.getElementById('filter-menu');
+    const addBtn = document.getElementById('add-filter-btn');
+    if (!menu) return;
+    
+    menu.innerHTML = '';
+    const remaining = ['type','workload','scenario'].filter(k => !window.jumpstartFilters.active.includes(k));
+    let added = 0;
+    
+    remaining.forEach(kind => {
+        const opts = getAvailableOptions(kind);
+        if (!opts.length) {
+            return;
+        }
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'filter-menu-btn';
+        btn.textContent = FILTER_LABELS[kind];
+        btn.onclick = () => addFilter(kind);
+        menu.appendChild(btn);
+        added += 1;
+    });
+    
+    if (added === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'filter-menu-empty';
+        empty.textContent = 'No filters available';
+        menu.appendChild(empty);
+    }
+    
+    // Ensure add button is properly enabled
+    if (addBtn) {
+        addBtn.disabled = false;
+        addBtn.removeAttribute('disabled');
+        addBtn.removeAttribute('aria-disabled');
+        addBtn.style.cursor = 'pointer';
+        addBtn.style.pointerEvents = 'auto';
+        addBtn.style.opacity = '1';
+    }
+    
+    menu.style.display = menu.dataset.open === 'true' ? 'block' : 'none';
+    if (addBtn) {
+        addBtn.setAttribute('aria-expanded', menu.dataset.open === 'true' ? 'true' : 'false');
+    }
+}
+
+function renderFilters() {
+    const container = document.getElementById('active-filters');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    window.jumpstartFilters.active.forEach(kind => {
+        const wrap = document.createElement('div');
+        wrap.className = 'filter-chip';
+        wrap.dataset.kind = kind;
+
+        const label = document.createElement('span');
+        label.className = 'filter-chip-label';
+        label.textContent = FILTER_LABELS[kind];
+        wrap.appendChild(label);
+
+        const select = document.createElement('select');
+        select.className = 'filter-select';
+        select.onchange = (e) => updateFilter(kind, e.target.value);
+
+        const options = getAvailableOptions(kind);
+        if (window.jumpstartFilters.values[kind] && !options.includes(window.jumpstartFilters.values[kind])) {
+            window.jumpstartFilters.values[kind] = options.length ? options[0] : null;
+        }
+        if (!options.length) {
+            const emptyOpt = document.createElement('option');
+            emptyOpt.value = '';
+            emptyOpt.textContent = 'No options';
+            select.appendChild(emptyOpt);
+            select.disabled = true;
+        } else {
+            options.forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt;
+                o.textContent = opt;
+                if (!window.jumpstartFilters.values[kind]) {
+                    window.jumpstartFilters.values[kind] = options[0];
+                }
+                if (window.jumpstartFilters.values[kind] === opt) {
+                    o.selected = true;
+                }
+                select.appendChild(o);
+            });
+            select.disabled = false;
+        }
+        wrap.appendChild(select);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'filter-chip-remove';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.onclick = () => removeFilter(kind);
+        wrap.appendChild(removeBtn);
+
+        container.appendChild(wrap);
+    });
+    renderFilterMenu();
+}
+
+function applyFilters() {
+    const viewType = window.jumpstartFilters.activeView || 'workload';
+    const filters = window.jumpstartFilters.values;
+    const view = document.getElementById(viewType + '-view');
+    if (!view) return;
+
+    const viewFilterValue = filters[viewType];
+
+    const sections = view.querySelectorAll('.category-section');
+    sections.forEach(section => {
+        const sectionCategory = section.dataset.category || '';
+        const sectionMatches = !viewFilterValue || viewFilterValue === sectionCategory;
+        let visibleCards = 0;
+
+        section.querySelectorAll('.jumpstart-card').forEach(card => {
+            const cardType = card.dataset.type || '';
+            const workloads = (card.dataset.workloads || '').split('|').filter(Boolean);
+            const scenarios = (card.dataset.scenarios || '').split('|').filter(Boolean);
+            const matchesType = !filters.type || filters.type === cardType;
+            const matchesWorkload = !filters.workload || workloads.includes(filters.workload);
+            const matchesScenario = !filters.scenario || scenarios.includes(filters.scenario);
+            const cardVisible = sectionMatches && matchesType && matchesWorkload && matchesScenario;
+            card.style.display = cardVisible ? '' : 'none';
+            if (cardVisible) {
+                visibleCards += 1;
+            }
+        });
+
+        section.classList.toggle('hidden', !sectionMatches || visibleCards === 0);
+    });
+}
+
+function copyToClipboard(button) {
+    const text = button.getAttribute('data-code');
+    if (!button.dataset.originalContent) {
+        button.dataset.originalContent = button.innerHTML;
+    }
+
+    const copyText = () => {
+        return new Promise((resolve, reject) => {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const ok = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                if (ok) {
+                    resolve();
+                } else {
+                    reject(new Error('execCommand returned false'));
+                }
+            } catch (err) {
+                reject(err);
+            }
+        });
+    };
+
+    copyText().then(() => {
+        button.classList.add('copied');
+        button.innerHTML = '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.431 3.323l-8.47 10-.79-.036-3.35-4.77.818-.574 2.978 4.24 8.051-9.506.764.646z"/></svg>';
+
+        setTimeout(() => {
+            button.classList.remove('copied');
+            button.innerHTML = button.dataset.originalContent;
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy to clipboard. Please copy manually: ' + text);
+    });
+}
+
+// Enhanced click handler with better debugging
+document.addEventListener('click', function(e) {
+    const target = e.target;
+    
+    // Handle copy button clicks
+    const copyBtn = target.classList.contains('copy-btn') ? target : target.closest('.copy-btn');
+    if (copyBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        copyToClipboard(copyBtn);
+        return;
+    }
+
+    // Handle add filter button clicks
+    const addBtn = document.getElementById('add-filter-btn');
+    if (addBtn && (target === addBtn || addBtn.contains(target))) {
+        console.log('Add filter button detected in click handler');
+        // Don't close menu if clicking the add button
+        return;
+    }
+
+    // Close menu when clicking outside
+    const menu = document.getElementById('filter-menu');
+    if (menu && menu.dataset.open === 'true' && !menu.contains(target)) {
+        closeFilterMenu();
+    }
+}, true);
+
+// Export functions for global access
+window.initJumpstartUI = initJumpstartUI;
+window.toggleView = toggleView;
+window.filterByTag = filterByTag;
+window.copyToClipboard = copyToClipboard;
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initJumpstartUI);
+} else {
+    initJumpstartUI();
+}
+
+// Also try to initialize after a short delay in case there are timing issues
+setTimeout(() => {
+    if (!jumpstartUIBound) {
+        console.log('Attempting delayed initialization');
+        initJumpstartUI();
+    }
+}, 100);

@@ -15,6 +15,12 @@ VALID_WORKLOAD_TAGS = [
     "Test",
 ]
 
+VALID_JUMPSTART_TYPES = [
+    "Accelerator",
+    "Tutorial",
+    "Demo",
+]
+
 VALID_SCENARIO_TAGS = [
     "Streaming",
     "Modeling",
@@ -123,6 +129,7 @@ class Jumpstart(BaseModel):
     workload_tags: List[str]
     scenario_tags: List[str]
     preview_image: Optional[str] = None
+    type: Optional[str] = "Accelerator"
     source: JumpstartSource
     items_in_scope: Optional[List[str]] = None
     feature_flags: Optional[List[str]] = None
@@ -137,3 +144,15 @@ class Jumpstart(BaseModel):
     @classmethod
     def validate_scenarios(cls, value: List[str]):
         return _validate_tags(value, VALID_SCENARIO_TAGS, "scenario_tags")
+
+    @field_validator("type")
+    @classmethod
+    def validate_jumpstart_type(cls, value: Optional[str]):
+        if value is None:
+            return "Accelerator"
+        if value not in VALID_JUMPSTART_TYPES:
+            allowed_display = ", ".join(VALID_JUMPSTART_TYPES)
+            raise ValueError(
+                f"Unknown jumpstart_type: {value}. Allowed values: {allowed_display}."
+            )
+        return value

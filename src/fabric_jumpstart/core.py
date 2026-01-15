@@ -86,9 +86,10 @@ class jumpstart:
         # Sort: NEW first, then alphabetical by id
         jumpstarts.sort(key=lambda x: (not x['is_new'], x['id']))
         
-        # Group by both scenario and workload
+        # Group by scenario, workload, and type
         grouped_scenario = {}
         grouped_workload = {}
+        grouped_type = {}
         
         for j in jumpstarts:
             # Group by scenario
@@ -104,9 +105,12 @@ class jumpstart:
                 if tag not in grouped_workload:
                     grouped_workload[tag] = []
                 grouped_workload[tag].append(j)
+
+            type_tag = j.get("type") or "Unspecified"
+            grouped_type.setdefault(type_tag, []).append(j)
         
         # Generate and display HTML
-        html = render_jumpstart_list(grouped_scenario, grouped_workload, instance_name)
+        html = render_jumpstart_list(grouped_scenario, grouped_workload, grouped_type, instance_name)
         display(HTML(html))
     
     def _get_instance_name(self):

@@ -10,6 +10,7 @@ jumpstarts:
     include_in_listing: True
     workload_tags: ["Data Engineering"]
     scenario_tags: ["Streaming"]
+    type: "Tutorial"
     preview_image: "assets/image-example.png"
     source:
       workspace_path: "src/"
@@ -36,6 +37,7 @@ jumpstarts:
     include_in_listing: True
     workload_tags: ["Data Engineering", "Data Warehouse"]
     scenario_tags: ["Streaming", "Modeling"]
+    type: "Tutorial"
     preview_image: "assets/image-example.png"
     source:
       repo_url: "https://github.com/microsoft/fabric-analytics-roadshow-lab.git/"
@@ -64,6 +66,7 @@ jumpstarts:
     include_in_listing: False
     workload_tags: ["Test"]
     scenario_tags: ["Test"]
+    type: "Demo"
     preview_image: "assets/image-example.png"
     source:
       workspace_path: "src/"
@@ -85,6 +88,7 @@ jumpstarts:
     include_in_listing: True
     workload_tags: ["Data Engineering", "Real Time Intelligence"]
     scenario_tags: ["Monitoring"]
+    type: "Accelerator"
     preview_image: "assets/image-example.png"
     source:
       repo_url: "https://github.com/microsoft/fabric-toolbox.git"
@@ -116,6 +120,7 @@ jumpstarts:
     include_in_listing: True
     workload_tags: ["Data Factory", "SQL Database"]
     scenario_tags: ["Data Integration"]
+    type: "Accelerator"
     preview_image: "assets/image-example.png"
     source:
       workspace_path: "src/"
@@ -145,6 +150,7 @@ jumpstarts:
     include_in_listing: True
     workload_tags: ["Data Engineering"]
     scenario_tags: ["Batch Processing"]
+    type: "Accelerator"
     preview_image: "assets/image-example.png"
     source:
       workspace_path: "src/"
@@ -174,6 +180,7 @@ jumpstarts:
     include_in_listing: True
     workload_tags: ["Power BI"]
     scenario_tags: ["Modeling"]
+    type: "Demo"
     preview_image: "assets/image-example.png"
     source:
       workspace_path: "src/"

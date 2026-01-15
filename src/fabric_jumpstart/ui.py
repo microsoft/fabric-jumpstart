@@ -194,9 +194,10 @@ def _generate_html(grouped_scenario, grouped_workload, grouped_type, scenario_ta
         </div>
     ''')
     
-    # Toggle button group
+    # Toggle button group with label
     html_parts.append('''
-        <div class="view-toggle">
+        <div class="filters-row">
+            <span class="group-by-label">Group By</span>
             <div class="toggle-group">
                 <button class="active" data-view="workload" onclick="toggleView('workload', this)">Workload</button>
                 <button data-view="scenario" onclick="toggleView('scenario', this)">Scenario</button>
@@ -260,8 +261,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
     html_parts = []
     
     for category, jumpstarts_list in sorted(grouped_jumpstarts.items()):
-        category_str = html.escape(str(category))
-        category_text = f"{category_str}s" if group_by == "type" else category_str
+        category_text = html.escape(str(category))
         category_attr = html.escape(str(category), quote=True)
 
         section_primary, section_secondary = _resolve_workload_colors(
@@ -274,7 +274,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
         html_parts.append(f'''
             <div class="category-section" data-category="{category_attr}">
                 <div class="category-label"{section_color_attr}>EXPLORE</div>
-                <h2 class="category-title">{category_text}</h2>
+                <h2 class="category-title">{f"{category_text}s" if group_by != "type" else category_text}</h2>
                 <div class="jumpstart-grid">
         ''')
         

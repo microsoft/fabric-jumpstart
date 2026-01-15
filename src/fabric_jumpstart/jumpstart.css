@@ -198,33 +198,49 @@
 }
 
 /* Toggle button group */
-.view-toggle {
-    display: flex;
+.filters-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    padding: 6px 6px;
+    border: 1px solid #e1dfdd;
+    border-radius: 6px;
+    background: #ffffff;
+    width: fit-content;
+}
+.group-by-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #323130;
+    line-height: 1.4;
 }
 .toggle-group {
     display: inline-flex;
     border: 1px solid #d2d0ce;
-    border-radius: 4px;
+    border-radius: 6px;
     overflow: hidden;
+    height: 32px;
 }
 .toggle-group.compact {
     border-color: #edebe9;
     border-radius: 6px;
 }
 .toggle-group button {
-    background: transparent;
+    background: #fafafa;
     color: #323130;
     border: none;
-    padding: 10px 32px;
-    font-size: 14px;
+    padding: 6px 16px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     border-right: 1px solid #d2d0ce;
+    height: 100%;
 }
 .toggle-group.compact button {
-    padding: 8px 14px;
+    padding: 6px 12px;
     min-width: 0;
 }
 .toggle-group button:last-child {

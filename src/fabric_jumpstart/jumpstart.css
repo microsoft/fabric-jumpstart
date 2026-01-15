@@ -54,6 +54,13 @@
     justify-content: flex-start;
     gap: 10px;
     flex-wrap: wrap;
+.filters-bar-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
 }
 .filters-bar-row {
     display: flex;
@@ -294,7 +301,7 @@
     font-size: 12px;
     font-weight: 600;
     background: #f7f7f7;
-    color: #434343;
+    color: #797979;
     border: 1px solid #e3e2e1;
     width: fit-content;
     margin-bottom: 12px;

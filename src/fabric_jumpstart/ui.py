@@ -49,6 +49,14 @@ WORKLOAD_ICON_MAP = {
 DEFAULT_WORKLOAD_ICON = WORKLOAD_ICON_MAP.get("Data Engineering")
 
 
+# Map jumpstart types to quick-recognition emojis for the card tag
+TYPE_EMOJI_MAP = {
+    "Accelerator": "🚀",
+    "Demo": "▶️",
+    "Tutorial": "📖",
+}
+
+
 @lru_cache(maxsize=32)
 def _load_svg(filename: str) -> str:
     """Load an SVG from ui_assets with simple caching."""
@@ -89,6 +97,15 @@ def _load_preview_image_data(path: Path) -> str:
     mime = _guess_mime(path)
     encoded = base64.b64encode(path.read_bytes()).decode('ascii')
     return f"data:{mime};base64,{encoded}"
+
+
+def _format_type_label(type_value: str) -> str:
+    """Return type label decorated with an emoji for quick scanning."""
+    if not type_value:
+        return ''
+    emoji = TYPE_EMOJI_MAP.get(str(type_value), '')
+    safe_text = html.escape(str(type_value), quote=True)
+    return f"{emoji} {safe_text}" if emoji else safe_text
 
 
 def _resolve_preview_image(jumpstart) -> str:
@@ -274,7 +291,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
         html_parts.append(f'''
             <div class="category-section" data-category="{category_attr}">
                 <div class="category-label"{section_color_attr}>EXPLORE</div>
-                <h2 class="category-title">{f"{category_text}s" if group_by != "type" else category_text}</h2>
+                <h2 class="category-title">{f"{category_text}s" if group_by == "type" else category_text}</h2>
                 <div class="jumpstart-grid">
         ''')
         
@@ -294,9 +311,15 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
                 or j.get('type')
                 or (category if group_by == "type" else '')
             )
-            type_text = html.escape(str(computed_type or ''), quote=True)
-            type_display = type_text or 'Unspecified'
-            type_callout = f'<div class="type-pill" aria-label="Type: {type_display}">{type_display}</div>' if type_display else ''
+            type_value = html.escape(str(computed_type or ''), quote=True)
+            type_label = _format_type_label(computed_type)
+            type_display = type_label or 'Unspecified'
+            aria_label = html.escape(f"Type: {computed_type or 'Unspecified'}", quote=True)
+            type_callout = (
+                f'<div class="type-pill" aria-label="{aria_label}">{type_display}</div>'
+                if type_display
+                else ''
+            )
 
             workload_badges = _build_workload_badges(j.get("workload_tags"))
             workload_badges_html = ''.join(

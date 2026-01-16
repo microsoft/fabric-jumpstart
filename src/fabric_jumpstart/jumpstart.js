@@ -7,59 +7,16 @@ window.jumpstartFilters = {
 };
 window.jumpstartData = window.jumpstartData || [];
 
-let jumpstartUIBound = false;
-
 function initJumpstartUI() {
-    if (jumpstartUIBound) {
-        return;
-    }
+    // Reset filter state for fresh UI
+    window.jumpstartFilters.active = [];
+    window.jumpstartFilters.values = { type: null, workload: null, scenario: null };
     
-    const addBtn = document.getElementById('add-filter-btn');
-    const menu = document.getElementById('filter-menu');
+    // Initialize data
+    collectData();
     
-    if (addBtn) {
-        // Clear any existing state
-        addBtn.disabled = false;
-        addBtn.removeAttribute('disabled');
-        addBtn.removeAttribute('aria-disabled');
-        addBtn.style.pointerEvents = 'auto';
-        addBtn.style.cursor = 'pointer';
-        addBtn.style.opacity = '1'; // Ensure it's visible
-        addBtn.tabIndex = 0;
-        
-        // Remove any existing event listeners to prevent duplicates
-        addBtn.replaceWith(addBtn.cloneNode(true));
-        const newAddBtn = document.getElementById('add-filter-btn');
-        
-        newAddBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Add filter button clicked'); // Debug log
-            toggleFilterMenu();
-        });
-        
-        // Also handle keyboard navigation
-        newAddBtn.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFilterMenu();
-            }
-        });
-    }
-
-    if (menu) {
-        menu.dataset.open = 'false';
-        menu.style.display = 'none';
-    }
-
-    // Initialize data if not already present
-    if (!window.jumpstartData || !window.jumpstartData.length) {
-        collectData();
-    }
-
-    jumpstartUIBound = true;
-    console.log('Jumpstart UI initialized'); // Debug log
+    // Render initial state
+    renderFilterMenu();
 }
 
 function getJumpstartRoot() {
@@ -123,15 +80,8 @@ function toggleView(viewType, clickedButton) {
         viewEl.classList.add('active');
     }
 
-    document.querySelectorAll('.tag-filter-row').forEach(row => {
-        row.style.display = 'none';
-    });
-    const tagRow = document.getElementById(viewType + '-tags');
-    if (tagRow) {
-        tagRow.style.display = 'flex';
-    }
-
-    filterByTag(null, viewType);
+    // Re-apply filters when view changes
+    applyFilters();
 
     document.querySelectorAll('.toggle-group button').forEach(btn => {
         btn.classList.remove('active');
@@ -148,41 +98,6 @@ function toggleView(viewType, clickedButton) {
         }
     }
 
-}
-
-function filterByTag(tag, viewType, clickedButton) {
-    const view = document.getElementById(viewType + '-view');
-    const tagButtons = document.querySelectorAll('#' + viewType + '-tags .tag-filter-btn');
-
-    if (!view) {
-        return;
-    }
-
-    const togglingOff = Boolean(clickedButton && clickedButton.classList.contains('active'));
-    if (togglingOff) {
-        tagButtons.forEach(btn => btn.classList.remove('active'));
-        view.querySelectorAll('.category-section').forEach(section => section.classList.remove('hidden'));
-        window.jumpstartFilters.values[viewType] = null;
-        applyFilters();
-        return;
-    }
-
-    tagButtons.forEach(btn => btn.classList.remove('active'));
-    if (clickedButton) {
-        clickedButton.classList.add('active');
-    }
-
-    const normalizedTag = tag ? tag.trim() : '';
-    const sections = view.querySelectorAll('.category-section');
-    sections.forEach(section => {
-        const titleEl = section.querySelector('.category-title');
-        const sectionTag = (section.dataset.category || (titleEl ? titleEl.textContent : '') || '').trim();
-        const hidden = Boolean(tag !== null && sectionTag !== normalizedTag);
-        section.classList.toggle('hidden', hidden);
-    });
-
-    window.jumpstartFilters.values[viewType] = tag || null;
-    applyFilters();
 }
 
 function toggleFilterMenu() {
@@ -275,14 +190,20 @@ function renderFilterMenu() {
         menu.appendChild(empty);
     }
     
-    // Ensure add button is properly enabled
+    // Grey out button when all filters are added
     if (addBtn) {
-        addBtn.disabled = false;
-        addBtn.removeAttribute('disabled');
-        addBtn.removeAttribute('aria-disabled');
-        addBtn.style.cursor = 'pointer';
-        addBtn.style.pointerEvents = 'auto';
-        addBtn.style.opacity = '1';
+        const allFiltersAdded = remaining.length === 0 || added === 0;
+        if (allFiltersAdded) {
+            addBtn.disabled = true;
+            addBtn.setAttribute('aria-disabled', 'true');
+            addBtn.style.cursor = 'not-allowed';
+            addBtn.style.opacity = '0.5';
+        } else {
+            addBtn.disabled = false;
+            addBtn.removeAttribute('aria-disabled');
+            addBtn.style.cursor = 'pointer';
+            addBtn.style.opacity = '1';
+        }
     }
     
     menu.style.display = menu.dataset.open === 'true' ? 'block' : 'none';
@@ -355,14 +276,10 @@ function applyFilters() {
     const view = document.getElementById(viewType + '-view');
     if (!view) return;
 
-    const viewFilterValue = filters[viewType];
-
     let anyVisible = false;
 
     const sections = view.querySelectorAll('.category-section');
     sections.forEach(section => {
-        const sectionCategory = section.dataset.category || '';
-        const sectionMatches = !viewFilterValue || viewFilterValue === sectionCategory;
         let visibleCards = 0;
 
         section.querySelectorAll('.jumpstart-card').forEach(card => {
@@ -372,14 +289,14 @@ function applyFilters() {
             const matchesType = !filters.type || filters.type === cardType;
             const matchesWorkload = !filters.workload || workloads.includes(filters.workload);
             const matchesScenario = !filters.scenario || scenarios.includes(filters.scenario);
-            const cardVisible = sectionMatches && matchesType && matchesWorkload && matchesScenario;
+            const cardVisible = matchesType && matchesWorkload && matchesScenario;
             card.style.display = cardVisible ? '' : 'none';
             if (cardVisible) {
                 visibleCards += 1;
             }
         });
 
-        const hideSection = !sectionMatches || visibleCards === 0;
+        const hideSection = visibleCards === 0;
         section.classList.toggle('hidden', hideSection);
         if (!hideSection) {
             anyVisible = true;
@@ -476,7 +393,10 @@ document.addEventListener('click', function(e) {
 // Export functions for global access
 window.initJumpstartUI = initJumpstartUI;
 window.toggleView = toggleView;
-window.filterByTag = filterByTag;
+window.toggleFilterMenu = toggleFilterMenu;
+window.addFilter = addFilter;
+window.removeFilter = removeFilter;
+window.updateFilter = updateFilter;
 window.copyToClipboard = copyToClipboard;
 
 // Initialize when DOM is ready
@@ -487,9 +407,4 @@ if (document.readyState === 'loading') {
 }
 
 // Also try to initialize after a short delay in case there are timing issues
-setTimeout(() => {
-    if (!jumpstartUIBound) {
-        console.log('Attempting delayed initialization');
-        initJumpstartUI();
-    }
-}, 100);
+setTimeout(initJumpstartUI, 100);

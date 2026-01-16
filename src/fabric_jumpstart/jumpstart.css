@@ -64,12 +64,13 @@
 }
 .filters-bar-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     flex-wrap: wrap;
     gap: 10px;
     justify-content: flex-start;
     position: relative;
     z-index: 50;
+    margin-bottom: 30px;
 }
 .filters-active {
     display: flex;
@@ -100,7 +101,6 @@
     z-index: 60;
     flex: 0 0 auto;
     pointer-events: auto;
-    order: -1;
 }
 .add-filter-btn {
     background: transparent;

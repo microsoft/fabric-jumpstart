@@ -236,35 +236,16 @@ def _generate_html(grouped_scenario, grouped_workload, grouped_type, scenario_ta
         </div>
     ''')
     
-    # Tag filter buttons - Scenario tags
-    html_parts.append('<div id="scenario-tags" class="tag-filters tag-filter-row" style="display: none;">')
-    for tag in scenario_tags:
-        safe_tag = html.escape(str(tag))
-        html_parts.append(
-            f'<button class="tag-filter-btn" data-tag="{safe_tag}" '
-            f'onclick="filterByTag(this.dataset.tag, \'scenario\', this)">{safe_tag}</button>'
-        )
-    html_parts.append('</div>')
-
-    # Tag filter buttons - Workload tags
-    html_parts.append('<div id="workload-tags" class="tag-filters tag-filter-row">')
-    for tag in workload_tags:
-        safe_tag = html.escape(str(tag))
-        html_parts.append(
-            f'<button class="tag-filter-btn" data-tag="{safe_tag}" '
-            f'onclick="filterByTag(this.dataset.tag, \'workload\', this)">{safe_tag}</button>'
-        )
-    html_parts.append('</div>')
-
-    # Tag filter buttons - Type tags
-    html_parts.append('<div id="type-tags" class="tag-filters tag-filter-row" style="display: none;">')
-    for tag in type_tags:
-        safe_tag = html.escape(str(tag))
-        html_parts.append(
-            f'<button class="tag-filter-btn" data-tag="{safe_tag}" '
-            f'onclick="filterByTag(this.dataset.tag, \'type\', this)">{safe_tag}</button>'
-        )
-    html_parts.append('</div>')
+    # Dropdown filter bar with "+ Add Filter" button
+    html_parts.append('''
+        <div class="filters-bar-row">
+            <div id="active-filters" class="filters-active"></div>
+            <div class="add-filter-wrapper">
+                <button id="add-filter-btn" class="add-filter-btn" type="button" aria-expanded="false" aria-haspopup="true" onclick="toggleFilterMenu()">+ Add Filter</button>
+                <div id="filter-menu" class="filter-menu" data-open="false"></div>
+            </div>
+        </div>
+    ''')
     
     # Scenario view
     html_parts.append('<div id="scenario-view" class="view-container">')

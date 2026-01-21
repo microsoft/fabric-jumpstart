@@ -5,7 +5,7 @@ import html
 from functools import lru_cache
 from pathlib import Path
 
-from .schemas import DEFAULT_WORKLOAD_COLORS, WORKLOAD_COLOR_MAP
+from .constants import DEFAULT_WORKLOAD_COLORS, WORKLOAD_COLOR_MAP
 
 # Load copy icon SVG once at module level
 _current_dir = Path(__file__).parent

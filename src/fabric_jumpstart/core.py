@@ -5,9 +5,7 @@ from typing import Optional
 
 import yaml
 from fabric_cicd import FabricWorkspace, append_feature_flag, publish_all_items
-from pydantic import ValidationError
 
-from .schemas import Jumpstart
 from .ui import render_jumpstart_list
 from .utils import _is_fabric_runtime, clone_repository
 
@@ -19,40 +17,11 @@ class jumpstart:
         self._registry = self._load_registry()
 
     def _load_registry(self):
-        """Load and validate jumpstart registry from YAML file."""
+        """Load jumpstart registry from YAML file."""
         registry_path = Path(__file__).parent / "registry.yml"
         with open(registry_path, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
-        registry_data = data.get('jumpstarts', [])
-        
-        valid_jumpstarts = []
-        for jumpstart in registry_data:
-            validated = self._validate_jumpstart_config(jumpstart)
-            if validated:
-                valid_jumpstarts.append(validated)
-        
-        return valid_jumpstarts
-    
-    def _validate_jumpstart_config(self, jumpstart):
-        """Validate a single jumpstart config.
-        
-        Args:
-            jumpstart: A single jumpstart dict to validate
-            
-        Returns:
-            Validated jumpstart dict or None if invalid.
-        """
-        jumpstart_id = jumpstart.get('id', '[unknown]')
-        
-        try:
-            validated = Jumpstart(**jumpstart)
-            logger.debug(f"Jumpstart '{jumpstart_id}' validated successfully")
-            return validated.model_dump()
-        except ValidationError as e:
-            logger.warning(
-                f"Jumpstart '{jumpstart_id}' filtered out due to schema validation error: {e}"
-            )
-            return None
+        return data.get('jumpstarts', [])
 
 
     def _list(self):

@@ -13,13 +13,4 @@
     - https://raw.githubusercontent.com/<org>/<repo_name>/<ref>/<image_path>
 
 
-- Add Jumpstart Type: ['Accelerator', 'Tutorial', 'Demo']
-    - Definitions
-        - Tutorial: Learn how to do something
-        - Accelerator: Get up and running faster
-        - Demo: See something working in action
-    - Tasks
-        - Add to registry.yml
-        - Add to schemas.py
-        - Add easy way to filter
-        - Add visual cue on each card
+- Improve 

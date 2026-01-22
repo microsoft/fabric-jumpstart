@@ -1,9 +1,10 @@
 .install-status-card {border:1px solid #edebe9;border-radius:6px;padding:16px;margin:12px 0;background:#ffffff;box-shadow:0 1.6px 3.6px rgba(0,0,0,.132),0 0.3px 0.9px rgba(0,0,0,.108);font-family:"Segoe UI",Helvetica,Arial,sans-serif;color:#1f1f1f;}
-.install-status-header {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.install-status-header {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
 .install-status-title {font-size:18px;font-weight:700;margin:0;}
 .install-status-subtitle {font-size:13px;color:#605e5c;margin:0;}
 .install-status-pill {display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:0.2px;text-transform:uppercase;}
 .install-status-pill.success {background:#e6f4ef;color:#0C695A;border:1px solid #b8e0d2;}
+.install-status-pill.info {background:#eef6ff;color:#0f4f8f;border:1px solid #d5e8ff;}
 .install-status-pill.error {background:#fde7e9;color:#a4262c;border:1px solid #f4afb4;}
 .install-status-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px;}
 .install-status-item {border:1px solid #f3f2f1;border-radius:6px;padding:10px 12px;background:#faf9f8;}
@@ -11,7 +12,32 @@
 .install-status-value {font-size:14px;font-weight:600;word-break:break-word;}
 .install-status-value a {color:#0f4f8f;text-decoration:none;}
 .install-status-value a:hover {text-decoration:underline;}
-.install-status-link {display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;background:linear-gradient(135deg,#117865 0%,#0C695A 100%);color:#ffffff !important;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,0.12);} 
+.install-status-link {display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;background:linear-gradient(135deg,#117865 0%,#0C695A 100%);color:#ffffff !important;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,0.12);} 
 .install-status-link:hover {text-decoration:none;filter:brightness(1.05);} 
 .install-status-link svg {width:14px;height:14px;}
 .install-status-error {margin-top:12px;padding:10px 12px;border-radius:6px;border:1px solid #f4afb4;background:#fde7e9;color:#a4262c;font-size:13px;word-break:break-word;}
+.install-status-section {margin-top:12px;}
+.install-status-section-title {font-size:14px;font-weight:600;color:#323130;letter-spacing:0.1px;margin:0 0 8px 0;}
+.install-status-grid.tight {grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}
+.install-status-logs {margin-top:12px;border:1px solid #edebe9;border-radius:6px;background:#faf9f8;padding:10px 12px;box-shadow:0 1px 2px rgba(0,0,0,0.06);} /* moved down */
+.install-status-logs details {border:1px solid #edebe9;border-radius:6px;background:#ffffff;padding:8px 10px;}
+.install-status-logs summary {display:flex;align-items:center;gap:8px;font-weight:700;font-size:12px;cursor:pointer;outline:none;list-style:none;}
+.install-status-logs summary::after {content:'▼';font-size:10px;margin-left:auto;transition:transform 0.2s ease;}
+.install-status-logs details:not([open]) summary::after {transform:rotate(-90deg);} 
+.install-status-logs summary::-webkit-details-marker{display:none;}
+.install-log-row {display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #edebe9;}
+.install-log-row:last-child {border-bottom:none;}
+.install-log-badge {display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.2px;text-transform:uppercase;white-space:nowrap;}
+.install-log-badge.info {background:#eef6ff;color:#0f4f8f;border:1px solid #d5e8ff;}
+.install-log-badge.warning {background:#fff8e1;color:#8a6d00;border:1px solid #ffe08a;}
+.install-log-badge.error {background:#fde7e9;color:#a4262c;border:1px solid #f4afb4;}
+.install-log-message {font-size:13px;color:#323130;line-height:1.4;}
+.install-status-logs {margin-top:12px;border:1px solid #edebe9;border-radius:6px;background:#faf9f8;padding:10px 12px;box-shadow:0 1px 2px rgba(0,0,0,0.06);}
+.install-status-logs-header {font-size:12px;font-weight:700;color:#323130;margin-bottom:8px;letter-spacing:0.2px;text-transform:uppercase;}
+.install-log-row {display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #edebe9;}
+.install-log-row:last-child {border-bottom:none;}
+.install-log-badge {display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.2px;text-transform:uppercase;white-space:nowrap;}
+.install-log-badge.info {background:#eef6ff;color:#0f4f8f;border:1px solid #d5e8ff;}
+.install-log-badge.warning {background:#fff8e1;color:#8a6d00;border:1px solid #ffe08a;}
+.install-log-badge.error {background:#fde7e9;color:#a4262c;border:1px solid #f4afb4;}
+.install-log-message {font-size:13px;color:#323130;line-height:1.4;}

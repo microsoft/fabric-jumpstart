@@ -1,4 +1,7 @@
+import contextlib
+import io
 import logging
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -12,6 +15,83 @@ from .ui import render_jumpstart_list
 from .utils import _is_fabric_runtime, clone_repository
 
 logger = logging.getLogger(__name__)
+
+_ANSI_RE = re.compile(r"\x1B[@-Z\\-_]|\x1B\[[0-?]*[ -/]*[@-~]")
+
+
+def _strip_ansi(text: str) -> str:
+    """Remove ANSI escape codes from a string."""
+    return _ANSI_RE.sub('', text or '')
+
+
+def _should_filter_log(message: str) -> bool:
+    """Filter out noisy log lines we do not want to render."""
+    cleaned = _strip_ansi(str(message))
+    return cleaned.lstrip().startswith("#####")
+
+
+class _BufferingHandler(logging.Handler):
+    """Collect INFO+ log records for rendering in HTML."""
+
+    def __init__(self, sink, on_emit=None):
+        super().__init__(level=logging.INFO)
+        self.sink = sink
+        self.on_emit = on_emit
+
+    def emit(self, record):
+        try:
+            if record.levelno >= logging.INFO:
+                msg = record.getMessage()
+                if _should_filter_log(msg):
+                    return
+                self.sink.append({
+                    "level": record.levelname,
+                    "message": msg,
+                })
+                if self.on_emit:
+                    self.on_emit()
+        except Exception:
+            # Swallow logging issues to avoid breaking install flow
+            pass
+
+
+class _StreamToLogs:
+    """Capture stdout/stderr writes and feed them into log buffer."""
+
+    def __init__(self, sink, on_emit=None, level="INFO"):
+        self.sink = sink
+        self.on_emit = on_emit
+        self.level = level
+        self._buf = ""
+
+    def write(self, s):
+        if not s:
+            return 0
+        self._buf += s
+        lines = self._buf.splitlines(keepends=True)
+        self._buf = '' if (lines and not lines[-1].endswith('\n')) else ''
+        if lines and not lines[-1].endswith('\n'):
+            self._buf = lines.pop()
+        for line in lines:
+            msg = line.rstrip('\n')
+            if msg:
+                if _should_filter_log(msg):
+                    continue
+                self.sink.append({"level": self.level, "message": msg})
+                if self.on_emit:
+                    self.on_emit()
+        return len(s)
+
+    def flush(self):
+        if self._buf:
+            msg = self._buf
+            if _should_filter_log(msg):
+                self._buf = ""
+                return
+            self.sink.append({"level": self.level, "message": msg})
+            if self.on_emit:
+                self.on_emit()
+            self._buf = ""
 
 class jumpstart:
     def __init__(self):
@@ -181,14 +261,67 @@ class jumpstart:
 
         items_in_scope = config.get('items_in_scope', [])
         unattended = kwargs.get('unattended', False)
-        try:
-            logger.info(f"Deploying items from {workspace_path} to workspace '{workspace_id}'")
-            target_ws = self._install_items(
-                items_in_scope=items_in_scope,
-                workspace_path=workspace_path,
+
+        log_buffer = []
+        live_handle = None
+        HTML_cls = None
+        live_rendering = False
+
+        def _update_live(status_label='installing', entry=None, err=None):
+            if not live_handle or HTML_cls is None:
+                return
+            html = render_install_status_html(
+                status=status_label,
+                jumpstart_name=config.get('name', name),
                 workspace_id=workspace_id,
-                feature_flags=kwargs.get('feature_flags', [])
+                entry_point=entry,
+                minutes_complete=config.get('minutes_to_complete_jumpstart'),
+                minutes_deploy=config.get('minutes_to_deploy'),
+                docs_uri=config.get('jumpstart_docs_uri'),
+                logs=log_buffer,
+                error_message=err,
             )
+            try:
+                live_handle.update(HTML_cls(html))
+            except Exception:
+                pass
+
+        try:
+            if not unattended:
+                from IPython.display import HTML as _HTML
+                from IPython.display import display
+                HTML_cls = _HTML
+                live_handle = display(_HTML("<div>Starting install...</div>"), display_id=True)
+                live_rendering = True
+                _update_live(status_label='installing')
+        except Exception:
+            live_handle = None
+            HTML_cls = None
+            live_rendering = False
+
+        handler = _BufferingHandler(log_buffer, on_emit=lambda: _update_live(status_label='installing', entry=None))
+        stdout_proxy = _StreamToLogs(log_buffer, on_emit=lambda: _update_live(status_label='installing', entry=None), level="INFO")
+        stderr_proxy = _StreamToLogs(log_buffer, on_emit=lambda: _update_live(status_label='installing', entry=None), level="ERROR")
+        fabric_logger = logging.getLogger('fabric_cicd')
+        module_logger = logger
+        targets = [fabric_logger, module_logger]
+
+        original_states = []
+        for tgt in targets:
+            original_states.append((tgt, list(tgt.handlers), tgt.propagate, tgt.level))
+            tgt.handlers = [handler]
+            tgt.propagate = False
+            if tgt.level > logging.INFO:
+                tgt.setLevel(logging.INFO)
+        try:
+            with contextlib.redirect_stdout(stdout_proxy), contextlib.redirect_stderr(stderr_proxy):
+                logger.info(f"Deploying items from {workspace_path} to workspace '{workspace_id}'")
+                target_ws = self._install_items(
+                    items_in_scope=items_in_scope,
+                    workspace_path=workspace_path,
+                    workspace_id=workspace_id,
+                    feature_flags=kwargs.get('feature_flags', [])
+                )
             logger.info(f"Successfully installed '{name}'")
 
             entry_point = config.get('entry_point')
@@ -217,10 +350,16 @@ class jumpstart:
                 minutes_complete=config.get('minutes_to_complete_jumpstart'),
                 minutes_deploy=config.get('minutes_to_deploy'),
                 docs_uri=config.get('jumpstart_docs_uri'),
+                logs=log_buffer,
             )
+
+            _update_live(status_label='success', entry=entry_url)
 
             if unattended:
                 print(f"Installed '{name}' to workspace '{workspace_id}'")
+                return None
+
+            if live_rendering:
                 return None
 
             try:
@@ -242,13 +381,22 @@ class jumpstart:
                 minutes_complete=config.get('minutes_to_complete_jumpstart'),
                 minutes_deploy=config.get('minutes_to_deploy'),
                 docs_uri=config.get('jumpstart_docs_uri'),
+                logs=log_buffer,
                 error_message=str(e),
             )
+            _update_live(status_label='error', entry=config.get('entry_point'), err=str(e))
+            if live_rendering:
+                return None
             try:
                 from IPython.display import HTML
                 return HTML(status_html)
             except Exception:
                 return status_html
+        finally:
+            for tgt, handlers, propagate, level in original_states:
+                tgt.handlers = handlers
+                tgt.propagate = propagate
+                tgt.setLevel(level)
 
 
     def _install_items(self, items_in_scope, workspace_path, workspace_id, feature_flags):

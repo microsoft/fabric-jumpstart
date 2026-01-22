@@ -1,16 +1,21 @@
 - INSTALL: return jumpstart entry point on success (i.e. Notebook URL, Website link, etc.)
 - visualize `items_in_scope`: can a graph be built to viz the resources that would be deployed?
 - validate scenario and workload tags (needs to adhere to a known list)
-- unit test to validate schema and fail if schema is wrong
 - support workspace_name or id like semantic link?
 - Deploy all jumpstarts to root folder in workspace? 
 - Make `workspace` support ID or NAME
-- move yaml validation to test module: pydantic moves to `test` dependency group and validate schema moves to test module
 - add all Fabric Items within a folder to containerize the solution
 - add user info about estimated deployment time
-- add user info about estimated time to go through jumpstart
-- review image rendering -> does it make more sense to render image from src repo? use rendering API?
-    - https://raw.githubusercontent.com/<org>/<repo_name>/<ref>/<image_path>
-
-
 - Improve 
+
+# Install Response
+- the core.install method should return a status HTML to show the user that either the jumpstart installed successfully and what the next steps are (reference to `entry_point` - this should resolve to the URL for that item wherever it was deployed to or a URL if that was provided)
+- the install method should accept kwargs, one of which would be unattended=True, if so, it will not return a rendered HTML, only a print message that it was installed
+- if unsuccessful, it should return HTML with the error code(s) embedded.
+- response should be formatted in the same sytle as the UI
+- key things to return 
+    - status
+    - entry_point
+    - minutes_to_complete_jumpstart
+
+

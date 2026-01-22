@@ -324,6 +324,22 @@
     letter-spacing: 0.1px;
 }
 
+.deploy-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f7f0e6;
+    color: #7b4b06;
+    border: 1px solid #e2c79b;
+    width: fit-content;
+    margin: 0;
+    letter-spacing: 0.1px;
+}
+
 .meta-pills {
     display: flex !important;
     align-items: center;

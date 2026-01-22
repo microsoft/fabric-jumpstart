@@ -132,6 +132,19 @@ def _format_duration_label(minutes) -> str:
     return f"⏱ {minutes_int} min"
 
 
+def _format_deploy_time_label(minutes) -> str:
+    """Return formatted deployment duration text like "📦 Deploy 10 min"."""
+    if minutes is None or minutes == '':
+        return ''
+    try:
+        minutes_int = int(minutes)
+    except (TypeError, ValueError):
+        safe_text = html.escape(str(minutes), quote=True)
+        return safe_text
+
+    return f"📦 {minutes_int} min"
+
+
 def _format_type_label(type_value: str) -> str:
     """Return type label decorated with an emoji for quick scanning."""
     if not type_value:
@@ -348,12 +361,24 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
                 quote=True,
             )
             duration_callout = (
-                f'<div class="duration-pill" aria-label="{duration_aria}">{duration_label}</div>'
+                f'<div class="duration-pill" aria-label="{duration_aria}" title="Time to complete">{duration_label}</div>'
                 if duration_label
                 else ''
             )
 
-            meta_pills = ''.join([pill for pill in [type_callout, duration_callout] if pill])
+            deploy_minutes_raw = j.get('minutes_to_deploy')
+            deploy_label = _format_deploy_time_label(deploy_minutes_raw)
+            deploy_aria = html.escape(
+                f"Deployment time: {deploy_minutes_raw if deploy_minutes_raw not in (None, '') else 'Unspecified'} minutes",
+                quote=True,
+            )
+            deploy_callout = (
+                f'<div class="deploy-pill" aria-label="{deploy_aria}" title="Time to deploy">{deploy_label}</div>'
+                if deploy_label
+                else ''
+            )
+
+            meta_pills = ''.join([pill for pill in [type_callout, deploy_callout, duration_callout] if pill])
             meta_block = (
                 f'<div class="meta-pills" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">{meta_pills}</div>'
                 if meta_pills

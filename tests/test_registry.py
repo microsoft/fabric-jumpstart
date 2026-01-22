@@ -98,7 +98,8 @@ class TestRegistryValidation:
             "date_added": "01/01/2025",
             "workload_tags": ["Test"],
             "scenario_tags": ["Test"],
-            "source": {"workspace_path": "/src"}
+            "source": {"workspace_path": "/src", "preview_image_path": "/img/img.png"},
+            "entry_point": "1_ExploreData.Notebook"
         }
         result = validate_jumpstart_config(valid_config)
         assert result is not None

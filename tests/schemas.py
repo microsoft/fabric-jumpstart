@@ -15,6 +15,7 @@ from fabric_jumpstart.constants import (
 class JumpstartSource(BaseModel):
     """Source configuration for a jumpstart."""
     workspace_path: str
+    preview_image_path: str
     repo_url: Optional[str] = None
     repo_ref: Optional[str] = "main"
 
@@ -30,11 +31,11 @@ class Jumpstart(BaseModel):
     include_in_listing: Optional[bool] = True # excluded from listing if False or not set
     workload_tags: List[str]
     scenario_tags: List[str]
-    preview_image: Optional[str] = None
     type: Optional[str] = "Accelerator"
     source: JumpstartSource
     items_in_scope: Optional[List[str]] = None
     feature_flags: Optional[List[str]] = None
+    jumpstart_docs_uri: Optional[str] = None
     entry_point: str
     test_suite: Optional[str] = None
     minutes_to_complete_jumpstart: Optional[int] = None

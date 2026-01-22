@@ -13,11 +13,13 @@ dependencies = [ # temporary until fabric_cicd-0.1.34 is released for SJD / Fabr
     "pyyaml>=6.0.3",
 ]
 
+[tool.hatch.build]
+# Include every file under src/fabric_jumpstart (not just .py) in the wheel
+include = ["src/fabric_jumpstart/**/*"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/fabric_jumpstart"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/fabric_jumpstart/ui_assets" = "fabric_jumpstart/ui_assets"
 
 [dependency-groups]
 dev = [

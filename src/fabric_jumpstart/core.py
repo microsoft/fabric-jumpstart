@@ -6,11 +6,12 @@ from typing import Optional
 import yaml
 from fabric_cicd import FabricWorkspace, append_feature_flag, publish_all_items
 
+from .constants import ITEM_URL_ROUTING_PATH_MAP
+from .response import render_install_status_html
 from .ui import render_jumpstart_list
 from .utils import _is_fabric_runtime, clone_repository
 
 logger = logging.getLogger(__name__)
-
 
 class jumpstart:
     def __init__(self):
@@ -22,7 +23,6 @@ class jumpstart:
         with open(registry_path, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
         return data.get('jumpstarts', [])
-
 
     def _list(self):
         """Display all available jumpstarts."""
@@ -180,18 +180,75 @@ class jumpstart:
         logger.info(f"Workspace path {workspace_path}")
 
         items_in_scope = config.get('items_in_scope', [])
+        unattended = kwargs.get('unattended', False)
         try:
             logger.info(f"Deploying items from {workspace_path} to workspace '{workspace_id}'")
-            self._install_items(
+            target_ws = self._install_items(
                 items_in_scope=items_in_scope,
                 workspace_path=workspace_path,
                 workspace_id=workspace_id,
                 feature_flags=kwargs.get('feature_flags', [])
             )
             logger.info(f"Successfully installed '{name}'")
+
+            entry_point = config.get('entry_point')
+            entry_url = None
+            if entry_point:
+                if entry_point.startswith(('http://', 'https://')):
+                    entry_url = entry_point
+                else:
+                    from fabric_cicd._parameter._utils import _extract_item_attribute
+                    parts = entry_point.split('.')
+                    if len(parts) >= 2:
+                        item_name, item_type = parts[0], parts[1]
+                        item_id = _extract_item_attribute(target_ws, f"$items.{item_type}.{item_name}.$id", False)
+
+                        routing_path = ITEM_URL_ROUTING_PATH_MAP.get(item_type)
+                        if not routing_path:
+                            raise ValueError(f"Unsupported entry point item type: {item_type}")
+                        entry_url = f"https://app.powerbi.com/groups/{target_ws.workspace_id}/{routing_path}/{item_id}?experience=fabric-developer"
+
+
+            status_html = render_install_status_html(
+                status='success',
+                jumpstart_name=config.get('name', name),
+                workspace_id=workspace_id,
+                entry_point=entry_url,
+                minutes_complete=config.get('minutes_to_complete_jumpstart'),
+                minutes_deploy=config.get('minutes_to_deploy'),
+                docs_uri=config.get('jumpstart_docs_uri'),
+            )
+
+            if unattended:
+                print(f"Installed '{name}' to workspace '{workspace_id}'")
+                return None
+
+            try:
+                from IPython.display import HTML
+                return HTML(status_html)
+            except Exception:
+                return status_html
         except Exception as e:
             logger.error(f"Failed to install jumpstart '{name}': {e}")
-            raise e
+            if unattended:
+                print(f"Failed to install '{name}': {e}")
+                raise
+
+            status_html = render_install_status_html(
+                status='error',
+                jumpstart_name=config.get('name', name),
+                workspace_id=workspace_id,
+                entry_point=config.get('entry_point'),
+                minutes_complete=config.get('minutes_to_complete_jumpstart'),
+                minutes_deploy=config.get('minutes_to_deploy'),
+                docs_uri=config.get('jumpstart_docs_uri'),
+                error_message=str(e),
+            )
+            try:
+                from IPython.display import HTML
+                return HTML(status_html)
+            except Exception:
+                return status_html
 
 
     def _install_items(self, items_in_scope, workspace_path, workspace_id, feature_flags):
@@ -204,3 +261,5 @@ class jumpstart:
             item_type_in_scope=items_in_scope
         )
         publish_all_items(target_ws)
+
+        return target_ws

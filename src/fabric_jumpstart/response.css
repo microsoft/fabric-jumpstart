@@ -1,0 +1,17 @@
+.install-status-card {border:1px solid #edebe9;border-radius:6px;padding:16px;margin:12px 0;background:#ffffff;box-shadow:0 1.6px 3.6px rgba(0,0,0,.132),0 0.3px 0.9px rgba(0,0,0,.108);font-family:"Segoe UI",Helvetica,Arial,sans-serif;color:#1f1f1f;}
+.install-status-header {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.install-status-title {font-size:18px;font-weight:700;margin:0;}
+.install-status-subtitle {font-size:13px;color:#605e5c;margin:0;}
+.install-status-pill {display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:0.2px;text-transform:uppercase;}
+.install-status-pill.success {background:#e6f4ef;color:#0C695A;border:1px solid #b8e0d2;}
+.install-status-pill.error {background:#fde7e9;color:#a4262c;border:1px solid #f4afb4;}
+.install-status-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px;}
+.install-status-item {border:1px solid #f3f2f1;border-radius:6px;padding:10px 12px;background:#faf9f8;}
+.install-status-label {font-size:12px;color:#605e5c;margin-bottom:4px;font-weight:600;}
+.install-status-value {font-size:14px;font-weight:600;word-break:break-word;}
+.install-status-value a {color:#0f4f8f;text-decoration:none;}
+.install-status-value a:hover {text-decoration:underline;}
+.install-status-link {display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;background:linear-gradient(135deg,#117865 0%,#0C695A 100%);color:#ffffff !important;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,0.12);} 
+.install-status-link:hover {text-decoration:none;filter:brightness(1.05);} 
+.install-status-link svg {width:14px;height:14px;}
+.install-status-error {margin-top:12px;padding:10px 12px;border-radius:6px;border:1px solid #f4afb4;background:#fde7e9;color:#a4262c;font-size:13px;word-break:break-word;}

@@ -65,6 +65,36 @@ WORKLOAD_COLOR_MAP = {
 
 DEFAULT_WORKLOAD_COLORS = WORKLOAD_COLOR_MAP["Data Engineering"]
 
+# maps between Item names in CICD and their URL routing paths for entry point resolution
+ITEM_URL_ROUTING_PATH_MAP = {
+    "DataPipeline": "pipelines",
+    "Environment": "sparkenvironments", 
+    "Notebook": "synapsenotebooks",
+    "Report": "reports",
+    "SemanticModel": "datasets",
+    "Lakehouse": "lakehouses",
+    "SQLEndpoint": "mirroredwarehouses",
+    "MirroredDatabase": "mirroreddatabases",
+    "VariableLibrary": "variablelibraries",
+    "CopyJob": "copyjobs",
+    "Eventhouse": "eventhouses",
+    "KQLDatabase": "databases",
+    "KQLQueryset": "queryworkbenches",
+    "Reflex": "reflexes",
+    "Eventstream": "eventstreams",
+    "Warehouse": "warehouses",
+    "SQLDatabase": "sqldatabases",
+    "KQLDashboard": "kustodashboards",
+    "Dataflow": "dataflows",
+    "GraphQLApi": "graphql",
+    "ApacheAirflowJob": "apacheairflowprojects",
+    "MountedDataFactory": "mounteddatafactories",
+    "DataAgent": "aiskills",
+    "UserDataFunction": "userdatafunctions",
+    "OrgApp": "apps",
+    "MLExperiment": "mlexperiments",
+    "SparkJobDefinition": "sparkjobdefinitions",
+}
 
 def _validate_tags(tags: List[str], allowed: List[str], field_name: str) -> List[str]:
     """Ensure tag values are non-empty and drawn from the approved list."""

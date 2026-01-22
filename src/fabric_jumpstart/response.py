@@ -16,7 +16,7 @@ def _format_minutes(minutes):
     if minutes in (None, ''):
         return 'Unspecified'
     try:
-        return f"{int(minutes)} min"
+        return f"{int(minutes)} min."
     except (TypeError, ValueError):
         return html.escape(str(minutes), quote=True)
 

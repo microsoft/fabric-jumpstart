@@ -35,6 +35,7 @@ class Jumpstart(BaseModel):
     source: JumpstartSource
     items_in_scope: Optional[List[str]] = None
     feature_flags: Optional[List[str]] = None
+    entry_point: str
     test_suite: Optional[str] = None
     minutes_to_complete_jumpstart: Optional[int] = None
     minutes_to_deploy: Optional[int] = None

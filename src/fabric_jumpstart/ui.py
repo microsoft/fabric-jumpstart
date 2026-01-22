@@ -4,6 +4,7 @@ import base64
 import html
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import urlparse
 
 from .constants import DEFAULT_WORKLOAD_COLORS, WORKLOAD_COLOR_MAP
 
@@ -99,6 +100,25 @@ def _load_preview_image_data(path: Path) -> str:
     return f"data:{mime};base64,{encoded}"
 
 
+def _build_github_raw_url(repo_url: str, ref: str, file_path: str) -> str:
+    """Convert a GitHub repo URL + ref + file path into a raw.githubusercontent URL."""
+    parsed = urlparse(repo_url)
+    if parsed.hostname != "github.com":
+        return ''
+
+    parts = parsed.path.strip('/').split('/')
+    if len(parts) < 2:
+        return ''
+
+    owner, repo = parts[0], parts[1]
+    if repo.endswith('.git'):
+        repo = repo[:-4]
+
+    safe_path = file_path.lstrip('/\\')
+    safe_ref = ref or 'main'
+    return f"https://raw.githubusercontent.com/{owner}/{repo}/{safe_ref}/{safe_path}"
+
+
 def _format_duration_label(minutes) -> str:
     """Return formatted duration text like "⏱ 120 min"."""
     if minutes is None or minutes == '':
@@ -123,12 +143,18 @@ def _format_type_label(type_value: str) -> str:
 
 def _resolve_preview_image(jumpstart) -> str:
     """Resolve preview image to a data URI or external URL."""
-    preview_path = jumpstart.get("preview_image")
+    preview_path = jumpstart['source'].get("preview_image_path")
     if not preview_path:
         return ''
 
     if preview_path.startswith(("http://", "https://", "data:")):
         return preview_path
+
+    source_cfg = jumpstart.get('source', {})
+    repo_url = source_cfg.get('repo_url')
+    if repo_url:
+        raw_url = _build_github_raw_url(repo_url, source_cfg.get('repo_ref', 'main'), preview_path)
+        return raw_url or ''
 
     candidates = []
     try:

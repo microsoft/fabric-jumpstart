@@ -166,49 +166,67 @@ class jumpstart:
         """Get the variable name of this jumpstart instance."""
         import inspect
         import re
-        # Get the frame where list() was called
-        frame = inspect.currentframe().f_back.f_back
-        
-        # Get all variables pointing to this instance
-        candidates = []
+        # Choose the frame that holds user scope:
+        # - If invoked via list(), go two frames up (user -> list -> _get_instance_name)
+        # - If invoked directly, go one frame up (user -> _get_instance_name)
+        caller = inspect.currentframe().f_back
+        frame = caller.f_back if caller and caller.f_code.co_name == "list" else caller
+
+        # Collect direct references to the instance and module aliases that expose it
+        instance_names = set()
+        module_aliases = set()
         for scope in [frame.f_locals, frame.f_globals]:
             for var_name, var_value in scope.items():
                 if var_value is self and not var_name.startswith('_'):
-                    candidates.append(var_name)
-        
-        logger.debug(f"Found candidate names: {candidates}")
-        
-        if not candidates:
-            logger.debug("No candidates found, using default 'jumpstart'")
-            return "jumpstart"
-        
-        # Parse the calling line to see which variable was used
+                    instance_names.add(var_name)
+                # Handle "import fabric_jumpstart as js" where js.jumpstart is the instance
+                try:
+                    if inspect.ismodule(var_value) and getattr(var_value, "jumpstart", None) is self:
+                        module_aliases.add(var_name)
+                except Exception:
+                    # Best-effort alias detection; ignore inspection issues
+                    pass
+
+        logger.debug(f"Found instance names: {instance_names}; module aliases: {module_aliases}")
+
+        # Parse the calling line to see which name was used
         try:
             import linecache
             call_line = frame.f_lineno
             filename = frame.f_code.co_filename
             line = linecache.getline(filename, call_line).strip()
-            
+
             logger.debug(f"Parsing line: {line}")
-            
-            # Look for pattern: variable_name.list()
-            method_pattern = r'(\w+)\.list\s*\('
-            match = re.search(method_pattern, line)
-            
-            if match:
-                calling_var = match.group(1)
-                logger.debug(f"Found calling variable: {calling_var}")
-                if calling_var in candidates:
-                    logger.debug(f"Using matched variable name: {calling_var}")
-                    return calling_var
-                    
+
+            patterns = [
+                r'(\w+)\.list\s*\(',
+                r'(\w+)\._get_instance_name\s*\(',
+            ]
+
+            for pattern in patterns:
+                match = re.search(pattern, line)
+                if match:
+                    calling_var = match.group(1)
+                    logger.debug(f"Found calling variable: {calling_var}")
+                    if calling_var in instance_names or calling_var in module_aliases:
+                        logger.debug(f"Using matched variable name: {calling_var}")
+                        return calling_var
+
         except Exception as e:
             logger.debug(f"Error parsing calling line: {e}")
-        
-        # Fallback to shortest name
-        shortest = min(candidates, key=len)
-        logger.debug(f"Using shortest candidate: {shortest}")
-        return shortest
+
+        # Prefer explicit references, then module aliases, then default
+        if instance_names:
+            shortest = min(instance_names, key=len)
+            logger.debug(f"Using shortest instance name: {shortest}")
+            return shortest
+        if module_aliases:
+            shortest = min(module_aliases, key=len)
+            logger.debug(f"Using shortest module alias: {shortest}")
+            return shortest
+
+        logger.debug("No candidates found, using default 'jumpstart'")
+        return "jumpstart"
 
     def _get_jumpstart_by_id(self, jumpstart_id: str):
         """Get jumpstart config by id, returns None if not found."""

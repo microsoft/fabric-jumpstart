@@ -24,15 +24,21 @@ except FileNotFoundError:
     # Fallback to a simple rectangle if file not found
     _COPY_ICON_SVG = '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><rect width="16" height="16" fill="currentColor"/></svg>'
 
-try:
-    _JUMPSTART_CSS = _css_path.read_text(encoding='utf-8')
-except FileNotFoundError:
-    _JUMPSTART_CSS = ''
+def _load_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding='utf-8')
+    except FileNotFoundError:
+        return ''
 
-try:
-    _JUMPSTART_JS = _js_path.read_text(encoding='utf-8')
-except FileNotFoundError:
-    _JUMPSTART_JS = ''
+_JUMPSTART_CSS = _load_text(_css_path)
+_JUMPSTART_JS = _load_text(_js_path)
+
+
+def reload_assets():
+    """Reload CSS/JS assets from disk without restarting the kernel."""
+    global _JUMPSTART_CSS, _JUMPSTART_JS
+    _JUMPSTART_CSS = _load_text(_css_path)
+    _JUMPSTART_JS = _load_text(_js_path)
 
 
 # Map workload tags to icon filenames stored in ui_assets
@@ -170,10 +176,9 @@ def _resolve_preview_image(jumpstart) -> str:
         return raw_url or ''
 
     candidates = []
-    try:
-        candidates.append(Path(__file__).parent / 'jumpstarts' / jumpstart['id'] / preview_path)
-    except KeyError:
-        pass
+    slug = jumpstart.get('logical_id') or jumpstart.get('id')
+    if slug:
+        candidates.append(Path(__file__).parent / 'jumpstarts' / str(slug) / preview_path)
 
     preview_path_obj = Path(preview_path)
     if preview_path_obj.is_absolute():
@@ -398,14 +403,15 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             description_text = j.get('description', '')
             description_title = html.escape(description_text, quote=True)
             
+            logical_id = j.get('logical_id') or j.get('id', '')
             install_code = (
                 f"<span style='color: #096bbc'>{instance_name}</span>."
                 f"<span style='color: #605e5c'>install</span>"
                 f"<span style='color: #0431fa'>(</span>"
-                f"<span style='color: #a31515'>'{j['id']}'</span>"
+                f"<span style='color: #a31515'>'{logical_id}'</span>"
                 f"<span style='color: #0431fa'>)</span>"
             )
-            install_code_plain = f"{instance_name}.install('{j['id']}')"
+            install_code_plain = f"{instance_name}.install('{logical_id}')"
             
             html_parts.append(f'''
                 <div class="jumpstart-card"{accent_style} data-type="{type_value}" data-workloads="{workloads_value}" data-scenarios="{scenarios_value}">

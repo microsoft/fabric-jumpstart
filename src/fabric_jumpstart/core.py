@@ -2,6 +2,7 @@ import contextlib
 import io
 import logging
 import re
+import traceback
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -12,7 +13,13 @@ from fabric_cicd import FabricWorkspace, append_feature_flag, publish_all_items
 from .constants import ITEM_URL_ROUTING_PATH_MAP
 from .response import render_install_status_html
 from .ui import render_jumpstart_list
-from .utils import _is_fabric_runtime, clone_repository
+from .utils import (
+    _apply_item_prefix,
+    _is_fabric_runtime,
+    _set_item_prefix,
+    clone_files_to_temp_directory,
+    clone_repository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +55,15 @@ class _BufferingHandler(logging.Handler):
                     "level": record.levelname,
                     "message": msg,
                 })
+                if record.exc_info:
+                    exc_text = logging.Formatter().formatException(record.exc_info)
+                    for line in exc_text.splitlines():
+                        if not line:
+                            continue
+                        self.sink.append({
+                            "level": record.levelname,
+                            "message": line,
+                        })
                 if self.on_emit:
                     self.on_emit()
         except Exception:
@@ -109,7 +125,9 @@ class jumpstart:
         print("Available jumpstarts:")
         for j in self._registry:
             if j.get('include_in_listing', True):
-                print(f"  • {j['id']}: {j.get('name', 'Unknown')} - {j.get('description', 'No description')}")
+                logical_id = j.get('logical_id', j.get('id', 'unknown'))
+                numeric_id = j.get('id', '?')
+                print(f"  • {logical_id} (#{numeric_id}): {j.get('name', 'Unknown')} - {j.get('description', 'No description')}")
 
     def list(self):
         """Display an interactive HTML UI of available jumpstarts."""
@@ -132,8 +150,8 @@ class jumpstart:
             except (ValueError, KeyError):
                 j['is_new'] = False
         
-        # Sort: NEW first, then alphabetical by id
-        jumpstarts.sort(key=lambda x: (not x['is_new'], x['id']))
+        # Sort: NEW first, then numeric id, then logical_id for stability
+        jumpstarts.sort(key=lambda x: (not x['is_new'], x.get('id', 0), x.get('logical_id', '')))
         
         # Group by scenario, workload, and type
         grouped_scenario = {}
@@ -228,25 +246,52 @@ class jumpstart:
         logger.debug("No candidates found, using default 'jumpstart'")
         return "jumpstart"
 
-    def _get_jumpstart_by_id(self, jumpstart_id: str):
-        """Get jumpstart config by id, returns None if not found."""
-        return next((item for item in self._registry if item['id'] == jumpstart_id), None)
+    def _get_jumpstart_by_logical_id(self, jumpstart_id: str):
+        """Get jumpstart config by logical_id, with backward compatibility for old id lookups."""
+        return next(
+            (
+                item
+                for item in self._registry
+                if item.get('logical_id') == jumpstart_id
+                or str(item.get('id')) == str(jumpstart_id)
+            ),
+            None,
+        )
 
     def install(self, name: str, workspace_id: Optional[str] = None, **kwargs):
         """
         Install a jumpstart to a Fabric workspace.
 
         Args:
-            name: Name of the jumpstart from registry
+            name: Logical id of the jumpstart from registry
             workspace_id: Target workspace GUID (optional)
             **kwargs: Additional options (overrides registry defaults)
+                - unattended: If True, suppresses live HTML output and prints to console instead
+                - item_prefix: Custom prefix for created items, set as None for no prefix, defaults to auto-generated
+                - debug: If True, include all jumpstart logs (INFO+) in the rendered output; otherwise only fabric-cicd logs
         """
+
+        # Configure item prefix
+        user_item_prefix = kwargs.get('item_prefix', 'auto')
+        item_prefix = user_item_prefix
+        if user_item_prefix == 'auto':
+            config = self._get_jumpstart_by_logical_id(name)
+            id = config.get('id')
+            logical_id = config.get('logical_id', '')
+            item_prefix = _set_item_prefix(id, logical_id)
+
+        config['item_prefix'] = item_prefix
+
+        entry_point = config.get('entry_point')
+        prefixed_entry_point = entry_point
+        if entry_point and not entry_point.startswith(('http://', 'https://')) and item_prefix is not None:
+            prefixed_entry_point = f"{item_prefix}{entry_point}"
 
         if workspace_id is None and _is_fabric_runtime():
             notebookutils = get_ipython().user_ns.get("notebookutils")  # noqa: F821
             workspace_id = notebookutils.runtime.context['currentWorkspaceId']
 
-        config = self._get_jumpstart_by_id(name)
+        config = self._get_jumpstart_by_logical_id(name)
         if not config:
             error_msg = f"Unknown jumpstart '{name}'. Use fabric_jumpstart.list() to list available jumpstarts."
             raise ValueError(error_msg)
@@ -254,7 +299,7 @@ class jumpstart:
         logger.info(f"Installing '{name}' to workspace '{workspace_id}'")
 
         source_config = config['source']
-        workspace_path_str = source_config['workspace_path']
+        workspace_path = source_config['workspace_path']
 
         if 'repo_url' in source_config:
             # Remote jumpstart
@@ -262,21 +307,19 @@ class jumpstart:
             repo_ref = source_config.get('repo_ref', 'main')
 
             logger.info(f"Cloning from {repo_url} (ref: {repo_ref})")
-            repo_path = Path(clone_repository(repository_url=repo_url, ref=repo_ref))
+            working_repo_path = clone_repository(repository_url=repo_url, ref=repo_ref, temp_dir_prefix=item_prefix)
 
-            logger.info(f"Repository cloned to {repo_path}")
+            logger.info(f"Repository cloned to {working_repo_path}")
         else:
             # Local jumpstart
             logger.info("Using local demo handler")
-            # Get the path to the jumpstarts folder and join with jumpstart id
             jumpstarts_dir = Path(__file__).parent / "jumpstarts"
             logger.info(f"Using local jumpstart_dir {jumpstarts_dir}")
-            repo_path = jumpstarts_dir / config['id']
-            logger.info(f"Using local repo_path {repo_path}")
+            repo_path = jumpstarts_dir / config.get('logical_id', name)
+            working_repo_path = clone_files_to_temp_directory(source_path=repo_path, temp_dir_prefix=item_prefix)
+            logger.info(f"Cloned local repo_path {repo_path} to temp {working_repo_path}")
 
-        workspace_path = repo_path / workspace_path_str.lstrip('/\\')
-        logger.info(f"Workspace path {workspace_path}")
-
+        temp_workspace_path = working_repo_path / workspace_path.lstrip('/\\')
         items_in_scope = config.get('items_in_scope', [])
         unattended = kwargs.get('unattended', False)
 
@@ -291,6 +334,7 @@ class jumpstart:
             html = render_install_status_html(
                 status=status_label,
                 jumpstart_name=config.get('name', name),
+                type=config.get('type').lower(),
                 workspace_id=workspace_id,
                 entry_point=entry,
                 minutes_complete=config.get('minutes_to_complete_jumpstart'),
@@ -320,29 +364,48 @@ class jumpstart:
         handler = _BufferingHandler(log_buffer, on_emit=lambda: _update_live(status_label='installing', entry=None))
         stdout_proxy = _StreamToLogs(log_buffer, on_emit=lambda: _update_live(status_label='installing', entry=None), level="INFO")
         stderr_proxy = _StreamToLogs(log_buffer, on_emit=lambda: _update_live(status_label='installing', entry=None), level="ERROR")
+        debug_logs = bool(kwargs.get('debug', False))
+
         fabric_logger = logging.getLogger('fabric_cicd')
-        module_logger = logger
-        targets = [fabric_logger, module_logger]
+        module_logger = logging.getLogger(__name__)
+        utils_root_logger = logging.getLogger('fabric_jumpstart')
+        utils_logger = logging.getLogger('fabric_jumpstart.utils')
+
+        # Always capture fabric + jumpstart logs; debug flag can be used for future verbosity gates.
+        targets = [fabric_logger, module_logger, utils_root_logger, utils_logger]
 
         original_states = []
         for tgt in targets:
             original_states.append((tgt, list(tgt.handlers), tgt.propagate, tgt.level))
             tgt.handlers = [handler]
             tgt.propagate = False
-            if tgt.level > logging.INFO:
-                tgt.setLevel(logging.INFO)
+            tgt.setLevel(logging.INFO)
+
+        logger.info(f"Workspace path {temp_workspace_path}")
+        entry_point = config.get('entry_point')
+        base_names = []
+        if entry_point and isinstance(entry_point, str) and '.' in entry_point:
+            base_names.append(entry_point.split('.')[0])
+        logger.info(
+            "Applying item prefix '%s' to workspace path %s with base_names=%s",
+            item_prefix,
+            temp_workspace_path,
+            base_names,
+        )
+        prefix_mappings = _apply_item_prefix(temp_workspace_path, item_prefix, base_names=base_names)
+        logger.info("Item prefix mappings applied: %s", prefix_mappings)
         try:
             with contextlib.redirect_stdout(stdout_proxy), contextlib.redirect_stderr(stderr_proxy):
-                logger.info(f"Deploying items from {workspace_path} to workspace '{workspace_id}'")
+                logger.info(f"Deploying items from {temp_workspace_path} to workspace '{workspace_id}'")
                 target_ws = self._install_items(
                     items_in_scope=items_in_scope,
-                    workspace_path=workspace_path,
+                    workspace_path=temp_workspace_path,
                     workspace_id=workspace_id,
                     feature_flags=kwargs.get('feature_flags', [])
                 )
             logger.info(f"Successfully installed '{name}'")
 
-            entry_point = config.get('entry_point')
+            entry_point = prefixed_entry_point or config.get('entry_point')
             entry_url = None
             if entry_point:
                 if entry_point.startswith(('http://', 'https://')):
@@ -363,6 +426,7 @@ class jumpstart:
             status_html = render_install_status_html(
                 status='success',
                 jumpstart_name=config.get('name', name),
+                type=config.get('type').lower(),
                 workspace_id=workspace_id,
                 entry_point=entry_url,
                 minutes_complete=config.get('minutes_to_complete_jumpstart'),
@@ -386,23 +450,35 @@ class jumpstart:
             except Exception:
                 return status_html
         except Exception as e:
-            logger.error(f"Failed to install jumpstart '{name}': {e}")
+            logger.exception(f"Failed to install jumpstart '{name}'")
+            error_text = str(e).strip() or e.__class__.__name__
+
+            try:
+                for line in traceback.format_exception(e):
+                    clean_line = line.rstrip("\n")
+                    if clean_line:
+                        log_buffer.append({"level": "ERROR", "message": clean_line})
+                _update_live(status_label='error', entry=config.get('entry_point'), err=error_text)
+            except Exception:
+                pass
+
             if unattended:
-                print(f"Failed to install '{name}': {e}")
+                print(f"Failed to install '{name}': {error_text}")
                 raise
 
             status_html = render_install_status_html(
                 status='error',
                 jumpstart_name=config.get('name', name),
+                type=config.get('type').lower(),
                 workspace_id=workspace_id,
-                entry_point=config.get('entry_point'),
+                entry_point=prefixed_entry_point,
                 minutes_complete=config.get('minutes_to_complete_jumpstart'),
                 minutes_deploy=config.get('minutes_to_deploy'),
                 docs_uri=config.get('jumpstart_docs_uri'),
                 logs=log_buffer,
-                error_message=str(e),
+                error_message=error_text,
             )
-            _update_live(status_label='error', entry=config.get('entry_point'), err=str(e))
+            _update_live(status_label='error', entry=prefixed_entry_point, err=error_text)
             if live_rendering:
                 return None
             try:

@@ -21,7 +21,7 @@ def _format_minutes(minutes):
         return html.escape(str(minutes), quote=True)
 
 
-def render_install_status_html(*, status: str, jumpstart_name: str, workspace_id: Optional[str], entry_point, minutes_complete, minutes_deploy, docs_uri=None, logs=None, error_message: Optional[str] = None):
+def render_install_status_html(*, status: str, jumpstart_name: str, type: str, workspace_id: Optional[str], entry_point, minutes_complete, minutes_deploy, docs_uri=None, logs=None, error_message: Optional[str] = None):
     """Build a styled HTML status card for install results."""
     status_lower = status.lower()
     pill_class = 'success' if status_lower == 'success' else 'error'
@@ -32,6 +32,17 @@ def render_install_status_html(*, status: str, jumpstart_name: str, workspace_id
         pill_class = 'info'
         pill_label = status.capitalize()
         pill_icon = '⏳'
+
+    pill_content = f'{pill_icon} {pill_label}'
+    if status_lower == 'installing':
+        pill_content = ''.join([
+            '<span class="pill-label">⏳ Installing</span>',
+            '<span class="pill-dots" aria-hidden="true">',
+            '  <span class="pill-dot"></span>',
+            '  <span class="pill-dot"></span>',
+            '  <span class="pill-dot"></span>',
+            '</span>'
+        ])
 
     safe_name = html.escape(jumpstart_name or 'Jumpstart', quote=True)
     workspace_text = workspace_id or 'Current workspace'
@@ -44,7 +55,7 @@ def render_install_status_html(*, status: str, jumpstart_name: str, workspace_id
             safe_docs = html.escape(docs_str, quote=True)
             docs_markup = (
                 f'<a class="install-status-link" href="{safe_docs}" target="_blank" rel="noopener noreferrer">'
-                f'<span>Jumpstart documentation</span>'
+                f'<span>Documentation</span>'
                 f'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3Zm5 14v2H5V5h2v12h12Z"/></svg>'
                 f'</a>'
             )
@@ -62,6 +73,60 @@ def render_install_status_html(*, status: str, jumpstart_name: str, workspace_id
 
 
     minutes_complete_label = _format_minutes(minutes_complete)
+
+    # Hero block for clear status
+    hero_block = ''
+    if status_lower == 'success':
+        ctas = []
+        if docs_uri:
+            docs_str = str(docs_uri)
+            if docs_str.startswith(('http://', 'https://')):
+                safe_docs = html.escape(docs_str, quote=True)
+                ctas.append(
+                    f'<a class="install-cta secondary" href="{safe_docs}" target="_blank" rel="noopener noreferrer">'
+                    f'<span>Documentation</span>'
+                    f'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3Zm5 14v2H5V5h2v12h12Z"/></svg>'
+                    f'</a>'
+                )
+            else:
+                ctas.append(f'<code>{html.escape(docs_str, quote=True)}</code>')
+
+        if entry_point:
+            entry_str = str(entry_point)
+            if entry_str.startswith(('http://', 'https://')):
+                safe_url = html.escape(entry_str, quote=True)
+                ctas.append(
+                    f'<a class="install-cta" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
+                    f'<span>Entry point</span>'
+                    f'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3Zm5 14v2H5V5h2v12h12Z"/></svg>'
+                    f'</a>'
+                )
+            else:
+                ctas.append(f'<code>{html.escape(entry_str, quote=True)}</code>')
+
+        cta_block = ''.join(ctas)
+
+
+        eta_str = '⏱ Est. time to complete jumpstart'
+        if type == 'accelerator':
+            eta_str = '⏱ Est. time to setup accelerator'
+        elif type == 'tutorial':
+            eta_str = 'Est. time to complete tutorial'
+        elif type == 'demo':
+            eta_str = '⏱ Est. time to complete demo'
+
+        hero_block = ''.join([
+            '<div class="install-hero success">',
+            '  <div class="hero-icon" aria-hidden="true">🎉</div>',
+            '  <div class="hero-text">',
+            '    <div class="hero-kicker category-label">Installation complete</div>',
+            f'    <div class="hero-title category-title">{safe_name}</div>',
+            f'    <div class="hero-sub">Workspace {safe_workspace}</div>',
+            f'    <div class="hero-meta">{eta_str}: {minutes_complete_label}</div>',
+            '  </div>',
+            f'  <div class="hero-cta">{cta_block}</div>',
+            '</div>',
+        ])
 
     error_block = ''
     if status_lower != 'success' and error_message:
@@ -101,49 +166,42 @@ def render_install_status_html(*, status: str, jumpstart_name: str, workspace_id
             '</div>',
         ])
 
-    entry_section = ''
-    if status_lower == 'success' and entry_point:
-        entry_str = str(entry_point)
-        if entry_str.startswith(('http://', 'https://')):
-            safe_url = html.escape(entry_str, quote=True)
-            entry_markup = (
-                f'<a class="install-status-link" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
-                f'<span>Open entry point</span>'
-                f'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3Zm5 14v2H5V5h2v12h12Z"/></svg>'
-                f'</a>'
-            )
-        else:
-            entry_markup = f'<code>{html.escape(entry_str, quote=True)}</code>'
+    # Hide entry/output sections on success; CTA already handled in hero
+    outcome_block = error_block if error_message else ''
 
-        entry_section = ''.join([
-            '<div class="install-status-section">',
-            '<div class="install-status-section-title">Output</div>',
-            '<div class="install-status-grid tight">',
-            f'  <div class="install-status-item"><div class="install-status-label">Entry point</div><div class="install-status-value">{entry_markup}</div></div>',
-            f'  <div class="install-status-item"><div class="install-status-label">⏱️ Est. time to complete jumpstart</div><div class="install-status-value">{minutes_complete_label}</div></div>',
-            '</div>',
-            '</div>',
+    # Always allow logs toggle if available
+    logs_section = logs_block if logs_block else ''
+
+    # Only show header/details when not successful
+    main_sections = ''
+    if status_lower != 'success':
+        main_sections = ''.join([
+            f'  <div class="install-status-header">',
+            f'    <div>',
+            f'      <div class="install-status-title">{safe_name}</div>',
+            f'      <div class="install-status-subtitle">Workspace: {safe_workspace}</div>',
+            f'    </div>',
+            f'    <div class="install-status-pill {pill_class}{" installing" if status_lower == "installing" else ""}">{pill_content}</div>',
+            f'  </div>',
+            f'  <div class="install-status-section">',
+            f'    <div class="install-status-section-title">Installation details</div>',
+            f'    <div class="install-status-grid tight">',
+            *top_items,
+            f'    </div>',
+            f'  </div>',
+            logs_section,
+            outcome_block,
         ])
-
-    outcome_block = error_block if error_message else entry_section
+    else:
+        main_sections = ''.join([
+            logs_section,
+            outcome_block,
+        ])
 
     return ''.join([
         _INSTALL_STATUS_CSS,
-        '<div class="install-status-card" role="status" aria-live="polite">',
-        f'  <div class="install-status-header">',
-        f'    <div>',
-        f'      <div class="install-status-title">{safe_name}</div>',
-        f'      <div class="install-status-subtitle">Workspace: {safe_workspace}</div>',
-        f'    </div>',
-        f'    <div class="install-status-pill {pill_class}">{pill_icon} {pill_label}</div>',
-        f'  </div>',
-        f'  <div class="install-status-section">',
-        f'    <div class="install-status-section-title">Installation details</div>',
-        f'    <div class="install-status-grid tight">',
-        *top_items,
-        f'    </div>',
-        f'  </div>',
-        logs_block,
-        outcome_block,
+        f'<div class="install-status-card {pill_class}" role="status" aria-live="polite">',
+        hero_block,
+        main_sections,
         '</div>',
     ])

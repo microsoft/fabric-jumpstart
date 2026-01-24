@@ -3,7 +3,9 @@
 }
 .jumpstart-container {
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
-    max-width: 1400px;
+    max-height: 1200px;
+    overflow: auto;
+    overscroll-behavior: contain;
     margin: 0 auto;
     padding: 40px 20px;
     background: #fafafa;

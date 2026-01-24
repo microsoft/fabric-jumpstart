@@ -1,11 +1,14 @@
 """Tests for jumpstart registry validation."""
 
 import logging
+import re
 from pathlib import Path
 
 import pytest
 import yaml
 from pydantic import ValidationError
+
+from fabric_jumpstart.constants import ITEM_URL_ROUTING_PATH_MAP
 
 from .schemas import Jumpstart
 
@@ -34,7 +37,7 @@ def validate_jumpstart_config(jumpstart: dict) -> dict | None:
     Returns:
         Validated jumpstart dict or None if invalid.
     """
-    jumpstart_id = jumpstart.get('id', '[unknown]')
+    jumpstart_id = jumpstart.get('logical_id', '[unknown]')
     
     try:
         validated = Jumpstart(**jumpstart)
@@ -66,7 +69,7 @@ class TestRegistryValidation:
         
         invalid_jumpstarts = []
         for jumpstart in registry_data:
-            jumpstart_id = jumpstart.get('id', '[unknown]')
+            jumpstart_id = jumpstart.get('logical_id', '[unknown]')
             try:
                 Jumpstart(**jumpstart)
             except ValidationError as e:
@@ -79,20 +82,63 @@ class TestRegistryValidation:
                 "\n".join(error_messages)
             )
 
-    @pytest.mark.parametrize("jumpstart", load_registry_data(), ids=lambda j: j.get('id', 'unknown'))
+    @pytest.mark.parametrize("jumpstart", load_registry_data(), ids=lambda j: j.get('logical_id', 'unknown'))
     def test_individual_jumpstart_schema(self, jumpstart):
         """Test each jumpstart individually for better error reporting."""
-        jumpstart_id = jumpstart.get('id', '[unknown]')
+        jumpstart_id = jumpstart.get('logical_id', '[unknown]')
         try:
             validated = Jumpstart(**jumpstart)
-            assert validated.id == jumpstart_id
+            assert validated.logical_id == jumpstart_id
         except ValidationError as e:
             pytest.fail(f"Jumpstart '{jumpstart_id}' failed validation: {e}")
+
+    def test_ids_are_unique_and_positive(self):
+        """Ensure numeric ids are unique and positive across the registry."""
+        registry_data = load_registry_data()
+        ids = [j.get('id') for j in registry_data]
+        assert all(isinstance(i, int) and i > 0 for i in ids), "All ids must be positive integers"
+        assert len(ids) == len(set(ids)), "Numeric ids must be unique"
+
+    def test_logical_ids_are_unique(self):
+        """Ensure logical_ids are unique across the registry."""
+        registry_data = load_registry_data()
+        logical_ids = [j.get('logical_id') for j in registry_data]
+        assert all(logical_ids), "logical_id must be present for all entries"
+        assert len(logical_ids) == len(set(logical_ids)), "logical_ids must be unique"
+
+    def test_logical_ids_are_kebab_case(self):
+        """Ensure logical_ids are lowercase kebab-case (pipe case)."""
+        registry_data = load_registry_data()
+        slug_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+        for j in registry_data:
+            logical_id = j.get('logical_id')
+            assert logical_id is not None, "logical_id must be present"
+            assert slug_re.match(logical_id), f"logical_id '{logical_id}' must be kebab-case (lowercase letters/numbers with dashes)"
+
+    def test_entry_points_are_valid(self):
+        """Ensure entry_point is http(s) URL or a Fabric item reference matching routing map."""
+        registry_data = load_registry_data()
+        pattern = re.compile(r"^[^.]+\.([^.]+)$")
+        for j in registry_data:
+            entry_point = j.get('entry_point')
+            assert entry_point, f"entry_point missing for {j.get('logical_id', '[unknown]')}"
+
+            if isinstance(entry_point, str) and entry_point.startswith(("https://", "http://")):
+                continue
+
+            match = pattern.match(entry_point or "")
+            assert match, f"entry_point '{entry_point}' must be 'ItemName.ItemType' or http(s) URL"
+            item_type = match.group(1)
+            assert item_type in ITEM_URL_ROUTING_PATH_MAP, (
+                f"entry_point '{entry_point}' has unknown item type '{item_type}'. "
+                f"Allowed: {', '.join(sorted(ITEM_URL_ROUTING_PATH_MAP.keys()))}"
+            )
 
     def test_validate_jumpstart_config_returns_dict_on_success(self):
         """Test validate_jumpstart_config returns dict for valid config."""
         valid_config = {
-            "id": "test-jumpstart",
+            "id": 999,
+            "logical_id": "test-jumpstart",
             "name": "Test Jumpstart",
             "description": "A test jumpstart",
             "date_added": "01/01/2025",
@@ -103,7 +149,7 @@ class TestRegistryValidation:
         }
         result = validate_jumpstart_config(valid_config)
         assert result is not None
-        assert result['id'] == "test-jumpstart"
+        assert result['logical_id'] == "test-jumpstart"
 
     def test_validate_jumpstart_config_returns_none_on_failure(self):
         """Test validate_jumpstart_config returns None for invalid config."""

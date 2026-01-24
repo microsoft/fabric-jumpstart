@@ -28,7 +28,7 @@ jumpstarts:
     test_suite: ""
     owner_email: "FabricJumpstart.SparkStructuredStreaming@microsoft.com"
     minutes_to_deploy: 8
-    minutes_to_complete_jumpstart: 120
+    minutes_to_complete_jumpstart: 240
 
   # ═══════════════════════════════════════════════════════════════
   # ANALYTICS ROADSHOW LAB
@@ -84,7 +84,7 @@ jumpstarts:
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
     owner_email: ""
-    minutes_to_deploy: 8
+    minutes_to_deploy: 1
     minutes_to_complete_jumpstart: 120
 
   # ═══════════════════════════════════════════════════════════════
@@ -119,8 +119,8 @@ jumpstarts:
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
     owner_email: "FabricJumpstart.SparkRTIMonitoring@microsoft.com"
-    minutes_to_deploy: 8
-    minutes_to_complete_jumpstart: 120
+    minutes_to_deploy: 3
+    minutes_to_complete_jumpstart: 20
 
   # ═══════════════════════════════════════════════════════════════
   # Example - TO DELETE LATER
@@ -152,8 +152,8 @@ jumpstarts:
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
     owner_email: ""
-    minutes_to_deploy: 8
-    minutes_to_complete_jumpstart: 120
+    minutes_to_deploy: 4
+    minutes_to_complete_jumpstart: 60
 
   # ═══════════════════════════════════════════════════════════════
   # Example - TO DELETE LATER
@@ -185,8 +185,8 @@ jumpstarts:
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
     owner_email: ""
-    minutes_to_deploy: 8
-    minutes_to_complete_jumpstart: 120
+    minutes_to_deploy: 2
+    minutes_to_complete_jumpstart: 60
 
   # ═══════════════════════════════════════════════════════════════
   # Example - TO DELETE LATER
@@ -218,5 +218,5 @@ jumpstarts:
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
     owner_email: ""
-    minutes_to_deploy: 8
-    minutes_to_complete_jumpstart: 120
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 30

@@ -1,5 +1,6 @@
 """Pydantic schemas for jumpstart registry validation (test-only)."""
 
+import re
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -24,7 +25,8 @@ class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""
     model_config = ConfigDict(extra="ignore")
 
-    id: str
+    id: int
+    logical_id: str
     name: str
     description: str
     date_added: str
@@ -40,6 +42,23 @@ class Jumpstart(BaseModel):
     test_suite: Optional[str] = None
     minutes_to_complete_jumpstart: Optional[int] = None
     minutes_to_deploy: Optional[int] = None
+
+    @field_validator("id")
+    @classmethod
+    def validate_id(cls, value: int):
+        if value <= 0:
+            raise ValueError("id must be a positive integer")
+        return value
+
+    @field_validator("logical_id")
+    @classmethod
+    def validate_logical_id(cls, value: str):
+        slug_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+        if not value:
+            raise ValueError("logical_id must be provided")
+        if not slug_re.match(value):
+            raise ValueError("logical_id must be lowercase alphanumeric with dashes")
+        return value
 
     @field_validator("workload_tags")
     @classmethod

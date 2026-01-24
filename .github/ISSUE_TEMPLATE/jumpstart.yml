@@ -1,6 +1,6 @@
 name: "New Jumpstart"
 description: "Propose a new Fabric Jumpstart package"
-title: "[Jumpstart]: "
+title: "jumpstart: "
 labels: ["Jumpstart", "Needs-Triage"]
 projects: ["microsoft/2147"]
 body:

@@ -1,6 +1,6 @@
 name: "Feature"
 description: "Request a new capability or enhancement to the Jumpstart framework or an existing Jumpstart"
-title: "[Feature]: "
+title: "feat: "
 labels: ["Feature-Request", "Needs-Triage"]
 projects: ["microsoft/2147"]
 body:

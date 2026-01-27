@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def _is_fabric_runtime() -> bool:
     """Checks if the execution runtime is Fabric."""
     try:
-        notebookutils = get_ipython().user_ns.get("notebookutils")  # noqa: F821
+        notebookutils = __import__('notebookutils')
         if notebookutils and hasattr(notebookutils, "runtime") and hasattr(notebookutils.runtime, "context"):
             context = notebookutils.runtime.context
             if "productType" in context:

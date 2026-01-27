@@ -29,9 +29,18 @@ dev = [
 ]
 lint = [
     "ruff>=0.14.10",
-    "ty>=0.0.14",
+    "ty==0.0.14",
 ]
 test = [
     "pydantic>=2.12.5",
     "pytest>=9.0.2",
 ]
+
+[tool.ruff]
+src = ["src"]
+# Ignore packaged jumpstart payloads (e.g., demo notebooks) to keep lint focused on library code.
+extend-exclude = ["src/fabric_jumpstart/jumpstarts/**"]
+
+[tool.ty]
+# Skip type checking for test helpers that rely on dynamic imports/aliases.
+exclude = ["tests/test_instance_name.py"]

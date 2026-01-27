@@ -259,11 +259,11 @@ dev = [
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "ruff", specifier = ">=0.14.10" },
-    { name = "ty", specifier = ">=0.0.14" },
+    { name = "ty", specifier = "==0.0.14" },
 ]
 lint = [
     { name = "ruff", specifier = ">=0.14.10" },
-    { name = "ty", specifier = ">=0.0.14" },
+    { name = "ty", specifier = "==0.0.14" },
 ]
 test = [
     { name = "pydantic", specifier = ">=2.12.5" },

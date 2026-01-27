@@ -176,19 +176,19 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
     main_sections = ''
     if status_lower != 'success':
         main_sections = ''.join([
-            f'  <div class="install-status-header">',
-            f'    <div>',
+            '  <div class="install-status-header">',
+            '    <div>',
             f'      <div class="install-status-title">{safe_name}</div>',
             f'      <div class="install-status-subtitle">Workspace: {safe_workspace}</div>',
-            f'    </div>',
+            '    </div>',
             f'    <div class="install-status-pill {pill_class}{" installing" if status_lower == "installing" else ""}">{pill_content}</div>',
-            f'  </div>',
-            f'  <div class="install-status-section">',
-            f'    <div class="install-status-section-title">Installation details</div>',
-            f'    <div class="install-status-grid tight">',
+            '  </div>',
+            '  <div class="install-status-section">',
+            '    <div class="install-status-section-title">Installation details</div>',
+            '    <div class="install-status-grid tight">',
             *top_items,
-            f'    </div>',
-            f'  </div>',
+            '    </div>',
+            '  </div>',
             logs_section,
             outcome_block,
         ])

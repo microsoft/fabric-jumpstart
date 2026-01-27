@@ -370,7 +370,7 @@ class jumpstart:
         utils_root_logger = logging.getLogger('fabric_jumpstart')
         utils_logger = logging.getLogger('fabric_jumpstart.utils')
 
-        # Always capture fabric + jumpstart logs; debug flag can be used for future verbosity gates.
+        # Always capture fabric + jumpstart logs; debug flag toggles verbosity.
         targets = [fabric_logger, module_logger, utils_root_logger, utils_logger]
 
         original_states = []
@@ -378,7 +378,7 @@ class jumpstart:
             original_states.append((tgt, list(tgt.handlers), tgt.propagate, tgt.level))
             tgt.handlers = [handler]
             tgt.propagate = False
-            tgt.setLevel(logging.INFO)
+            tgt.setLevel(logging.DEBUG if debug_logs else logging.INFO)
 
         logger.info(f"Workspace path {temp_workspace_path}")
         entry_point = config.get('entry_point')

@@ -32,7 +32,7 @@ jobs:
 
       - name: Type check (ty)
         run: |
-          uv run ty
+          uv run ty check .
 
       - name: Run tests
         run: |

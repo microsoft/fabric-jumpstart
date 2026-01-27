@@ -26,6 +26,7 @@ dev = [
     {include-group = "lint"},
     {include-group = "test"},
     "make>=0.1.6.post2",
+    "ipython>=8.20",
 ]
 lint = [
     "ruff>=0.14.10",
@@ -41,6 +42,10 @@ src = ["src"]
 # Ignore packaged jumpstart payloads (e.g., demo notebooks) to keep lint focused on library code.
 extend-exclude = ["src/fabric_jumpstart/jumpstarts/**"]
 
-[tool.ty]
+[tool.ty.src]
 # Skip type checking for test helpers that rely on dynamic imports/aliases.
-exclude = ["tests/test_instance_name.py"]
+exclude = [
+    "tests/test_instance_name.py", 
+    "src/fabric_jumpstart/jumpstarts/**",
+    "dev/**"
+]

@@ -30,7 +30,7 @@ jumpstarts:
     test_suite: ""
     owner_email: "FabricJumpstart.AnalyticsRoadshowLab@microsoft.com"
     minutes_to_deploy: 8
-    minutes_to_complete_jumpstart: 120
+    minutes_to_complete_jumpstart: 180
 
   # ═══════════════════════════════════════════════════════════════
   # SPARK STRUCTURED STREAMING

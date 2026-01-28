@@ -8,8 +8,9 @@ version = "0.1.1"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-dependencies = [ # temporary until fabric_cicd-0.1.34 is released for SJD / Fabric Auth support
-    "fabric-cicd>=0.1.34",
+dependencies = [
+    "fabric-cicd==0.1.34",
+    "ipython>=8.20",
     "pyyaml>=6.0.3",
 ]
 
@@ -26,7 +27,6 @@ dev = [
     {include-group = "lint"},
     {include-group = "test"},
     "make>=0.1.6.post2",
-    "ipython>=8.20",
 ]
 lint = [
     "ruff>=0.14.10",

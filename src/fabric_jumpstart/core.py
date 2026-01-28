@@ -128,7 +128,7 @@ class jumpstart:
                 numeric_id = j.get('id', '?')
                 print(f"  • {logical_id} (#{numeric_id}): {j.get('name', 'Unknown')} - {j.get('description', 'No description')}")
 
-    def list(self):
+    def list(self, **kwargs):
         """Display an interactive HTML UI of available jumpstarts."""
         from IPython.display import HTML, display
         
@@ -136,7 +136,8 @@ class jumpstart:
         instance_name = self._get_instance_name()
         
         # Filter jumpstarts that should be listed
-        jumpstarts = [j for j in self._registry if j.get('include_in_listing', True)]
+        show_unlisted = kwargs.get("show_unlisted", False)
+        jumpstarts = [j for j in self._registry if j.get("include_in_listing", True) or show_unlisted]
         
         # Determine NEW threshold (60 days ago)
         new_threshold = datetime.now() - timedelta(days=60)

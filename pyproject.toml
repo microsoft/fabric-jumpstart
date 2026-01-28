@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "fabric-jumpstart"
 version = "0.1.1"
-description = "Add your description here"
+description = "Get started quickly with pre-built solutions, tutorials, demos, and accelerators—automated, high-quality, and open-source."
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
@@ -26,7 +26,6 @@ packages = ["src/fabric_jumpstart"]
 dev = [
     {include-group = "lint"},
     {include-group = "test"},
-    "make>=0.1.6.post2",
 ]
 lint = [
     "ruff>=0.14.10",

@@ -14,7 +14,7 @@ jumpstarts:
     type: "Tutorial"
     source:
       repo_url: "https://github.com/microsoft/fabric-analytics-roadshow-lab.git/"
-      repo_ref: "v0.1.1"
+      repo_ref: "v0.1.2"
       workspace_path: "workspace/"
       preview_image_path: "assets/image-example.png"
     items_in_scope: 
@@ -23,10 +23,11 @@ jumpstarts:
       - Notebook
       - SparkJobDefinition
       - Environment
+      - DataPipeline
     feature_flags:
       - enable_lakehouse_unpublish
-    jumpstart_docs_uri: "https://jumpstart.fabric.microsoft.com/azure_arc_jumpstart/azure_arc_vsphere/"
-    entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
+    jumpstart_docs_uri: "https://github.com/microsoft/fabric-analytics-roadshow-lab/blob/v0.1.1/README.md"
+    entry_point: "1_process_data.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
     owner_email: "FabricJumpstart.AnalyticsRoadshowLab@microsoft.com"
     minutes_to_deploy: 8

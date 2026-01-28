@@ -1,6 +1,6 @@
 # ⚡️Fabric Jumpstart
 
-Fabric Jumpstart accelerates Microsoft Fabric adoption with ready-to-run solutions, demos, and tutorials that install directly into your workspace in minutes via [fabric-cicd](https://microsoft.github.io/fabric-cicd/latest/).
+Fabric Jumpstart accelerates Microsoft Fabric adoption with ready-to-run accelerators, demos, and tutorials that install directly into your workspace in minutes via [fabric-cicd](https://microsoft.github.io/fabric-cicd/latest/).
 
 ## What is a Jumpstart?
 - A curated, tested Fabric solution (data, notebooks, pipelines, reports, supporting assets, etc.) that you can deploy end-to-end with one call.
@@ -8,7 +8,7 @@ Fabric Jumpstart accelerates Microsoft Fabric adoption with ready-to-run solutio
 - Discover available Jumpstarts at https://fabric.jumpstart.microsoft.com ( ⚠️ UNDER CONSTRUCTION ⚠️ ).
 
 ## Install the Library
-Requirements: Python 3.11–3.12 and access to a Microsoft Fabric workspace.
+Requirements: Python 3.10–3.12 and access to a Microsoft Fabric workspace.
 
 ```bash
 pip install fabric-jumpstart

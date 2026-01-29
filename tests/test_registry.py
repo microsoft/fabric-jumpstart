@@ -115,25 +115,6 @@ class TestRegistryValidation:
             assert logical_id is not None, "logical_id must be present"
             assert slug_re.match(logical_id), f"logical_id '{logical_id}' must be kebab-case (lowercase letters/numbers with dashes)"
 
-    def test_entry_points_are_valid(self):
-        """Ensure entry_point is http(s) URL or a Fabric item reference matching routing map."""
-        registry_data = load_registry_data()
-        pattern = re.compile(r"^[^.]+\.([^.]+)$")
-        for j in registry_data:
-            entry_point = j.get('entry_point')
-            assert entry_point, f"entry_point missing for {j.get('logical_id', '[unknown]')}"
-
-            if isinstance(entry_point, str) and entry_point.startswith(("https://", "http://")):
-                continue
-
-            match = pattern.match(entry_point or "")
-            assert match, f"entry_point '{entry_point}' must be 'ItemName.ItemType' or http(s) URL"
-            item_type = match.group(1)
-            assert item_type in ITEM_URL_ROUTING_PATH_MAP, (
-                f"entry_point '{entry_point}' has unknown item type '{item_type}'. "
-                f"Allowed: {', '.join(sorted(ITEM_URL_ROUTING_PATH_MAP.keys()))}"
-            )
-
     def test_validate_jumpstart_config_returns_dict_on_success(self):
         """Test validate_jumpstart_config returns dict for valid config."""
         valid_config = {
@@ -145,7 +126,8 @@ class TestRegistryValidation:
             "workload_tags": ["Test"],
             "scenario_tags": ["Test"],
             "source": {"workspace_path": "/src", "preview_image_path": "/img/img.png"},
-            "entry_point": "1_ExploreData.Notebook"
+            "entry_point": "1_ExploreData.Notebook",
+            "owner_email": "owner@example.com",
         }
         result = validate_jumpstart_config(valid_config)
         assert result is not None

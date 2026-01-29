@@ -82,12 +82,14 @@ jumpstarts:
       workspace_path: "src/"
       preview_image_path: "assets/image-example.png"
     items_in_scope:
+      - Notebook
+      - Lakehouse
     feature_flags:
       - enable_lakehouse_unpublish
     jumpstart_docs_uri: "https://jumpstart.fabric.microsoft.com/azure_arc_jumpstart/azure_arc_vsphere/"
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
-    owner_email: ""
+    owner_email: "user@example.com"
     minutes_to_deploy: 1
     minutes_to_complete_jumpstart: 120
 
@@ -155,7 +157,7 @@ jumpstarts:
     jumpstart_docs_uri: ""
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
-    owner_email: ""
+    owner_email: "user@example.com"
     minutes_to_deploy: 4
     minutes_to_complete_jumpstart: 60
 
@@ -188,7 +190,7 @@ jumpstarts:
     jumpstart_docs_uri: ""
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
-    owner_email: ""
+    owner_email: "user@example.com"
     minutes_to_deploy: 2
     minutes_to_complete_jumpstart: 60
 
@@ -221,6 +223,6 @@ jumpstarts:
     jumpstart_docs_uri: ""
     entry_point: "1_ExploreData.Notebook" # can be a Fabric Item OR a URL
     test_suite: ""
-    owner_email: ""
+    owner_email: "user@example.com"
     minutes_to_deploy: 1
     minutes_to_complete_jumpstart: 30

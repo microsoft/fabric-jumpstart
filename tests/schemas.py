@@ -6,6 +6,7 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from fabric_jumpstart.constants import (
+    ITEM_URL_ROUTING_PATH_MAP,
     VALID_JUMPSTART_TYPES,
     VALID_SCENARIO_TAGS,
     VALID_WORKLOAD_TAGS,
@@ -48,6 +49,7 @@ class Jumpstart(BaseModel):
     jumpstart_docs_uri: Optional[str] = None
     entry_point: str
     test_suite: Optional[str] = None
+    owner_email: str
     minutes_to_complete_jumpstart: Optional[int] = None
     minutes_to_deploy: Optional[int] = None
 
@@ -74,6 +76,36 @@ class Jumpstart(BaseModel):
         if len(value) > 250:
             raise ValueError("description must be 250 characters or fewer")
         return value
+    
+    @field_validator("owner_email")
+    @classmethod
+    def validate_owner_email(cls, value: str):
+        if not value:
+            raise ValueError("owner_email must be a valid email address")
+        name, sep, domain = value.partition("@")
+        if not sep or not name or not domain:
+            raise ValueError("owner_email must be a valid email address")
+        part1, sep, part2 = domain.partition(".")
+        if not sep or not part1 or not part2:
+            raise ValueError("owner_email must be a valid email address")
+        return value
+
+    @field_validator("entry_point")
+    @classmethod
+    def validate_entry_point(cls, value: str):
+        if not value:
+            raise ValueError("entry_point must be provided")
+        entry = value.strip()
+        if entry.startswith(("http://", "https://")):
+            return entry
+
+        name, sep, item_type = entry.rpartition(".")
+        if not sep or not name or item_type not in ITEM_URL_ROUTING_PATH_MAP:
+            allowed = ", ".join(ITEM_URL_ROUTING_PATH_MAP.keys())
+            raise ValueError(
+                f"entry_point must be a URL or '<name>.<item_type>' where item_type is one of: {allowed}."
+            )
+        return entry
 
     @model_validator(mode="after")
     def validate_description_not_prefixed_by_name(self):
@@ -103,6 +135,19 @@ class Jumpstart(BaseModel):
             raise ValueError(
                 f"Unknown jumpstart_type: {value}. Allowed values: {allowed_display}."
             )
+        return value
+    
+    @field_validator("items_in_scope")
+    @classmethod
+    def validate_items_in_scope(cls, value: List[str]):
+        if value is None:
+            raise ValueError("items_in_scope must be provided")
+        for item in value:
+            if item not in ITEM_URL_ROUTING_PATH_MAP:
+                allowed = ", ".join(ITEM_URL_ROUTING_PATH_MAP.keys())
+                raise ValueError(
+                    f"Unknown item in items_in_scope: {item}. Allowed values: {allowed}."
+                )
         return value
 
     @field_validator("minutes_to_complete_jumpstart", "minutes_to_deploy", mode="before")

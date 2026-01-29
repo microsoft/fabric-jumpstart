@@ -10,8 +10,6 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from fabric_jumpstart.constants import ITEM_URL_ROUTING_PATH_MAP
-
 from .schemas import Jumpstart
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,7 @@
 """Pydantic schemas for jumpstart registry validation (test-only)."""
 
 import re
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
@@ -75,6 +76,16 @@ class Jumpstart(BaseModel):
     def validate_description(cls, value: str):
         if len(value) > 250:
             raise ValueError("description must be 250 characters or fewer")
+        return value
+
+    @field_validator("date_added")
+    @classmethod
+    def validate_date_added(cls, value: str):
+        try:
+            # Expect month/day/year; allows single-digit month/day.
+            datetime.strptime(value, "%m/%d/%Y")
+        except Exception:
+            raise ValueError("date_added must be a valid date in MM/DD/YYYY format")
         return value
     
     @field_validator("owner_email")

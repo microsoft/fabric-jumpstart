@@ -127,7 +127,7 @@ class TestRegistryValidation:
             if not repo_url:
                 continue
 
-            repo_ref = source.get("repo_ref")
+            repo_ref = source["repo_ref"]
             check_cmd = ["git", "ls-remote", "--exit-code", repo_url, repo_ref]
             result = subprocess.run(check_cmd, capture_output=True, text=True, timeout=15)
 

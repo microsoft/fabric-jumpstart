@@ -3,7 +3,7 @@
 import re
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from fabric_jumpstart.constants import (
     VALID_JUMPSTART_TYPES,
@@ -18,7 +18,15 @@ class JumpstartSource(BaseModel):
     workspace_path: str
     preview_image_path: str
     repo_url: Optional[str] = None
-    repo_ref: Optional[str] = "main"
+    repo_ref: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_repo_fields(self):
+        if self.repo_url:
+            ref = (self.repo_ref or "").strip()
+            if not ref:
+                raise ValueError("repo_ref, a tag of the repository, must be provided when repo_url is set")
+        return self
 
 
 class Jumpstart(BaseModel):
@@ -59,6 +67,21 @@ class Jumpstart(BaseModel):
         if not slug_re.match(value):
             raise ValueError("logical_id must be lowercase alphanumeric with dashes")
         return value
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str):
+        if len(value) > 250:
+            raise ValueError("description must be 250 characters or fewer")
+        return value
+
+    @model_validator(mode="after")
+    def validate_description_not_prefixed_by_name(self):
+        name = (self.name or "").strip()
+        desc = (self.description or "").lstrip()
+        if name and desc.lower().startswith(name.lower()):
+            raise ValueError("description must not start with the jumpstart name")
+        return self
 
     @field_validator("workload_tags")
     @classmethod

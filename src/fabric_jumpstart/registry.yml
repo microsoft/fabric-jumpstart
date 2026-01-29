@@ -226,3 +226,157 @@ jumpstarts:
     owner_email: "user@example.com"
     minutes_to_deploy: 1
     minutes_to_complete_jumpstart: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI HEALTHCARE BILLING SYSTEM DEMO
+  # ═══════════════════════════════════════════════════════════════
+  - id: 8
+    logical_id: rti-hbs-demo
+    name: "RTI Healthcare Billing System Demo"
+    description: "Jumpstart for RTI Healthcare Billing System Demo"
+    date_added: "9/1/2025"
+    include_in_listing: True
+    workload_tags: ["Real Time Intelligence"]
+    scenario_tags: ["Streaming"]
+    type: "Demo"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-rti-demos.git"
+      workspace_path: "healthcare-billing-system/"
+      preview_image_path: "image-example.png" # TO BE UPDATED
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+    jumpstart_docs_uri: ""
+    entry_point: "HealthcareBillingSystem.Notebook" # can be a Fabric Item OR a URL
+    test_suite: ""
+    owner_email: ""
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING CAPACITY EVENTS
+  # ═══════════════════════════════════════════════════════════════
+  - id: 9
+    logical_id: rti-fpm-capacity-events
+    name: "Fabric Platform Monitoring - Capacity Events"
+    description: "Jumpstart for Fabric Platform Monitoring - Capacity Events"
+    date_added: "9/1/2025"
+    include_in_listing: True
+    workload_tags: ["Real Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      workspace_path: "capacity-events/src/"
+      preview_image_path: "image-example.png" # TO BE UPDATED
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+    jumpstart_docs_uri: ""
+    entry_point: "Capacity Events Update Eventstream.Notebook" # can be a Fabric Item OR a URL
+    test_suite: ""
+    owner_email: ""
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING ACTIVITY EVENTS
+  # ═══════════════════════════════════════════════════════════════
+  - id: 10
+    logical_id: rti-fpm-activity-events
+    name: "Fabric Platform Monitoring - Activity Events"
+    description: "Jumpstart for Fabric Platform Monitoring - Activity Events"
+    date_added: "9/1/2025"
+    include_in_listing: True
+    workload_tags: ["Real Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      workspace_path: "activity-events/src/"
+      preview_image_path: "image-example.png" # TO BE UPDATED
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+      - VariableLibrary
+    jumpstart_docs_uri: ""
+    entry_point: "Activity Events Setup.Notebook" # can be a Fabric Item OR a URL
+    test_suite: ""
+    owner_email: ""
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING FABRIC INVENTORY
+  # ═══════════════════════════════════════════════════════════════
+  - id: 11
+    logical_id: rti-fpm-fabric-inventory
+    name: "Fabric Platform Monitoring - Fabric Inventory"
+    description: "Jumpstart for Fabric Platform Monitoring - Fabric Inventory"
+    date_added: "9/1/2025"
+    include_in_listing: True
+    workload_tags: ["Real Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      workspace_path: "fabric-inventory/src/"
+      preview_image_path: "image-example.png" # TO BE UPDATED
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+      - VariableLibrary
+    jumpstart_docs_uri: ""
+    entry_point: "Fabric Inventory Setup.Notebook" # can be a Fabric Item OR a URL
+    test_suite: ""
+    owner_email: ""
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING GATEWAY MONITORING
+  # ═══════════════════════════════════════════════════════════════
+  - id: 12
+    logical_id: rti-fpm-gateway-monitoring
+    name: "Fabric Platform Monitoring - Gateway Monitoring"
+    description: "Jumpstart for Fabric Platform Monitoring - Gateway Monitoring"
+    date_added: "9/1/2025"
+    include_in_listing: True
+    workload_tags: ["Real Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      workspace_path: "gateway-monitoring/src/"
+      preview_image_path: "image-example.png" # TO BE UPDATED
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+      - VariableLibrary
+      - SemanticModel
+      - Report
+    jumpstart_docs_uri: ""
+    entry_point: "Gateway Monitoring Setup.Notebook" # can be a Fabric Item OR a URL
+    test_suite: ""
+    owner_email: ""
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 30

@@ -277,8 +277,9 @@ class jumpstart:
         # Configure item prefix
         user_item_prefix = kwargs.get('item_prefix', 'auto')
         item_prefix = user_item_prefix
+        config = self._get_jumpstart_by_logical_id(name)
+
         if user_item_prefix == 'auto':
-            config = self._get_jumpstart_by_logical_id(name)
             id = config.get('id')
             logical_id = config.get('logical_id', '')
             item_prefix = _set_item_prefix(id, logical_id)
@@ -293,8 +294,7 @@ class jumpstart:
         if workspace_id is None and _is_fabric_runtime():
             import notebookutils  # ty: ignore[unresolved-import]
             workspace_id = notebookutils.runtime.context['currentWorkspaceId']
-
-        config = self._get_jumpstart_by_logical_id(name)
+        
         if not config:
             error_msg = f"Unknown jumpstart '{name}'. Use fabric_jumpstart.list() to list available jumpstarts."
             raise ValueError(error_msg)

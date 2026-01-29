@@ -2,6 +2,8 @@
 
 import logging
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -109,6 +111,50 @@ class TestRegistryValidation:
     def test_logical_ids_are_kebab_case(self):
         """Ensure logical_ids are lowercase kebab-case (pipe case)."""
         registry_data = load_registry_data()
+        slug_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+        for j in registry_data:
+            logical_id = j.get('logical_id')
+            assert logical_id is not None, "logical_id must be present"
+            assert slug_re.match(logical_id), f"logical_id '{logical_id}' must be kebab-case (lowercase letters/numbers with dashes)"
+
+    def test_repo_urls_and_refs_resolve(self):
+        """Ensure remote repo_url/repo_ref pairs are reachable via git ls-remote."""
+        if not shutil.which("git"):
+            pytest.skip("git executable not available")
+
+        registry_data = load_registry_data()
+        for j in registry_data:
+            source = j.get("source", {}) or {}
+            repo_url = source.get("repo_url")
+            if not repo_url:
+                continue
+
+            repo_ref = source.get("repo_ref")
+            check_cmd = ["git", "ls-remote", "--exit-code", repo_url, repo_ref]
+            result = subprocess.run(check_cmd, capture_output=True, text=True, timeout=15)
+
+            if result.returncode == 0:
+                continue
+
+            # If the ref lookup failed, check if the repo itself is reachable to
+            # distinguish a bad ref from a network/auth issue.
+            reachability = subprocess.run(
+                ["git", "ls-remote", "--exit-code", repo_url],
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+
+            if reachability.returncode != 0:
+                pytest.skip(
+                    f"Unable to reach repo_url '{repo_url}' (logical_id={j.get('logical_id', '[unknown]')}); "
+                    f"stderr: {reachability.stderr.strip()}"
+                )
+
+            assert False, (
+                f"Repo ref not reachable for {j.get('logical_id', '[unknown]')}: {repo_url}@{repo_ref}\n"
+                f"stderr: {result.stderr.strip()}"
+            )
         slug_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
         for j in registry_data:
             logical_id = j.get('logical_id')

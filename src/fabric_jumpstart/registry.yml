@@ -107,7 +107,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/microsoft/fabric-toolbox.git"
-      repo_ref: "f09cb09d26ab317f50a9d97bb833009834661541"
+      repo_ref: "main"
       workspace_path: "monitoring/fabric-spark-monitoring/src/"
       preview_image_path: "monitoring/fabric-spark-monitoring/assets/image-example.png" # TO BE UPDATED
     items_in_scope: 

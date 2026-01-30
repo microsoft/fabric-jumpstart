@@ -293,6 +293,9 @@ class jumpstart:
         if workspace_id is None and _is_fabric_runtime():
             import notebookutils  # ty: ignore[unresolved-import]
             workspace_id = notebookutils.runtime.context['currentWorkspaceId']
+        
+        if workspace_id is None:
+            raise ValueError("workspace_id must be provided when not running inside a Fabric runtime")
 
         config = self._get_jumpstart_by_logical_id(name)
         if not config:
@@ -330,6 +333,51 @@ class jumpstart:
         live_handle = None
         HTML_cls = None
         live_rendering = False
+
+
+        target_ws = FabricWorkspace(
+            workspace_id=workspace_id,
+            repository_directory=str(temp_workspace_path),
+            item_type_in_scope=items_in_scope
+        )
+
+        def _get_existing_item_list(workspace: FabricWorkspace) -> list[str]:
+            """Get list of existing item names in the target workspace."""
+            existing_items: list[str] = []
+            from fabric_cicd.constants import DEFAULT_API_ROOT_URL
+
+            next_url = f"{DEFAULT_API_ROOT_URL}/v1/workspaces/{workspace.workspace_id}/items"
+
+            while next_url:
+                response = workspace.endpoint.invoke(method="GET", url=next_url)
+                if not isinstance(response, dict):
+                    break
+
+                body = response.get("body", {})
+                for i in body.get("value", []) or []:
+                    name = i.get("displayName")
+                    if name:
+                        type = i.get("type")
+                        item = f"{name}.{type}"
+                        existing_items.append(item)
+
+                continuation_uri = body.get("continuationUri")
+                continuation_token = body.get("continuationToken")
+
+                if continuation_uri:
+                    next_url = continuation_uri
+                elif continuation_token:
+                    next_url = (
+                        f"{DEFAULT_API_ROOT_URL}/v1/workspaces/{workspace.workspace_id}/items"
+                        f"?continuationToken={continuation_token}"
+                    )
+                else:
+                    next_url = None
+
+            return existing_items
+        
+        existing_items = _get_existing_item_list(target_ws)
+
 
         def _update_live(status_label='installing', entry=None, err=None):
             if not live_handle or HTML_cls is None:

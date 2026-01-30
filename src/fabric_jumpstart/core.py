@@ -1,4 +1,5 @@
 import contextlib
+import io
 import logging
 import re
 import traceback
@@ -334,12 +335,17 @@ class jumpstart:
         HTML_cls = None
         live_rendering = False
 
-
-        target_ws = FabricWorkspace(
-            workspace_id=workspace_id,
-            repository_directory=str(temp_workspace_path),
-            item_type_in_scope=items_in_scope
-        )
+        @contextlib.contextmanager
+        def _suppress_fabric_info():
+            """Temporarily silence fabric-cicd info/warning noise."""
+            fabric_logger = logging.getLogger("fabric_cicd")
+            original_level = fabric_logger.level
+            try:
+                fabric_logger.setLevel(logging.ERROR)
+                with contextlib.redirect_stdout(io.StringIO()):
+                    yield
+            finally:
+                fabric_logger.setLevel(original_level)
 
         def _get_existing_item_list(workspace: FabricWorkspace) -> list[str]:
             """Get list of existing item names in the target workspace."""
@@ -375,7 +381,13 @@ class jumpstart:
                     next_url = None
 
             return existing_items
-        
+
+        with _suppress_fabric_info():
+            target_ws = FabricWorkspace(
+                workspace_id=workspace_id,
+                repository_directory=str(temp_workspace_path),
+                item_type_in_scope=items_in_scope
+            )
         existing_items = _get_existing_item_list(target_ws)
 
 

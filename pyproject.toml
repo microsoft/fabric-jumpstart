@@ -19,7 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "fabric-cicd==0.1.34",
+    "fabric-cicd==0.1.34", # for testing local build: "fabric-cicd @ file:///C:/.../fabric-cicd/dist/fabric_cicd-0.1.34-py3-none-any.whl",
     "ipython>=8.20.0",
     "pyyaml>=6.0.3",
 ]
@@ -30,6 +30,9 @@ include = ["src/fabric_jumpstart/**/*"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fabric_jumpstart"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 
 [dependency-groups]

@@ -1,6 +1,17 @@
+/* ============================================================================
+   Fabric Jumpstart UI Styles
+   Unified CSS for list view and install status displays
+   ============================================================================ */
+
+/* Global styles */
 * {
     box-sizing: border-box;
 }
+
+/* ============================================================================
+   Jumpstart List View
+   ============================================================================ */
+
 .jumpstart-container {
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
     max-height: 1200px;
@@ -10,9 +21,11 @@
     padding: 40px 20px;
     background: #fafafa;
 }
+
 .jumpstart-header {
     margin-bottom: 40px;
 }
+
 .jumpstart-label {
     color: #117865;
     font-size: 16px;
@@ -21,6 +34,7 @@
     letter-spacing: 2.25px;
     margin-bottom: 8px;
 }
+
 .jumpstart-header h1 {
     color: #1f1f1f;
     font-size: 32px;
@@ -28,6 +42,7 @@
     font-weight: 700;
     line-height: 1.2;
 }
+
 .jumpstart-header p {
     color: #605e5c;
     font-size: 18px;
@@ -36,6 +51,7 @@
     line-height: 1.5;
 }
 
+/* Controls and filters */
 .controls-stack {
     display: flex;
     flex-direction: column;
@@ -44,26 +60,22 @@
     position: relative;
     z-index: 50;
 }
+
 .controls-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 12px;
 }
+
 .filters-bar {
     display: flex;
     align-items: stretch;
     justify-content: flex-start;
     gap: 10px;
     flex-wrap: wrap;
-.filters-bar-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 30px;
 }
-}
+
 .filters-bar-row {
     display: flex;
     align-items: center;
@@ -74,6 +86,7 @@
     z-index: 50;
     margin-bottom: 30px;
 }
+
 .filters-active {
     display: flex;
     flex-wrap: wrap;
@@ -82,6 +95,7 @@
     flex: 0 1 auto;
     min-width: 0;
 }
+
 .group-by-chip {
     display: inline-flex;
     align-items: center;
@@ -93,9 +107,11 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.06);
     flex: 0 0 auto;
 }
+
 .group-by-chip .filter-chip-label {
     margin-right: 2px;
 }
+
 .add-filter-wrapper {
     position: relative;
     display: inline-flex;
@@ -104,6 +120,7 @@
     flex: 0 0 auto;
     pointer-events: auto;
 }
+
 .add-filter-btn {
     background: transparent;
     border: 1px dashed #c8c6c4;
@@ -118,14 +135,17 @@
     position: relative;
     z-index: 70;
 }
+
 .add-filter-btn:hover {
     border-color: #8a8886;
     background: #ffffff;
 }
+
 .add-filter-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
 .filter-menu {
     position: absolute;
     right: 0;
@@ -139,6 +159,7 @@
     z-index: 20;
     min-width: 160px;
 }
+
 .filter-menu-btn {
     width: 100%;
     background: transparent;
@@ -150,15 +171,18 @@
     font-weight: 600;
     color: #323130;
 }
+
 .filter-menu-btn:hover {
     background: #f3f2f1;
 }
+
 .filter-menu-empty {
     padding: 8px 10px;
     font-size: 12px;
     color: #8a8886;
     font-weight: 600;
 }
+
 .filter-chip {
     display: inline-flex;
     align-items: center;
@@ -169,11 +193,13 @@
     background: #ffffff;
     box-shadow: 0 1px 2px rgba(0,0,0,0.06);
 }
+
 .filter-chip-label {
     font-size: 12px;
     font-weight: 700;
     color: #323130;
 }
+
 .filter-select {
     border: 1px solid #edebe9;
     border-radius: 6px;
@@ -183,6 +209,7 @@
     color: #323130;
     transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
+
 .filter-select:hover,
 .filter-select:focus {
     border-color: #117865;
@@ -190,10 +217,12 @@
     color: #323130;
     outline: none;
 }
+
 .filter-select option:hover {
     background: #117865;
     color: #ffffff;
 }
+
 .filter-chip-remove {
     background: transparent;
     border: none;
@@ -202,6 +231,7 @@
     color: #605e5c;
     padding: 0 4px;
 }
+
 .filter-chip-remove:hover {
     color: #323130;
 }
@@ -219,12 +249,14 @@
     background: #ffffff;
     width: fit-content;
 }
+
 .group-by-label {
     font-size: 13px;
     font-weight: 600;
     color: #323130;
     line-height: 1.4;
 }
+
 .toggle-group {
     display: inline-flex;
     border: 1px solid #d2d0ce;
@@ -232,10 +264,12 @@
     overflow: hidden;
     height: 32px;
 }
+
 .toggle-group.compact {
     border-color: #edebe9;
     border-radius: 6px;
 }
+
 .toggle-group button {
     background: #fafafa;
     color: #323130;
@@ -248,17 +282,21 @@
     border-right: 1px solid #d2d0ce;
     height: 100%;
 }
+
 .toggle-group.compact button {
     padding: 6px 12px;
     min-width: 0;
 }
+
 .toggle-group button:last-child {
     border-right: none;
 }
+
 .toggle-group button.active {
     background: linear-gradient(135deg, #117865 0%, #0C695A 100%);
     color: white;
 }
+
 .toggle-group button:hover:not(.active) {
     background: #ffffff;
 }
@@ -270,9 +308,11 @@
     gap: 10px;
     margin: 0;
 }
+
 .tag-filter-row {
     margin-bottom: 40px;
 }
+
 .tag-filter-btn {
     background: transparent;
     color: #323130;
@@ -284,16 +324,19 @@
     cursor: pointer;
     transition: all 0.2s;
 }
+
 .tag-filter-btn:hover {
     background: #ffffff;
     border-color: #8a8886;
 }
+
 .tag-filter-btn.active {
     background: linear-gradient(135deg, #117865 0%, #0C695A 100%);
     color: white;
     border-color: transparent;
 }
 
+/* Metadata pills */
 .type-pill {
     display: inline-flex;
     align-items: center;
@@ -350,12 +393,16 @@
     margin-bottom: 12px;
     min-height: 24px;
 }
+
+/* Category sections */
 .category-section {
     margin-bottom: 56px;
 }
+
 .category-section.hidden {
     display: none;
 }
+
 .category-label {
     color: #117865;
     font-size: 16px;
@@ -364,6 +411,7 @@
     letter-spacing: 2.25px;
     margin-bottom: 4px;
 }
+
 .category-title {
     color: #1f1f1f;
     font-size: 24px;
@@ -371,12 +419,15 @@
     margin: 0 0 30px 0;
     line-height: 1.2;
 }
+
+/* Jumpstart cards */
 .jumpstart-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
     margin-bottom: 16px;
 }
+
 .jumpstart-card {
     background: #ffffff;
     border: 1px solid #edebe9;
@@ -390,10 +441,12 @@
     --accent-primary: #117865;
     --accent-secondary: #0C695A;
 }
+
 .jumpstart-card:hover {
     box-shadow: 0 6.4px 14.4px 0 rgba(0,0,0,.132), 0 1.2px 3.6px 0 rgba(0,0,0,.108);
     transform: translateY(-2px);
 }
+
 .jumpstart-image {
     width: 100%;
     height: 160px;
@@ -404,6 +457,7 @@
     justify-content: center;
     overflow: visible;
 }
+
 .jumpstart-image::after {
     content: '';
     position: absolute;
@@ -412,6 +466,7 @@
     z-index: 0;
     pointer-events: none;
 }
+
 .jumpstart-image .preview-img {
     position: absolute;
     bottom: 0;
@@ -425,6 +480,7 @@
     box-shadow: 0 8px 18px rgba(0,0,0,0.18);
     z-index: 1;
 }
+
 .jumpstart-new-badge {
     position: absolute;
     top: 12px;
@@ -439,6 +495,7 @@
     letter-spacing: 0.5px;
     z-index: 2;
 }
+
 .workload-ribbon {
     position: absolute;
     left: 12px;
@@ -457,6 +514,7 @@
     border: 1px solid rgba(0, 0, 0, 0.04);
     z-index: 2;
 }
+
 .workload-chip {
     display: inline-flex;
     align-items: center;
@@ -469,18 +527,21 @@
     cursor: default;
     pointer-events: auto;
 }
+
 .workload-chip .workload-icon svg,
 .workload-chip .workload-icon img {
     width: 20px;
     height: 20px;
     display: block;
 }
+
 .jumpstart-content {
     padding: 36px 24px 24px 24px;
     flex: 1;
     display: flex;
     flex-direction: column;
 }
+
 .type-badge {
     display: inline-flex;
     align-items: center;
@@ -495,6 +556,7 @@
     margin-bottom: 10px;
     letter-spacing: 0.25px;
 }
+
 .jumpstart-name {
     color: #1f1f1f;
     font-size: 1.5em;
@@ -502,6 +564,7 @@
     margin-bottom: 12px;
     line-height: 1.3;
 }
+
 .jumpstart-description {
     color: #605e5c;
     font-size: 14px;
@@ -514,6 +577,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Shared install code block styles */
 .jumpstart-install {
     font-family: 'Consolas', 'Courier New', monospace;
     font-size: 13px;
@@ -524,18 +589,24 @@
     cursor: pointer;
     transition: background 0.2s;
     position: relative;
+    display: block;
+    margin: 8px 0;
 }
+
 .jumpstart-install:hover {
     background: #edebe9;
 }
+
 .jumpstart-install:hover .copy-btn {
     opacity: 1;
 }
+
 .jumpstart-install code {
     color: var(--accent-secondary, #0C695A);
     background: transparent;
     font-family: inherit;
 }
+
 .copy-btn {
     position: absolute;
     right: 8px;
@@ -552,23 +623,28 @@
     justify-content: center;
     z-index: 10;
 }
+
 .copy-btn:hover {
     background: rgba(0, 0, 0, 0.05);
     border-radius: 2px;
     opacity: 1;
 }
+
 .copy-btn svg {
     width: 18px;
     height: 18px;
     fill: #424242;
     pointer-events: none;
 }
+
 .copy-btn.copied svg {
     fill: var(--accent-secondary, #0C695A);
 }
+
 .view-container {
     display: none;
 }
+
 .view-container.active {
     display: block;
 }
@@ -582,4 +658,536 @@
     color: #605e5c;
     font-size: 14px;
     font-weight: 600;
+}
+
+/* ============================================================================
+   Install Status Display
+   ============================================================================ */
+
+.install-status-card {
+    border: 1px solid #edebe9;
+    border-radius: 10px;
+    padding: 16px;    
+    margin: 12px 0;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+    font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1f1f1f;
+    position: relative;
+    overflow: hidden;
+}
+
+.install-status-card.success::before {
+    content: "";
+    position: absolute;
+    inset: -30% -10%;
+    background: radial-gradient(circle at 40% 30%, rgba(17, 120, 101, 0.02), transparent 55%), radial-gradient(circle at 80% 20%, rgba(15, 79, 143, 0.02), transparent 45%);
+    z-index: 0;
+}
+
+.install-status-card.error::before {
+    content: "";
+    position: absolute;
+    inset: -40% -20%;
+    background: radial-gradient(circle at 30% 30%, rgba(164, 38, 44, 0.08), transparent 45%), radial-gradient(circle at 80% 20%, rgba(255, 141, 141, 0.08), transparent 35%);
+    z-index: 0;
+}
+
+.install-status-card>* {
+    position: relative;
+    z-index: 1;
+}
+
+/* Hero section */
+.install-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.install-hero.success {
+    background: #f6fbf9;
+    color: #0f5246;
+    border: 1px solid #d5ebe2;
+}
+
+.install-hero.success .hero-kicker {
+    color: #0f5246;
+    opacity: 0.8;
+}
+
+.install-hero.success .hero-meta {
+    color: #0f5246
+}
+
+.install-hero.error {
+    background: linear-gradient(135deg, #d64545, #a4262c);
+    color: #ffffff;
+}
+
+.hero-icon {
+    font-size: 28px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
+}
+
+.hero-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.hero-kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+.hero-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 2px 0;
+}
+
+.hero-title.category-title {
+    color: #1f1f1f;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.hero-kicker.category-label {
+    color: #117865;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 2.25px;
+    font-weight: 600;
+    opacity: 1;
+}
+
+.hero-sub {
+    color: #1f1f1f;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.hero-meta {
+    color: #1f1f1f;
+    margin-top: 4px;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.hero-cta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.install-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #0f9d8c, #0c695a);
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+    text-decoration: none;
+    border: 1px solid #0c695a;
+}
+
+.install-cta:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+    filter: brightness(1.03);
+}
+
+.install-cta.secondary {
+    background: #f7fbf9;
+    color: #0c695a !important;
+    border: 1px solid #b8dcd0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.install-cta.secondary:hover {
+    filter: none;
+    transform: translateY(-1px);
+    background: #eef7f2;
+}
+
+.install-cta svg {
+    width: 14px;
+    height: 14px;
+}
+
+.install-hero.success .hero-icon {
+    animation: pop 0.6s ease;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(0.8);
+    }
+
+    60% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Status header */
+.install-status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.install-status-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.install-status-subtitle {
+    font-size: 13px;
+    color: #605e5c;
+    margin: 0;
+}
+
+/* Status pill */
+.install-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.install-status-pill.success {
+    background: #e6f4ef;
+    color: #0C695A;
+    border: 1px solid #b8e0d2;
+}
+
+.install-status-pill.info {
+    background: #eef6ff;
+    color: #0f4f8f;
+    border: 1px solid #d5e8ff;
+}
+
+.install-status-pill.error {
+    background: #fde7e9;
+    color: #a4262c;
+    border: 1px solid #f4afb4;
+}
+
+.install-status-pill.installing {
+    gap: 6px;
+}
+
+.install-status-pill.installing .pill-label {
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.install-status-pill.installing .pill-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.install-status-pill.installing .pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.35;
+    animation: install-dots 1.1s infinite ease-in-out;
+}
+
+.install-status-pill.installing .pill-dot:nth-child(2) {
+    animation-delay: 0.12s;
+}
+
+.install-status-pill.installing .pill-dot:nth-child(3) {
+    animation-delay: 0.24s;
+}
+
+@keyframes install-dots {
+    0%, 80%, 100% {
+        transform: scale(0.65);
+        opacity: 0.35;
+    }
+    40% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+/* Status details grid */
+.install-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.install-status-grid.tight {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.install-status-item {
+    border: 1px solid #f3f2f1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: #faf9f8;
+}
+
+.install-status-label {
+    font-size: 12px;
+    color: #1f1f1f;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.install-status-value {
+    font-size: 14px;
+    font-weight: 600;
+    word-break: break-word;
+    color: #1f1f1f;
+}
+
+.install-status-value a {
+    color: #0f4f8f;
+    text-decoration: none;
+}
+
+.install-status-value a:hover {
+    text-decoration: underline;
+}
+
+.install-status-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #117865 0%, #0C695A 100%);
+    color: #ffffff !important;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.install-status-link:hover {
+    text-decoration: none;
+    filter: brightness(1.05);
+}
+
+.install-status-link svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Status sections */
+.install-status-section {
+    margin-top: 12px;
+}
+
+.install-status-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #323130;
+    letter-spacing: 0.1px;
+    margin: 0 0 8px 0;
+}
+
+.install-status-error {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #f4afb4;
+    background: #fde7e9;
+    color: #a4262c;
+    font-size: 13px;
+    word-break: break-word;
+}
+
+/* Conflict UI */
+.install-conflicts {
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff4ce;
+    border-left: 4px solid #ffb900;
+    border-radius: 4px;
+}
+
+.install-conflict-snippets {
+    margin-top: 16px;
+}
+
+.install-conflict-snippets > p {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    color: #323130;
+}
+
+.install-conflict-snippets .jumpstart-install {
+    margin-bottom: 8px;
+}
+
+.install-conflict-list {
+    list-style: disc;
+    margin: 8px 0 16px 20px;
+    padding: 0;
+    color: #323130;
+}
+
+.install-conflict-list li {
+    margin: 4px 0;
+}
+
+.install-conflict-list code {
+    background: #f3f2f1;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    color: #a4262c;
+}
+
+/* Logs section */
+.install-status-logs {
+    margin-top: 12px;
+    border: 1px solid #edebe9;
+    border-radius: 6px;
+    background: #faf9f8;
+    padding: 10px 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.install-status-logs details {
+    border: 1px solid #edebe9;
+    border-radius: 6px;
+    background: #ffffff;
+    padding: 8px 10px;
+    max-height: 700px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: auto;
+    scrollbar-color: #0C695A #e6f4ef;
+}
+
+.install-status-logs details::-webkit-scrollbar {
+    width: 12px;
+}
+
+.install-status-logs details::-webkit-scrollbar-track {
+    background: #e6f4ef;
+    border-radius: 10px;
+}
+
+.install-status-logs details::-webkit-scrollbar-thumb {
+    background: #0C695A;
+    border-radius: 10px;
+    border: 2px solid #e6f4ef;
+}
+
+.install-status-logs details::-webkit-scrollbar-thumb:hover {
+    background: #0f9d8c;
+}
+
+.install-status-logs summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    list-style: none;
+}
+
+.install-status-logs summary::after {
+    content: '▼';
+    font-size: 10px;
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.install-status-logs details:not([open]) summary::after {
+    transform: rotate(-90deg);
+}
+
+.install-status-logs summary::-webkit-details-marker {
+    display: none;
+}
+
+.install-log-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #edebe9;
+}
+
+.install-log-row:last-child {
+    border-bottom: none;
+}
+
+.install-log-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.install-log-badge.info {
+    background: #eef6ff;
+    color: #0f4f8f;
+    border: 1px solid #d5e8ff;
+}
+
+.install-log-badge.warning {
+    background: #fff8e1;
+    color: #8a6d00;
+    border: 1px solid #ffe08a;
+}
+
+.install-log-badge.error {
+    background: #fde7e9;
+    color: #a4262c;
+    border: 1px solid #f4afb4;
+}
+
+.install-log-message {
+    font-size: 13px;
+    color: #323130;
+    line-height: 1.4;
 }

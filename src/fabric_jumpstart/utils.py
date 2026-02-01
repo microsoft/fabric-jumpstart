@@ -149,7 +149,12 @@ def _apply_item_prefix(workspace_path: Path, item_prefix: Optional[str], base_na
 
         new_content = content
         for old_base, new_base in mappings:
-            new_content = new_content.replace(old_base, new_base)
+            # Use word boundary matching to avoid replacing partial matches
+            # and avoid replacing text that's already prefixed
+            import re
+            # Negative lookbehind to ensure we don't replace already-prefixed occurrences
+            pattern = rf'(?<!{re.escape(item_prefix)})\b{re.escape(old_base)}\b'
+            new_content = re.sub(pattern, new_base, new_content)
 
         if new_content != content:
             file_path.write_text(new_content, encoding='utf-8')

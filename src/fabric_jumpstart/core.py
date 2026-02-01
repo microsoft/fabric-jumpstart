@@ -217,7 +217,7 @@ class jumpstart:
             )
             try:
                 live_handle.update(HTML_cls(html))
-            except Exception as e:
+            except Exception:
                 # Don't log here as it can cause infinite loop with on_emit callback
                 pass
 

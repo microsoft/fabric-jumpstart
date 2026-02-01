@@ -74,7 +74,7 @@ def syntax_highlight_python(code: str) -> str:
             key = key.strip()
             val = val.strip()
             result += f'<span style="color: #096bbc">{html.escape(key)}</span>'  # Parameter name
-            result += f'<span style="color: #808080">=</span>'  # Punctuation
+            result += '<span style="color: #808080">=</span>'  # Punctuation
             
             # Check if value is a string literal
             if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):

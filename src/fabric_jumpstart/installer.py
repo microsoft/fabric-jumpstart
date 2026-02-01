@@ -67,7 +67,7 @@ class JumpstartInstaller:
             ValueError: If workspace_id cannot be determined
         """
         if self.workspace_id is None and _is_fabric_runtime():
-            import notebookutils
+            import notebookutils  # type: ignore[import-untyped]
             self.workspace_id = notebookutils.runtime.context['currentWorkspaceId']
         
         if self.workspace_id is None:
@@ -91,6 +91,8 @@ class JumpstartInstaller:
         source_config = self.config['source']
         workspace_path = source_config['workspace_path']
         config_id = self.config.get('id')
+        if config_id is None:
+            raise ValueError("Jumpstart config missing required 'id' field")
         logical_id = self.config.get('logical_id', '')
         system_prefix = _set_item_prefix(config_id, logical_id)
         
@@ -125,7 +127,15 @@ class JumpstartInstaller:
         
         Returns:
             Configured WorkspaceManager instance
+            
+        Raises:
+            RuntimeError: If workspace_id or temp_workspace_path is not set
         """
+        if self.workspace_id is None:
+            raise RuntimeError("workspace_id must be set before initializing workspace manager")
+        if self.temp_workspace_path is None:
+            raise RuntimeError("temp_workspace_path must be set before initializing workspace manager")
+            
         items_in_scope = self.config.get('items_in_scope', [])
         self.workspace_manager = WorkspaceManager(
             workspace_id=self.workspace_id,
@@ -141,7 +151,13 @@ class JumpstartInstaller:
         
         Returns:
             Tuple of (planned_items, existing_items, conflicts, had_conflicts)
+            
+        Raises:
+            RuntimeError: If workspace_manager is not initialized
         """
+        if self.workspace_manager is None:
+            raise RuntimeError("workspace_manager must be initialized before checking conflicts")
+            
         existing_items = self.workspace_manager.get_existing_items()
         planned_items_base = self.workspace_manager.collect_planned_items()
         planned_items = self.workspace_manager.apply_prefix_to_names(
@@ -180,9 +196,15 @@ class JumpstartInstaller:
         logger.info(f"Conflicting items detected: {conflicts}")
         
         if self.auto_prefix_on_conflict:
+            if self.workspace_manager is None:
+                raise RuntimeError("workspace_manager must be initialized")
+            config_id = self.config.get('id')
+            if config_id is None:
+                raise ValueError("Jumpstart config missing required 'id' field")
+                
             resolver = ConflictResolver(
                 self.workspace_manager,
-                self.config.get('id'),
+                config_id,
                 self.config.get('logical_id', '')
             )
             prefixed_items, remaining_conflicts, prefix_used = resolver.resolve_with_prefix(
@@ -212,7 +234,13 @@ class JumpstartInstaller:
             
         Returns:
             List of (old_name, new_name) mappings
+            
+        Raises:
+            RuntimeError: If temp_workspace_path is not set
         """
+        if self.temp_workspace_path is None:
+            raise RuntimeError("temp_workspace_path must be set before applying prefix")
+            
         entry_point = self.config.get('entry_point')
         base_names = []
         if entry_point and isinstance(entry_point, str) and '.' in entry_point:
@@ -237,7 +265,13 @@ class JumpstartInstaller:
         
         Returns:
             FabricWorkspace instance after deployment
+            
+        Raises:
+            RuntimeError: If workspace_manager is not initialized
         """
+        if self.workspace_manager is None:
+            raise RuntimeError("workspace_manager must be initialized before deploying")
+            
         feature_flags = self.options.get('feature_flags', [])
         return self.workspace_manager.deploy_items(feature_flags)
     

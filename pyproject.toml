@@ -8,7 +8,7 @@ authors = [{ name = "Microsoft Corporation" }]
 version = "0.1.0"
 description = "Get started quickly with pre-built solutions, tutorials, demos, and accelerators—automated, high-quality, and open-source."
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<=3.13"
 license = "MIT"
 license-files = ["LICENSE"]
 urls.Repository = "https://github.com/microsoft/fabric-jumpstart.git"
@@ -17,6 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "fabric-cicd==0.1.34", # for testing local build: "fabric-cicd @ file:///C:/.../fabric-cicd/dist/fabric_cicd-0.1.34-py3-none-any.whl",

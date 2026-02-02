@@ -103,7 +103,7 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
                 safe_url = html.escape(entry_str, quote=True)
                 ctas.append(
                     f'<a class="install-cta" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
-                    f'<span>Entry point</span>'
+                    f'<span>Get started</span>'
                     f'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3Zm5 14v2H5V5h2v12h12Z"/></svg>'
                     f'</a>'
                 )

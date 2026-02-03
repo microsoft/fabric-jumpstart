@@ -2,13 +2,13 @@
 
 import logging
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
 from pydantic import ValidationError
-
-from fabric_jumpstart.constants import ITEM_URL_ROUTING_PATH_MAP
 
 from .schemas import Jumpstart
 
@@ -115,24 +115,49 @@ class TestRegistryValidation:
             assert logical_id is not None, "logical_id must be present"
             assert slug_re.match(logical_id), f"logical_id '{logical_id}' must be kebab-case (lowercase letters/numbers with dashes)"
 
-    def test_entry_points_are_valid(self):
-        """Ensure entry_point is http(s) URL or a Fabric item reference matching routing map."""
-        registry_data = load_registry_data()
-        pattern = re.compile(r"^[^.]+\.([^.]+)$")
-        for j in registry_data:
-            entry_point = j.get('entry_point')
-            assert entry_point, f"entry_point missing for {j.get('logical_id', '[unknown]')}"
+    def test_repo_urls_and_refs_resolve(self):
+        """Ensure remote repo_url/repo_ref pairs are reachable via git ls-remote."""
+        if not shutil.which("git"):
+            pytest.skip("git executable not available")
 
-            if isinstance(entry_point, str) and entry_point.startswith(("https://", "http://")):
+        registry_data = load_registry_data()
+        for j in registry_data:
+            source = j.get("source", {}) or {}
+            repo_url = source.get("repo_url")
+            if not repo_url:
                 continue
 
-            match = pattern.match(entry_point or "")
-            assert match, f"entry_point '{entry_point}' must be 'ItemName.ItemType' or http(s) URL"
-            item_type = match.group(1)
-            assert item_type in ITEM_URL_ROUTING_PATH_MAP, (
-                f"entry_point '{entry_point}' has unknown item type '{item_type}'. "
-                f"Allowed: {', '.join(sorted(ITEM_URL_ROUTING_PATH_MAP.keys()))}"
+            repo_ref = source["repo_ref"]
+            check_cmd = ["git", "ls-remote", "--exit-code", repo_url, repo_ref]
+            result = subprocess.run(check_cmd, capture_output=True, text=True, timeout=15)
+
+            if result.returncode == 0:
+                continue
+
+            # If the ref lookup failed, check if the repo itself is reachable to
+            # distinguish a bad ref from a network/auth issue.
+            reachability = subprocess.run(
+                ["git", "ls-remote", "--exit-code", repo_url],
+                capture_output=True,
+                text=True,
+                timeout=15,
             )
+
+            if reachability.returncode != 0:
+                pytest.skip(
+                    f"Unable to reach repo_url '{repo_url}' (logical_id={j.get('logical_id', '[unknown]')}); "
+                    f"stderr: {reachability.stderr.strip()}"
+                )
+
+            assert False, (
+                f"Repo ref not reachable for {j.get('logical_id', '[unknown]')}: {repo_url}@{repo_ref}\n"
+                f"stderr: {result.stderr.strip()}"
+            )
+        slug_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+        for j in registry_data:
+            logical_id = j.get('logical_id')
+            assert logical_id is not None, "logical_id must be present"
+            assert slug_re.match(logical_id), f"logical_id '{logical_id}' must be kebab-case (lowercase letters/numbers with dashes)"
 
     def test_validate_jumpstart_config_returns_dict_on_success(self):
         """Test validate_jumpstart_config returns dict for valid config."""
@@ -145,7 +170,8 @@ class TestRegistryValidation:
             "workload_tags": ["Test"],
             "scenario_tags": ["Test"],
             "source": {"workspace_path": "/src", "preview_image_path": "/img/img.png"},
-            "entry_point": "1_ExploreData.Notebook"
+            "entry_point": "1_ExploreData.Notebook",
+            "owner_email": "owner@example.com",
         }
         result = validate_jumpstart_config(valid_config)
         assert result is not None

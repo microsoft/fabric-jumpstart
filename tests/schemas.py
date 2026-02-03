@@ -1,11 +1,13 @@
 """Pydantic schemas for jumpstart registry validation (test-only)."""
 
 import re
+from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from fabric_jumpstart.constants import (
+    ITEM_URL_ROUTING_PATH_MAP,
     VALID_JUMPSTART_TYPES,
     VALID_SCENARIO_TAGS,
     VALID_WORKLOAD_TAGS,
@@ -18,7 +20,15 @@ class JumpstartSource(BaseModel):
     workspace_path: str
     preview_image_path: str
     repo_url: Optional[str] = None
-    repo_ref: Optional[str] = "main"
+    repo_ref: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_repo_fields(self):
+        if self.repo_url:
+            ref = (self.repo_ref or "").strip()
+            if not ref:
+                raise ValueError("repo_ref, a tag of the repository, must be provided when repo_url is set")
+        return self
 
 
 class Jumpstart(BaseModel):
@@ -40,6 +50,7 @@ class Jumpstart(BaseModel):
     jumpstart_docs_uri: Optional[str] = None
     entry_point: str
     test_suite: Optional[str] = None
+    owner_email: str
     minutes_to_complete_jumpstart: Optional[int] = None
     minutes_to_deploy: Optional[int] = None
 
@@ -59,6 +70,61 @@ class Jumpstart(BaseModel):
         if not slug_re.match(value):
             raise ValueError("logical_id must be lowercase alphanumeric with dashes")
         return value
+
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, value: str):
+        if len(value) > 250:
+            raise ValueError("description must be 250 characters or fewer")
+        return value
+
+    @field_validator("date_added")
+    @classmethod
+    def validate_date_added(cls, value: str):
+        try:
+            # Expect month/day/year; allows single-digit month/day.
+            datetime.strptime(value, "%m/%d/%Y")
+        except Exception:
+            raise ValueError("date_added must be a valid date in MM/DD/YYYY format")
+        return value
+    
+    @field_validator("owner_email")
+    @classmethod
+    def validate_owner_email(cls, value: str):
+        if not value:
+            raise ValueError("owner_email must be a valid email address")
+        name, sep, domain = value.partition("@")
+        if not sep or not name or not domain:
+            raise ValueError("owner_email must be a valid email address")
+        part1, sep, part2 = domain.partition(".")
+        if not sep or not part1 or not part2:
+            raise ValueError("owner_email must be a valid email address")
+        return value
+
+    @field_validator("entry_point")
+    @classmethod
+    def validate_entry_point(cls, value: str):
+        if not value:
+            raise ValueError("entry_point must be provided")
+        entry = value.strip()
+        if entry.startswith(("http://", "https://")):
+            return entry
+
+        name, sep, item_type = entry.rpartition(".")
+        if not sep or not name or item_type not in ITEM_URL_ROUTING_PATH_MAP:
+            allowed = ", ".join(ITEM_URL_ROUTING_PATH_MAP.keys())
+            raise ValueError(
+                f"entry_point must be a URL or '<name>.<item_type>' where item_type is one of: {allowed}."
+            )
+        return entry
+
+    @model_validator(mode="after")
+    def validate_description_not_prefixed_by_name(self):
+        name = (self.name or "").strip()
+        desc = (self.description or "").lstrip()
+        if name and desc.lower().startswith(name.lower()):
+            raise ValueError("description must not start with the jumpstart name")
+        return self
 
     @field_validator("workload_tags")
     @classmethod
@@ -80,6 +146,19 @@ class Jumpstart(BaseModel):
             raise ValueError(
                 f"Unknown jumpstart_type: {value}. Allowed values: {allowed_display}."
             )
+        return value
+    
+    @field_validator("items_in_scope")
+    @classmethod
+    def validate_items_in_scope(cls, value: List[str]):
+        if value is None:
+            raise ValueError("items_in_scope must be provided")
+        for item in value:
+            if item not in ITEM_URL_ROUTING_PATH_MAP:
+                allowed = ", ".join(ITEM_URL_ROUTING_PATH_MAP.keys())
+                raise ValueError(
+                    f"Unknown item in items_in_scope: {item}. Allowed values: {allowed}."
+                )
         return value
 
     @field_validator("minutes_to_complete_jumpstart", "minutes_to_deploy", mode="before")

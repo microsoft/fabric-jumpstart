@@ -1,4 +1,4 @@
-"""UI rendering functions for Fabric Jumpstart."""
+"""Catalog rendering functions for Fabric Jumpstart."""
 
 import base64
 import html
@@ -6,14 +6,15 @@ from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlparse
 
-from .constants import DEFAULT_WORKLOAD_COLORS, WORKLOAD_COLOR_MAP
+from ..constants import DEFAULT_WORKLOAD_COLORS, WORKLOAD_COLOR_MAP
+from .formatting import syntax_highlight_python
 
 # Load copy icon SVG once at module level
 _current_dir = Path(__file__).parent
-_assets_path = _current_dir / 'ui_assets'
+_assets_path = _current_dir / 'assets'
 _copy_icon_path = _assets_path / 'copy-icon.svg'
-_css_path = _current_dir / 'jumpstart.css'
-_js_path = _current_dir / 'jumpstart.js'
+_css_path = _current_dir / 'ui.css'
+_js_path = _current_dir / 'catalog.js'
 try:
     with open(_copy_icon_path, 'r', encoding='utf-8') as f:
         _COPY_ICON_SVG = f.read()
@@ -404,14 +405,8 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             description_title = html.escape(description_text, quote=True)
             
             logical_id = j.get('logical_id') or j.get('id', '')
-            install_code = (
-                f"<span style='color: #096bbc'>{instance_name}</span>."
-                f"<span style='color: #605e5c'>install</span>"
-                f"<span style='color: #0431fa'>(</span>"
-                f"<span style='color: #a31515'>'{logical_id}'</span>"
-                f"<span style='color: #0431fa'>)</span>"
-            )
             install_code_plain = f"{instance_name}.install('{logical_id}')"
+            install_code = syntax_highlight_python(install_code_plain)
             
             html_parts.append(f'''
                 <div class="jumpstart-card"{accent_style} data-type="{type_value}" data-workloads="{workloads_value}" data-scenarios="{scenarios_value}">

@@ -1,10 +1,10 @@
-"""Render install responses for Fabric Jumpstart."""
+"""Render install status displays for Fabric Jumpstart."""
 
 import html
 from pathlib import Path
 from typing import Optional
 
-_response_css_path = Path(__file__).parent / "response.css"
+_response_css_path = Path(__file__).parent / "ui.css"
 try:
     _INSTALL_STATUS_CSS = f"<style>{_response_css_path.read_text(encoding='utf-8')}</style>"
 except FileNotFoundError:
@@ -21,14 +21,20 @@ def _format_minutes(minutes):
         return html.escape(str(minutes), quote=True)
 
 
-def render_install_status_html(*, status: str, jumpstart_name: str, type: str, workspace_id: Optional[str], entry_point, minutes_complete, minutes_deploy, docs_uri=None, logs=None, error_message: Optional[str] = None):
+def render_install_status_html(*, status: str, jumpstart_name: str, type: str, workspace_id: Optional[str], entry_point, minutes_complete, minutes_deploy, docs_uri=None, logs=None, error_message: Optional[str] = None, extra_html: Optional[str] = None):
     """Build a styled HTML status card for install results."""
     status_lower = status.lower()
-    pill_class = 'success' if status_lower == 'success' else 'error'
-    pill_label = 'Installed' if status_lower == 'success' else 'Failed'
-    pill_icon = '✓' if status_lower == 'success' else '✕'
+    failure_states = {'error', 'failed', 'failure', 'conflict'}
 
-    if status_lower not in ('success', 'error', 'failed'):
+    if status_lower == 'success':
+        pill_class = 'success'
+        pill_label = 'Installed'
+        pill_icon = '✓'
+    elif status_lower in failure_states:
+        pill_class = 'error'
+        pill_label = 'Failed' if status_lower in {'error', 'failed', 'failure'} else status.capitalize()
+        pill_icon = '✕'
+    else:
         pill_class = 'info'
         pill_label = status.capitalize()
         pill_icon = '⏳'
@@ -97,7 +103,7 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
                 safe_url = html.escape(entry_str, quote=True)
                 ctas.append(
                     f'<a class="install-cta" href="{safe_url}" target="_blank" rel="noopener noreferrer">'
-                    f'<span>Entry point</span>'
+                    f'<span>Get started</span>'
                     f'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3Zm5 14v2H5V5h2v12h12Z"/></svg>'
                     f'</a>'
                 )
@@ -174,6 +180,8 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
 
     # Only show header/details when not successful
     main_sections = ''
+    extra_block = extra_html or ''
+
     if status_lower != 'success':
         main_sections = ''.join([
             '  <div class="install-status-header">',
@@ -189,6 +197,7 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
             *top_items,
             '    </div>',
             '  </div>',
+            extra_block,
             logs_section,
             outcome_block,
         ])

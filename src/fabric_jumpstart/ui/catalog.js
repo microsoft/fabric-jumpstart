@@ -280,6 +280,22 @@ function applyFilters() {
 
     const sections = view.querySelectorAll('.category-section');
     sections.forEach(section => {
+        section.classList.remove('hidden');
+
+        const category = section.dataset.category || '';
+        const categoryFilter = filters[viewType];
+        const categoryMatches = !categoryFilter || category === categoryFilter;
+
+        // When the active view has the same dimension as the filter (e.g., workload view with a workload filter),
+        // hide entire category sections that do not match to avoid showing unrelated groups.
+        if (!categoryMatches) {
+            section.classList.add('hidden');
+            section.querySelectorAll('.jumpstart-card').forEach(card => {
+                card.style.display = 'none';
+            });
+            return;
+        }
+
         let visibleCards = 0;
 
         section.querySelectorAll('.jumpstart-card').forEach(card => {

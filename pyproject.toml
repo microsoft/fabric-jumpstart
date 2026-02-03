@@ -53,7 +53,7 @@ test = [
 [tool.ruff]
 src = ["src"]
 # Ignore packaged jumpstart payloads (e.g., demo notebooks) to keep lint focused on library code.
-extend-exclude = ["src/fabric_jumpstart/jumpstarts/**"]
+extend-exclude = ["src/fabric_jumpstart/jumpstarts/**", "dev/**"]
 
 [tool.ty.src]
 # Skip type checking for test helpers that rely on dynamic imports/aliases.

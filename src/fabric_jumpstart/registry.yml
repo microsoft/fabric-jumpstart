@@ -234,7 +234,7 @@ jumpstarts:
     logical_id: rti-healthcare-billing-system
     name: "Real-Time Healthcare Billing System"
     description: "This demo will show you how Fabric RTI is used for integrating real-time AI-driven intelligence into its patient billing system to enhance accuracy, reduce disputes, and streamline payments."
-    date_added: "30/1/2026"
+    date_added: "02/03/2026"
     include_in_listing: True
     workload_tags: ["Real-Time Intelligence"]
     scenario_tags: ["Streaming"]
@@ -263,7 +263,7 @@ jumpstarts:
     logical_id: rti-fpm-capacity-events
     name: "Fabric Platform Monitoring - Capacity Events"
     description: "Uses the Capacity Events to get the information of the capacity in real-time."
-    date_added: "30/1/2026"
+    date_added: "02/03/2026"
     include_in_listing: True
     workload_tags: ["Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
@@ -293,7 +293,7 @@ jumpstarts:
     logical_id: rti-fpm-activity-events
     name: "Fabric Platform Monitoring - Activity Events"
     description: "Extract and store as fast as possible the Activity Events of the platform, using Eventhouse for handling semi-structure data. You could extract the logs with a frequency as low as 2 minutes."
-    date_added: "30/1/2026"
+    date_added: "02/03/2026"
     include_in_listing: True
     workload_tags: ["Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
@@ -324,7 +324,7 @@ jumpstarts:
     logical_id: rti-fpm-fabric-inventory
     name: "Fabric Platform Monitoring - Fabric Inventory"
     description: "Extract the information of the tenant, keeping a semi-structure format for some details like specific item details that could be added or change over time."
-    date_added: "30/1/2026"
+    date_added: "02/03/2026"
     include_in_listing: True
     workload_tags: ["Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
@@ -355,7 +355,7 @@ jumpstarts:
     logical_id: rti-fpm-gateway-monitoring
     name: "Fabric Platform Monitoring - Gateway Monitoring"
     description: "Monitor the gateway performance and usage, with real-time data ingestion."
-    date_added: "30/1/2026"
+    date_added: "02/03/2026"
     include_in_listing: True
     workload_tags: ["Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]

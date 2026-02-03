@@ -241,6 +241,7 @@ jumpstarts:
     type: "Demo"
     source:
       repo_url: "https://github.com/ecotte/fabric-rti-demos.git"
+      repo_ref: "main"
       workspace_path: "healthcare-billing-system/"
       preview_image_path: "healthcare-billing-system/HealthcareBillingSystem.png"
     items_in_scope: 
@@ -270,6 +271,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      repo_ref: "main"
       workspace_path: "capacity-events/src/"
       preview_image_path: "capacity-events/CapacityEvents.png"
     items_in_scope: 
@@ -300,6 +302,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      repo_ref: "main"
       workspace_path: "activity-events/src/"
       preview_image_path: "activity-events/ActivityEvents.png"
     items_in_scope: 
@@ -331,6 +334,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      repo_ref: "main"
       workspace_path: "fabric-inventory/src/"
       preview_image_path: "fabric-inventory/FabricInventory.png"
     items_in_scope: 
@@ -362,6 +366,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      repo_ref: "main"
       workspace_path: "gateway-monitoring/src/"
       preview_image_path: "gateway-monitoring/GatewayMonitoring.png"
     items_in_scope: 

@@ -6,7 +6,7 @@ VALID_WORKLOAD_TAGS = [
     "Data Engineering",
     "Data Warehouse",
     "Data Science",
-    "Real Time Intelligence",
+    "Real-Time Intelligence",
     "Data Factory",
     "SQL Database",
     "Power BI",
@@ -41,7 +41,7 @@ WORKLOAD_COLOR_MAP = {
         "primary": "#1fb6ef", 
         "secondary": "#096bbc"
     },
-    "Real Time Intelligence": {
+    "Real-Time Intelligence": {
         "primary": "#fa4e56", 
         "secondary": "#a41836"
     },

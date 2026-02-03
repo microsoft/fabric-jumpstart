@@ -99,10 +99,10 @@ jumpstarts:
   - id: 4
     logical_id: spark-rti-monitoring
     name: "Spark RTI Monitoring"
-    description: "Empower your Spark workloads with real-time monitoring using Fabric Real Time Intelligence. This jumpstart provides a comprehensive setup to monitor Spark jobs, track performance metrics, and visualize data streams in real-time dashboards."
+    description: "Empower your Spark workloads with real-time monitoring using Fabric Real-Time Intelligence. This jumpstart provides a comprehensive setup to monitor Spark jobs, track performance metrics, and visualize data streams in real-time dashboards."
     date_added: "9/1/2025"
     include_in_listing: False
-    workload_tags: ["Data Engineering", "Real Time Intelligence"]
+    workload_tags: ["Data Engineering", "Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
     type: "Accelerator"
     source:
@@ -226,3 +226,157 @@ jumpstarts:
     owner_email: "user@example.com"
     minutes_to_deploy: 1
     minutes_to_complete_jumpstart: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI HEALTHCARE BILLING SYSTEM
+  # ═══════════════════════════════════════════════════════════════
+  - id: 8
+    logical_id: rti-healthcare-billing-system
+    name: "Real-Time Healthcare Billing System"
+    description: "This demo will show you how Fabric RTI is used for integrating real-time AI-driven intelligence into its patient billing system to enhance accuracy, reduce disputes, and streamline payments."
+    date_added: "30/1/2026"
+    include_in_listing: True
+    workload_tags: ["Real-Time Intelligence"]
+    scenario_tags: ["Streaming"]
+    type: "Demo"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-rti-demos.git"
+      workspace_path: "healthcare-billing-system/"
+      preview_image_path: "healthcare-billing-system/HealthcareBillingSystem.png"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+    jumpstart_docs_uri: ""
+    entry_point: "HealthcareBillingSystem.Notebook"
+    test_suite: ""
+    owner_email: "fabricjumpstart.rti-iq@microsoft.com"
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 5
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING CAPACITY EVENTS
+  # ═══════════════════════════════════════════════════════════════
+  - id: 9
+    logical_id: rti-fpm-capacity-events
+    name: "Fabric Platform Monitoring - Capacity Events"
+    description: "Uses the Capacity Events to get the information of the capacity in real-time."
+    date_added: "30/1/2026"
+    include_in_listing: True
+    workload_tags: ["Real-Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      workspace_path: "capacity-events/src/"
+      preview_image_path: "capacity-events/CapacityEvents.png"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+    jumpstart_docs_uri: ""
+    entry_point: "Capacity Events Update Eventstream.Notebook"
+    test_suite: ""
+    owner_email: "fabricjumpstart.rti-iq@microsoft.com"
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 5
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING ACTIVITY EVENTS
+  # ═══════════════════════════════════════════════════════════════
+  - id: 10
+    logical_id: rti-fpm-activity-events
+    name: "Fabric Platform Monitoring - Activity Events"
+    description: "Extract and store as fast as possible the Activity Events of the platform, using Eventhouse for handling semi-structure data. You could extract the logs with a frequency as low as 2 minutes."
+    date_added: "30/1/2026"
+    include_in_listing: True
+    workload_tags: ["Real-Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      workspace_path: "activity-events/src/"
+      preview_image_path: "activity-events/ActivityEvents.png"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+      - VariableLibrary
+    jumpstart_docs_uri: ""
+    entry_point: "Activity Events Setup.Notebook"
+    test_suite: ""
+    owner_email: "fabricjumpstart.rti-iq@microsoft.com"
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 5
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING FABRIC INVENTORY
+  # ═══════════════════════════════════════════════════════════════
+  - id: 11
+    logical_id: rti-fpm-fabric-inventory
+    name: "Fabric Platform Monitoring - Fabric Inventory"
+    description: "Extract the information of the tenant, keeping a semi-structure format for some details like specific item details that could be added or change over time."
+    date_added: "30/1/2026"
+    include_in_listing: True
+    workload_tags: ["Real-Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      workspace_path: "fabric-inventory/src/"
+      preview_image_path: "fabric-inventory/FabricInventory.png"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+      - VariableLibrary
+    jumpstart_docs_uri: ""
+    entry_point: "Fabric Inventory Setup.Notebook"
+    test_suite: ""
+    owner_email: "fabricjumpstart.rti-iq@microsoft.com"
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 5
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING GATEWAY MONITORING
+  # ═══════════════════════════════════════════════════════════════
+  - id: 12
+    logical_id: rti-fpm-gateway-monitoring
+    name: "Fabric Platform Monitoring - Gateway Monitoring"
+    description: "Monitor the gateway performance and usage, with real-time data ingestion."
+    date_added: "30/1/2026"
+    include_in_listing: True
+    workload_tags: ["Real-Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      workspace_path: "gateway-monitoring/src/"
+      preview_image_path: "gateway-monitoring/GatewayMonitoring.png"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+      - VariableLibrary
+      - SemanticModel
+      - Report
+    jumpstart_docs_uri: ""
+    entry_point: "Gateway Monitoring Setup.Notebook"
+    test_suite: ""
+    owner_email: "fabricjumpstart.rti-iq@microsoft.com"
+    minutes_to_deploy: 1
+    minutes_to_complete_jumpstart: 5

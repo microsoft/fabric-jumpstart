@@ -4,9 +4,9 @@ import html
 import logging
 from typing import List, Optional, Tuple
 
-from .formatting import render_copyable_code
 from ..utils import _set_item_prefix
 from ..workspace_manager import WorkspaceManager
+from .formatting import render_copyable_code
 
 logger = logging.getLogger(__name__)
 
@@ -146,12 +146,12 @@ class ConflictUI:
         )
         
         ws_arg = f', workspace_id="{workspace_id}"' if workspace_id else ''
-        overwrite_snippet = f"{instance_name}.install(\"{jumpstart_name}\"{ws_arg}, overwrite=True)"
+        update_existing_snippet = f"{instance_name}.install(\"{jumpstart_name}\"{ws_arg}, update_existing=True)"
         autoprefix_snippet = f"{instance_name}.install(\"{jumpstart_name}\"{ws_arg}, auto_prefix_on_conflict=True)"
         custom_prefix_snippet = f"{instance_name}.install(\"{jumpstart_name}\"{ws_arg}, item_prefix=\"<your_prefix>\")"
         
         # Generate code snippets
-        snippet1 = render_copyable_code(overwrite_snippet)
+        snippet1 = render_copyable_code(update_existing_snippet)
         snippet2 = render_copyable_code(autoprefix_snippet)
         snippet3 = render_copyable_code(custom_prefix_snippet)
         

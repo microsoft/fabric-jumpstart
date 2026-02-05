@@ -178,7 +178,7 @@ class jumpstart:
             **kwargs: Additional options (overrides registry defaults)
                 - unattended: If True, suppresses live HTML output and prints to console instead
                 - item_prefix: Custom prefix for created items, set as None for no prefix
-                - overwrite: If True, overwrite conflicting items
+                - update_existing: If True, conflicting items will be updated
                 - auto_prefix_on_conflict: If True, auto-generate a prefix when conflicts are detected
                 - debug: If True, include all jumpstart logs (INFO+) in the rendered output; otherwise only fabric-cicd logs
         """
@@ -239,7 +239,7 @@ class jumpstart:
         current_status = {'label': 'installing', 'entry': None}  # Track current status
         
         def on_emit():
-            # Only update if still in installing state (don't overwrite error/conflict/success)
+            # Only update if still in installing state (don't update_existing error/conflict/success)
             if current_status['label'] == 'installing':
                 _update_live(status_label='installing', entry=None)
         
@@ -336,7 +336,7 @@ class jumpstart:
                 logger.exception(f"Failed to install jumpstart '{name}'")
                 error_text = str(e).strip() or e.__class__.__name__
                 
-                # Don't overwrite conflict UI if it's already been rendered
+                # Don't update_existing conflict UI if it's already been rendered
                 if conflict_already_rendered:
                     raise RuntimeError(error_text)
                 

@@ -6,8 +6,8 @@ from typing import Dict, List, Optional
 
 from fabric_cicd import FabricWorkspace
 
-from .ui import ConflictDetector, ConflictResolver
 from .constants import ITEM_URL_ROUTING_PATH_MAP
+from .ui import ConflictDetector, ConflictResolver
 from .utils import (
     _apply_item_prefix,
     _is_fabric_runtime,
@@ -35,7 +35,7 @@ class JumpstartInstaller:
             config: Jumpstart configuration dictionary from registry
             workspace_id: Target workspace GUID
             instance_name: Variable name of jumpstart instance
-            **options: Installation options (overwrite, auto_prefix_on_conflict, item_prefix, etc.)
+            **options: Installation options (update_existing, auto_prefix_on_conflict, item_prefix, etc.)
         """
         self.config = config
         self.workspace_id = workspace_id
@@ -43,7 +43,7 @@ class JumpstartInstaller:
         self.options = options
         
         # Extract common options
-        self.overwrite = bool(options.get('overwrite', False))
+        self.update_existing = bool(options.get('update_existing', False))
         self.auto_prefix_on_conflict = bool(options.get('auto_prefix_on_conflict', False))
         self.item_prefix = options.get('item_prefix')
         self.unattended = options.get('unattended', False)
@@ -219,8 +219,8 @@ class JumpstartInstaller:
             else:
                 conflicts = remaining_conflicts
         
-        if self.overwrite:
-            logger.info(f"Conflicts resolved via overwrite flag; proceeding: {conflicts}")
+        if self.update_existing:
+            logger.info(f"Conflicts resolved via update_existing flag; proceeding: {conflicts}")
             return self.item_prefix, []
         
         # Conflicts remain and no resolution strategy

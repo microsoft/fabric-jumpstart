@@ -231,7 +231,7 @@ jumpstarts:
   # RTI HEALTHCARE BILLING SYSTEM
   # ═══════════════════════════════════════════════════════════════
   - id: 8
-    logical_id: rti-healthcare-billing-system
+    logical_id: healthcare-billing-system
     name: "Real-Time Healthcare Billing System"
     description: "This demo will show you how Fabric RTI is used for integrating real-time AI-driven intelligence into its patient billing system to enhance accuracy, reduce disputes, and streamline payments."
     date_added: "02/03/2026"
@@ -241,7 +241,7 @@ jumpstarts:
     type: "Demo"
     source:
       repo_url: "https://github.com/ecotte/fabric-rti-demos.git"
-      repo_ref: "v0.1"
+      repo_ref: "v0.1.1"
       workspace_path: "healthcare-billing-system/"
       preview_image_path: "healthcare-billing-system/HealthcareBillingSystem.png"
     items_in_scope: 
@@ -251,7 +251,7 @@ jumpstarts:
       - KQLDatabase
       - KQLDashboard
     jumpstart_docs_uri: ""
-    entry_point: "HealthcareBillingSystem.Notebook"
+    entry_point: "HealthcareBillingDataEmulator.Notebook"
     test_suite: ""
     owner_email: "fabricjumpstart.rti-iq@microsoft.com"
     minutes_to_deploy: 2
@@ -261,7 +261,7 @@ jumpstarts:
   # RTI FABRIC PLATFORM MONITORING CAPACITY EVENTS
   # ═══════════════════════════════════════════════════════════════
   - id: 9
-    logical_id: rti-fpm-capacity-events
+    logical_id: fpm-capacity-events
     name: "Fabric Platform Monitoring - Capacity Events"
     description: "Uses the Capacity Events to get the information of the capacity in real-time."
     date_added: "02/03/2026"
@@ -271,7 +271,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
-      repo_ref: "v0.1"
+      repo_ref: "v0.2.1"
       workspace_path: "capacity-events/src/"
       preview_image_path: "capacity-events/CapacityEvents.png"
     items_in_scope: 
@@ -292,9 +292,9 @@ jumpstarts:
   # RTI FABRIC PLATFORM MONITORING ACTIVITY EVENTS
   # ═══════════════════════════════════════════════════════════════
   - id: 10
-    logical_id: rti-fpm-activity-events
+    logical_id: fpm-activity-events
     name: "Fabric Platform Monitoring - Activity Events"
-    description: "Extract and store as fast as possible the Activity Events of the platform, using Eventhouse for handling semi-structure data. You could extract the logs with a frequency as low as 2 minutes."
+    description: "Extract and store semi-structured platform activity events in an Eventhouse for near real-time analysis and data-driven actions"
     date_added: "02/03/2026"
     include_in_listing: True
     workload_tags: ["Real-Time Intelligence"]
@@ -302,7 +302,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
-      repo_ref: "v0.1"
+      repo_ref: "v0.2.1"
       workspace_path: "activity-events/src/"
       preview_image_path: "activity-events/ActivityEvents.png"
     items_in_scope: 
@@ -324,7 +324,7 @@ jumpstarts:
   # RTI FABRIC PLATFORM MONITORING FABRIC INVENTORY
   # ═══════════════════════════════════════════════════════════════
   - id: 11
-    logical_id: rti-fpm-fabric-inventory
+    logical_id: fpm-fabric-inventory
     name: "Fabric Platform Monitoring - Fabric Inventory"
     description: "Extract the information of the tenant, keeping a semi-structure format for some details like specific item details that could be added or change over time."
     date_added: "02/03/2026"
@@ -334,7 +334,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
-      repo_ref: "v0.1"
+      repo_ref: "v0.2.1"
       workspace_path: "fabric-inventory/src/"
       preview_image_path: "fabric-inventory/FabricInventory.png"
     items_in_scope: 
@@ -356,7 +356,7 @@ jumpstarts:
   # RTI FABRIC PLATFORM MONITORING GATEWAY MONITORING
   # ═══════════════════════════════════════════════════════════════
   - id: 12
-    logical_id: rti-fpm-gateway-monitoring
+    logical_id: fpm-gateway-monitoring
     name: "Fabric Platform Monitoring - Gateway Monitoring"
     description: "Monitor the gateway performance and usage, with real-time data ingestion."
     date_added: "02/03/2026"
@@ -366,7 +366,7 @@ jumpstarts:
     type: "Accelerator"
     source:
       repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
-      repo_ref: "v0.2"
+      repo_ref: "v0.2.1"
       workspace_path: "gateway-monitoring/src/"
       preview_image_path: "gateway-monitoring/GatewayMonitoring.png"
     items_in_scope: 

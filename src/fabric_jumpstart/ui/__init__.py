@@ -7,13 +7,14 @@ This module contains all UI rendering components:
 - conflict_resolver: Conflict detection and resolution UI
 """
 
-from .catalog import render_jumpstart_list
+from .catalog import render_jumpstart_list, reload_assets
 from .install_status import render_install_status_html
 from .conflict_resolver import ConflictDetector, ConflictResolver, ConflictUI
 from .formatting import render_copyable_code, syntax_highlight_python
 
 __all__ = [
     'render_jumpstart_list',
+    'reload_assets',
     'render_install_status_html',
     'ConflictDetector',
     'ConflictResolver',

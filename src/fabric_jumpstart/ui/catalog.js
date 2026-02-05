@@ -8,14 +8,15 @@ window.jumpstartFilters = {
 window.jumpstartData = window.jumpstartData || [];
 
 function initJumpstartUI() {
-    // Reset filter state for fresh UI
-    window.jumpstartFilters.active = [];
-    window.jumpstartFilters.values = { type: null, workload: null, scenario: null };
+    // Initialize all filters as active by default
+    window.jumpstartFilters.active = ['workload', 'scenario', 'type'];
+    window.jumpstartFilters.values = { workload: null, scenario: null, type: null };
     
     // Initialize data
     collectData();
     
     // Render initial state
+    renderFilters();
     renderFilterMenu();
 }
 
@@ -141,7 +142,7 @@ function addFilter(kind) {
         window.jumpstartFilters.active.push(kind);
     }
     const options = getAvailableOptions(kind);
-    window.jumpstartFilters.values[kind] = options.length ? options[0] : null;
+    window.jumpstartFilters.values[kind] = null; // Start with "- All -"
     renderFilters();
     applyFilters();
     closeFilterMenu();
@@ -155,7 +156,7 @@ function removeFilter(kind) {
 }
 
 function updateFilter(kind, value) {
-    window.jumpstartFilters.values[kind] = value || null;
+    window.jumpstartFilters.values[kind] = (value === '' || !value) ? null : value;
     renderFilters();
     applyFilters();
 }
@@ -233,7 +234,7 @@ function renderFilters() {
 
         const options = getAvailableOptions(kind);
         if (window.jumpstartFilters.values[kind] && !options.includes(window.jumpstartFilters.values[kind])) {
-            window.jumpstartFilters.values[kind] = options.length ? options[0] : null;
+            window.jumpstartFilters.values[kind] = null;
         }
         if (!options.length) {
             const emptyOpt = document.createElement('option');
@@ -242,13 +243,19 @@ function renderFilters() {
             select.appendChild(emptyOpt);
             select.disabled = true;
         } else {
+            // Add "- All -" option first
+            const allOpt = document.createElement('option');
+            allOpt.value = '';
+            allOpt.textContent = '- All -';
+            if (!window.jumpstartFilters.values[kind]) {
+                allOpt.selected = true;
+            }
+            select.appendChild(allOpt);
+            
             options.forEach(opt => {
                 const o = document.createElement('option');
                 o.value = opt;
                 o.textContent = opt;
-                if (!window.jumpstartFilters.values[kind]) {
-                    window.jumpstartFilters.values[kind] = options[0];
-                }
                 if (window.jumpstartFilters.values[kind] === opt) {
                     o.selected = true;
                 }

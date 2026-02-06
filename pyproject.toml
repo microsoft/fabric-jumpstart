@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "fabric-jumpstart"
 authors = [{ name = "Microsoft Corporation" }]
-version = "0.1.0"
+version = "0.1.1"
 description = "Get started quickly with pre-built solutions, tutorials, demos, and accelerators—automated, high-quality, and open-source."
 readme = "README.md"
 requires-python = ">=3.10,<=3.13"

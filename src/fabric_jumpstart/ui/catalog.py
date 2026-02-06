@@ -46,12 +46,11 @@ def reload_assets():
 WORKLOAD_ICON_MAP = {
     "Data Engineering": "data_engineering_24_color.svg",
     "Data Warehouse": "data_warehouse_24_color.svg",
-    "Real Time Intelligence": "real_time_intelligence_24_color.svg",
+    "Real-Time Intelligence": "real_time_intelligence_24_color.svg",
     "Data Factory": "data_factory_24_color.svg",
     "SQL Database": "databases_24_color.svg",
     "Power BI": "power_bi_24_color.svg",
-    "Data Science": "data_science_24_color.svg",
-    "Test": "app_development_24_color.svg",
+    "Data Science": "data_science_24_color.svg"
 }
 
 DEFAULT_WORKLOAD_ICON = WORKLOAD_ICON_MAP.get("Data Engineering")

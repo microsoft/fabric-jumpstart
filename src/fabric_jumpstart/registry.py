@@ -13,38 +13,82 @@ logger = logging.getLogger(__name__)
 class JumpstartRegistry:
     """Manages the jumpstart registry and provides query operations.
     
-    The registry is loaded from a YAML file and cached for the lifetime
-    of the instance.
+    The registry is loaded from individual YAML files organized in core/
+    and community/ subdirectories.
     """
     
     def __init__(self, registry_path: Optional[Path] = None):
         """Initialize the registry.
         
         Args:
-            registry_path: Path to registry YAML file. If None, uses default location.
+            registry_path: Path to jumpstarts directory containing core/ and community/.
+                          If None, uses default location: jumpstarts/
         """
         if registry_path is None:
-            registry_path = Path(__file__).parent / "registry.yml"
+            registry_path = Path(__file__).parent / "jumpstarts"
         self._registry_path = registry_path
         self._jumpstarts: Optional[List[Dict]] = None
     
     def load(self) -> List[Dict]:
-        """Load the jumpstart registry from YAML file.
+        """Load the jumpstart registry from directory structure.
+        
+        Scans core/ and community/ subdirectories and adds the 'core' flag
+        based on folder location.
         
         Returns:
             List of jumpstart configuration dictionaries
             
         Raises:
-            FileNotFoundError: If registry file doesn't exist
-            yaml.YAMLError: If registry file is invalid YAML
+            FileNotFoundError: If jumpstarts directory doesn't exist
+            yaml.YAMLError: If any YAML file is invalid
         """
         if self._jumpstarts is None:
             logger.debug(f"Loading jumpstart registry from {self._registry_path}")
-            with open(self._registry_path, 'r', encoding='utf-8') as f:
-                data = yaml.safe_load(f)
-            self._jumpstarts = data.get('jumpstarts', [])
+            
+            if not self._registry_path.is_dir():
+                raise FileNotFoundError(
+                    f"Jumpstarts directory not found at {self._registry_path}"
+                )
+            
+            self._jumpstarts = self._load_from_directory(self._registry_path)
             logger.info(f"Loaded {len(self._jumpstarts)} jumpstarts from registry")
+            
         return self._jumpstarts
+    
+    def _load_from_directory(self, jumpstarts_dir: Path) -> List[Dict]:
+        """Load jumpstarts from directory structure with core/community folders.
+        
+        Args:
+            jumpstarts_dir: Path to jumpstarts directory containing core/ and community/
+            
+        Returns:
+            List of jumpstart configuration dictionaries with 'core' flag added
+        """
+        jumpstarts = []
+        
+        # Load from core folder
+        core_dir = jumpstarts_dir / "core"
+        if core_dir.is_dir():
+            for yml_file in sorted(core_dir.glob("*.yml")):
+                with open(yml_file, 'r', encoding='utf-8') as f:
+                    jumpstart = yaml.safe_load(f)
+                    if jumpstart:
+                        jumpstart['core'] = True
+                        jumpstarts.append(jumpstart)
+                        logger.debug(f"Loaded core jumpstart: {yml_file.name}")
+        
+        # Load from community folder
+        community_dir = jumpstarts_dir / "community"
+        if community_dir.is_dir():
+            for yml_file in sorted(community_dir.glob("*.yml")):
+                with open(yml_file, 'r', encoding='utf-8') as f:
+                    jumpstart = yaml.safe_load(f)
+                    if jumpstart:
+                        jumpstart['core'] = False
+                        jumpstarts.append(jumpstart)
+                        logger.debug(f"Loaded community jumpstart: {yml_file.name}")
+        
+        return jumpstarts
     
     def get_by_id(self, jumpstart_id: str) -> Optional[Dict]:
         """Get a jumpstart by its logical_id or numeric id.

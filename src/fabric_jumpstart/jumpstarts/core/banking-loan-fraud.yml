@@ -1,0 +1,29 @@
+id: 14
+logical_id: banking-loan-fraud
+name: Real-Time Banking Loan Fraud Detection
+description: This demo will show you how Fabric RTI is used for detecting fraudulent
+  activities in banking loan applications in real-time.
+date_added: 02/13/2026
+include_in_listing: true
+workload_tags:
+- Real-Time Intelligence
+scenario_tags:
+- Streaming
+type: Demo
+source:
+  repo_url: https://github.com/ecotte/fabric-rti-demos.git
+  repo_ref: v0.1.4
+  workspace_path: banking-loan-fraud/
+  preview_image_path: banking-loan-fraud/BankingLoanFraud.png
+items_in_scope:
+- Notebook
+- Eventhouse
+- Eventstream
+- KQLDatabase
+- KQLDashboard
+jumpstart_docs_uri: ''
+entry_point: BankingLoanFraudEmulator.Notebook
+test_suite: ''
+owner_email: fabricjumpstart.rti-iq@microsoft.com
+minutes_to_deploy: 2
+minutes_to_complete_jumpstart: 5

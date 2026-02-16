@@ -16,16 +16,36 @@ logger = logging.getLogger(__name__)
 
 
 def get_registry_path() -> Path:
-    """Get the path to the registry.yml file."""
-    return Path(__file__).parent.parent / "src" / "fabric_jumpstart" / "registry.yml"
+    """Get the path to the jumpstarts directory."""
+    return Path(__file__).parent.parent / "src" / "fabric_jumpstart" / "jumpstarts"
 
 
 def load_registry_data() -> list:
-    """Load raw registry data from YAML file."""
+    """Load raw registry data from YAML files in jumpstarts directory."""
     registry_path = get_registry_path()
-    with open(registry_path, 'r', encoding='utf-8') as f:
-        data = yaml.safe_load(f)
-    return data.get('jumpstarts', [])
+    jumpstarts = []
+    
+    # Load from core folder
+    core_dir = registry_path / "core"
+    if core_dir.is_dir():
+        for yml_file in sorted(core_dir.glob("*.yml")):
+            with open(yml_file, 'r', encoding='utf-8') as f:
+                jumpstart = yaml.safe_load(f)
+                if jumpstart:
+                    jumpstart['core'] = True
+                    jumpstarts.append(jumpstart)
+    
+    # Load from community folder
+    community_dir = registry_path / "community"
+    if community_dir.is_dir():
+        for yml_file in sorted(community_dir.glob("*.yml")):
+            with open(yml_file, 'r', encoding='utf-8') as f:
+                jumpstart = yaml.safe_load(f)
+                if jumpstart:
+                    jumpstart['core'] = False
+                    jumpstarts.append(jumpstart)
+    
+    return jumpstarts
 
 
 def validate_jumpstart_config(jumpstart: dict) -> dict | None:
@@ -54,9 +74,10 @@ class TestRegistryValidation:
     """Test suite for registry schema validation."""
 
     def test_registry_file_exists(self):
-        """Verify registry.yml file exists."""
+        """Verify jumpstarts directory exists."""
         registry_path = get_registry_path()
-        assert registry_path.exists(), f"Registry file not found at {registry_path}"
+        assert registry_path.exists(), f"Jumpstarts directory not found at {registry_path}"
+        assert registry_path.is_dir(), f"Jumpstarts path must be a directory at {registry_path}"
 
     def test_registry_is_valid_yaml(self):
         """Verify registry.yml is valid YAML."""
@@ -185,3 +206,13 @@ class TestRegistryValidation:
         }
         result = validate_jumpstart_config(invalid_config)
         assert result is None
+
+    def test_core_flag_based_on_folder(self):
+        """Verify core flag is set correctly based on folder location."""
+        registry_data = load_registry_data()
+        
+        # All jumpstarts should have core flag
+        for jumpstart in registry_data:
+            logical_id = jumpstart.get('logical_id', '[unknown]')
+            assert 'core' in jumpstart, f"Jumpstart '{logical_id}' missing core flag"
+            assert isinstance(jumpstart['core'], bool), f"Jumpstart '{logical_id}' core flag must be boolean"

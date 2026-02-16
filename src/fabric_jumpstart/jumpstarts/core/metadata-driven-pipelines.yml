@@ -1,0 +1,32 @@
+id: 5
+logical_id: metadata-driven-pipelines
+name: Metadata Driven Pipelines
+description: Jumpstart for Metadata Driven Pipelines
+date_added: 9/1/2025
+include_in_listing: false
+workload_tags:
+- Data Factory
+- SQL Database
+scenario_tags:
+- Data Integration
+type: Accelerator
+source:
+  workspace_path: src/
+  preview_image_path: assets/image-example.png
+items_in_scope:
+- Notebook
+- Eventhouse
+- Eventstream
+- KQLDatabase
+- KQLDashboard
+- KQLQueryset
+- Environment
+- DataPipeline
+- Report
+- SemanticModel
+jumpstart_docs_uri: ''
+entry_point: 1_ExploreData.Notebook
+test_suite: ''
+owner_email: user@example.com
+minutes_to_deploy: 4
+minutes_to_complete_jumpstart: 60

@@ -1,0 +1,31 @@
+id: 2
+logical_id: spark-structured-streaming
+name: Spark Structured Streaming
+description: Learn Spark Structured Streaming on a fully packaged streaming lakehouse
+  demo.
+date_added: 1/8/2026
+include_in_listing: false
+workload_tags:
+- Data Engineering
+scenario_tags:
+- Streaming
+type: Tutorial
+source:
+  repo_url: https://github.com/microsoft/fabric-analytics-roadshow-lab.git/
+  repo_ref: v0.1.1
+  workspace_path: workspace/
+  preview_image_path: assets/image-example.png
+items_in_scope:
+- Lakehouse
+- Warehouse
+- Notebook
+- SparkJobDefinition
+- Environment
+feature_flags:
+- enable_lakehouse_unpublish
+jumpstart_docs_uri: ''
+entry_point: 1_ExploreData.Notebook
+test_suite: ''
+owner_email: FabricJumpstart.SparkStructuredStreaming@microsoft.com
+minutes_to_deploy: 8
+minutes_to_complete_jumpstart: 240

@@ -1,0 +1,30 @@
+id: 8
+logical_id: healthcare-billing-system
+name: Real-Time Healthcare Billing System
+description: This demo will show you how Fabric RTI is used for integrating real-time
+  AI-driven intelligence into its patient billing system to enhance accuracy, reduce
+  disputes, and streamline payments.
+date_added: 02/03/2026
+include_in_listing: true
+workload_tags:
+- Real-Time Intelligence
+scenario_tags:
+- Streaming
+type: Demo
+source:
+  repo_url: https://github.com/ecotte/fabric-rti-demos.git
+  repo_ref: v0.1.2
+  workspace_path: healthcare-billing-system/
+  preview_image_path: healthcare-billing-system/HealthcareBillingSystem.png
+items_in_scope:
+- Notebook
+- Eventhouse
+- Eventstream
+- KQLDatabase
+- KQLDashboard
+jumpstart_docs_uri: ''
+entry_point: HealthcareBillingDataEmulator.Notebook
+test_suite: ''
+owner_email: fabricjumpstart.rti-iq@microsoft.com
+minutes_to_deploy: 2
+minutes_to_complete_jumpstart: 5

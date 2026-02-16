@@ -44,6 +44,7 @@ class Jumpstart(BaseModel):
     workload_tags: List[str]
     scenario_tags: List[str]
     type: Optional[str] = "Accelerator"
+    core: bool = False
     source: JumpstartSource
     items_in_scope: Optional[List[str]] = None
     feature_flags: Optional[List[str]] = None

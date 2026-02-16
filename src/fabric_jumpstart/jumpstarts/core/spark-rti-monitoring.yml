@@ -1,0 +1,36 @@
+id: 4
+logical_id: spark-rti-monitoring
+name: Spark RTI Monitoring
+description: Empower your Spark workloads with real-time monitoring using Fabric Real-Time
+  Intelligence. This jumpstart provides a comprehensive setup to monitor Spark jobs,
+  track performance metrics, and visualize data streams in real-time dashboards.
+date_added: 9/1/2025
+include_in_listing: false
+workload_tags:
+- Data Engineering
+- Real-Time Intelligence
+scenario_tags:
+- Monitoring
+type: Accelerator
+source:
+  repo_url: https://github.com/microsoft/fabric-toolbox.git
+  repo_ref: main
+  workspace_path: monitoring/fabric-spark-monitoring/src/
+  preview_image_path: monitoring/fabric-spark-monitoring/assets/image-example.png
+items_in_scope:
+- Notebook
+- Eventhouse
+- Eventstream
+- KQLDatabase
+- KQLDashboard
+- KQLQueryset
+- Environment
+- DataPipeline
+- Report
+- SemanticModel
+jumpstart_docs_uri: ''
+entry_point: 1_ExploreData.Notebook
+test_suite: ''
+owner_email: FabricJumpstart.SparkRTIMonitoring@microsoft.com
+minutes_to_deploy: 3
+minutes_to_complete_jumpstart: 20

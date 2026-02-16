@@ -1,0 +1,25 @@
+id: 3
+logical_id: analytics-lab
+name: Analytics Lab
+description: This is a sample description for a test jumpstart.
+date_added: 1/8/2026
+include_in_listing: false
+workload_tags:
+- Test
+scenario_tags:
+- Test
+type: Demo
+source:
+  workspace_path: src/
+  preview_image_path: assets/image-example.png
+items_in_scope:
+- Notebook
+- Lakehouse
+feature_flags:
+- enable_lakehouse_unpublish
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/azure_arc_jumpstart/azure_arc_vsphere/
+entry_point: 1_ExploreData.Notebook
+test_suite: ''
+owner_email: user@example.com
+minutes_to_deploy: 1
+minutes_to_complete_jumpstart: 120

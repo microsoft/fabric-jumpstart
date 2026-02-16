@@ -1,0 +1,29 @@
+id: 9
+logical_id: fpm-capacity-events
+name: Fabric Platform Monitoring - Capacity Events
+description: Uses the Capacity Events to get the information of the capacity in real-time.
+date_added: 02/03/2026
+include_in_listing: true
+workload_tags:
+- Real-Time Intelligence
+scenario_tags:
+- Monitoring
+type: Accelerator
+source:
+  repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
+  repo_ref: v0.2.1
+  workspace_path: capacity-events/src/
+  preview_image_path: capacity-events/CapacityEvents.png
+items_in_scope:
+- Notebook
+- Eventhouse
+- Eventstream
+- KQLDatabase
+- KQLDashboard
+- DataPipeline
+jumpstart_docs_uri: ''
+entry_point: Capacity Events Update Eventstream.Notebook
+test_suite: ''
+owner_email: fabricjumpstart.rti-iq@microsoft.com
+minutes_to_deploy: 2
+minutes_to_complete_jumpstart: 5

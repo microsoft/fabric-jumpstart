@@ -1,0 +1,31 @@
+id: 10
+logical_id: fpm-activity-events
+name: Fabric Platform Monitoring - Activity Events
+description: Extract and store semi-structured platform activity events in an Eventhouse
+  for near real-time analysis and data-driven actions
+date_added: 02/03/2026
+include_in_listing: true
+workload_tags:
+- Real-Time Intelligence
+scenario_tags:
+- Monitoring
+type: Accelerator
+source:
+  repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
+  repo_ref: v0.2.1
+  workspace_path: activity-events/src/
+  preview_image_path: activity-events/ActivityEvents.png
+items_in_scope:
+- Notebook
+- Eventhouse
+- Eventstream
+- KQLDatabase
+- KQLDashboard
+- DataPipeline
+- VariableLibrary
+jumpstart_docs_uri: ''
+entry_point: Activity Events Setup.Notebook
+test_suite: ''
+owner_email: fabricjumpstart.rti-iq@microsoft.com
+minutes_to_deploy: 2
+minutes_to_complete_jumpstart: 5

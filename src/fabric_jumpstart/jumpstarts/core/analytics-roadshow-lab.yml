@@ -1,0 +1,34 @@
+id: 1
+logical_id: analytics-roadshow-lab
+name: Analytics Roadshow Lab
+description: Explore the power of Fabric Spark and Fabric Data Warehouse on streaming
+  industrial sales and shipment data.
+date_added: 1/8/2026
+include_in_listing: false
+workload_tags:
+- Data Engineering
+- Data Warehouse
+scenario_tags:
+- Streaming
+- Modeling
+type: Tutorial
+source:
+  repo_url: https://github.com/microsoft/fabric-analytics-roadshow-lab.git/
+  repo_ref: v0.1.2
+  workspace_path: workspace/
+  preview_image_path: assets/image-example.png
+items_in_scope:
+- Lakehouse
+- Warehouse
+- Notebook
+- SparkJobDefinition
+- Environment
+- DataPipeline
+feature_flags:
+- enable_lakehouse_unpublish
+jumpstart_docs_uri: https://github.com/microsoft/fabric-analytics-roadshow-lab/blob/v0.1.1/README.md
+entry_point: 1_process_data.Notebook
+test_suite: ''
+owner_email: FabricJumpstart.AnalyticsRoadshowLab@microsoft.com
+minutes_to_deploy: 8
+minutes_to_complete_jumpstart: 180

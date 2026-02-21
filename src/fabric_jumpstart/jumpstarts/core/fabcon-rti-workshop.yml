@@ -23,9 +23,9 @@ items_in_scope:
   - Environment
   - Reflex
   - Lakehouse
-jumpstart_docs_uri: http://aka.ms/fabconrtiworkshop
-entry_point: ''
+jumpstart_docs_uri: ''
+entry_point: http://aka.ms/fabconrtiworkshop
 test_suite: ''
 owner_email: fabricjumpstart.rti-iq@microsoft.com
-minutes_to_deploy: 2
+minutes_to_deploy: 4
 minutes_to_complete_jumpstart: 360

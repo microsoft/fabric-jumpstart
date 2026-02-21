@@ -25,7 +25,7 @@ items_in_scope:
   - SemanticModel
   - Report
 jumpstart_docs_uri: ''
-entry_point: ''
+entry_point: https://aka.ms/fabric-platform-monitoring
 test_suite: ''
 owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 2

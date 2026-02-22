@@ -12,5 +12,8 @@ wheels/
 # Logs
 /**/fabric_cicd.error.log
 
+# Node
+node_modules/
+
 # Scratch
 .temp/

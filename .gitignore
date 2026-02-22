@@ -9,4 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
+# Logs
 /**/fabric_cicd.error.log
+
+# Scratch
+.temp/

@@ -32,3 +32,14 @@ test_suite: ''
 owner_email: FabricJumpstart.AnalyticsRoadshowLab@microsoft.com
 minutes_to_deploy: 8
 minutes_to_complete_jumpstart: 180
+web:
+  title: "Analytics Roadshow Lab"
+  summary: >-
+    Explore the power of Fabric Spark and Fabric Data Warehouse on streaming industrial
+    sales and shipment data. This comprehensive tutorial walks through data engineering,
+    warehousing, modeling, and streaming patterns across multiple Fabric workloads.
+  preview_image_url: "https://placehold.co/600x400?text=Analytics+Roadshow+Lab"
+  video_url: ""
+  tags_display: ["Data Engineering", "Data Warehouse", "Streaming", "Modeling"]
+  difficulty: "Advanced"
+  last_updated: "2026-01-08"

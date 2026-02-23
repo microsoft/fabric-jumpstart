@@ -27,3 +27,14 @@ test_suite: ''
 owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 2
 minutes_to_complete_jumpstart: 5
+web:
+  title: "Fabric Platform Monitoring - Capacity Events"
+  summary: >-
+    Monitor your Fabric capacity utilization in real-time using Capacity Events. Ingest
+    capacity telemetry into an Eventhouse via Eventstream and visualize resource consumption
+    trends on live KQL dashboards for proactive management.
+  preview_image_url: "https://placehold.co/600x400?text=Capacity+Events"
+  video_url: ""
+  tags_display: ["Real-Time Intelligence", "Monitoring"]
+  difficulty: "Beginner"
+  last_updated: "2026-02-03"

@@ -29,3 +29,14 @@ test_suite: ''
 owner_email: user@example.com
 minutes_to_deploy: 1
 minutes_to_complete_jumpstart: 30
+web:
+  title: "Semantic Link"
+  summary: >-
+    Explore Semantic Link to bridge the gap between Power BI semantic models and Fabric
+    notebooks. Use Python-based APIs to programmatically interact with semantic models,
+    perform data analysis, and automate modeling workflows.
+  preview_image_url: "https://placehold.co/600x400?text=Semantic+Link"
+  video_url: ""
+  tags_display: ["Power BI", "Modeling"]
+  difficulty: "Intermediate"
+  last_updated: "2025-09-01"

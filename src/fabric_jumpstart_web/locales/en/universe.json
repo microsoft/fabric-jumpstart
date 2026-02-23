@@ -1,0 +1,14 @@
+{
+  "explore": {
+    "label": "Explore",
+    "title": "Fabric Jumpstart Content Library",
+    "cards": {
+      "scenarios": {
+        "title": "Jumpstart",
+        "subtitle": "Scenarios",
+        "footerText": "Browse scenarios",
+        "desc": "Want to explore multiple Fabric features working together seamlessly to solve real-world problems? Get started with zero-to-hero scenarios that showcases the full power of Jumpstart."
+      }
+    }
+  }
+}

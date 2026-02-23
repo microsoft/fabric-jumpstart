@@ -34,3 +34,14 @@ test_suite: ''
 owner_email: FabricJumpstart.SparkRTIMonitoring@microsoft.com
 minutes_to_deploy: 3
 minutes_to_complete_jumpstart: 20
+web:
+  title: "Spark RTI Monitoring"
+  summary: >-
+    Empower your Spark workloads with real-time monitoring using Fabric Real-Time Intelligence.
+    Track Spark job performance metrics, visualize data streams on live dashboards,
+    and gain operational insights to optimize your data engineering pipelines.
+  preview_image_url: "https://placehold.co/600x400?text=Spark+RTI+Monitoring"
+  video_url: ""
+  tags_display: ["Data Engineering", "Real-Time Intelligence", "Monitoring"]
+  difficulty: "Intermediate"
+  last_updated: "2025-09-01"

@@ -35,6 +35,9 @@ uv sync --all-groups
 cd "$REPO_ROOT"
 npm install
 
+cd "$REPO_ROOT/src/fabric_jumpstart_web"
+npm install
+
 echo "python: $(python3 --version)"
 echo "uv: $(uv --version)"
 echo "npm: $(npm version)"

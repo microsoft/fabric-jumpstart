@@ -1,0 +1,25 @@
+{
+  "banner": {
+    "label": "multiple environments",
+    "heading": "Jumpstart Scenarios",
+    "desc": "Get automated zero-to-hero scenarios and experience the full breadth of Jumpstart. All you need is a Fabric workspace to get started.",
+    "imageAlt": "Fabric Jumpstart Scenario"
+  },
+  "cards": {
+    "realTimeIntelligence": {
+      "title": "Real-Time Intelligence",
+      "desc": "Stream, analyze, and visualize data in real-time with Eventstreams, Eventhouses, and KQL Dashboards.",
+      "linkText": "Explore RTI scenarios"
+    },
+    "dataEngineering": {
+      "title": "Data Engineering",
+      "desc": "Build scalable data pipelines with Spark, Lakehouses, and Notebooks.",
+      "linkText": "Explore DE scenarios"
+    },
+    "platformMonitoring": {
+      "title": "Platform Monitoring",
+      "desc": "Monitor your Fabric platform with real-time capacity, activity, and inventory tracking.",
+      "linkText": "Explore monitoring scenarios"
+    }
+  }
+}

@@ -18,5 +18,12 @@ node_modules/
 # Nx
 .nx/
 
+# Next.js generated
+src/fabric_jumpstart_web/out/
+src/fabric_jumpstart_web/.next/
+src/fabric_jumpstart_web/docs/
+src/fabric_jumpstart_web/src/data/side-menu.json
+src/fabric_jumpstart_web/src/data/scenarios.json
+
 # Scratch
 .temp/

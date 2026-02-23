@@ -1,0 +1,283 @@
+/**
+ * Pre-build content generation script.
+ *
+ * Reads scenario YAML files from ../fabric_jumpstart/jumpstarts/core/
+ * and generates:
+ * - docs/ directory with markdown per scenario
+ * - src/data/side-menu.json (navigation tree)
+ * - src/data/scenarios.json (scenario cards data)
+ */
+
+import * as fs from 'fs';
+import * as path from 'path';
+import * as yaml from 'js-yaml';
+import { glob } from 'glob';
+
+const JUMPSTARTS_DIR = path.resolve(
+  __dirname,
+  '../../fabric_jumpstart/jumpstarts/core'
+);
+const DOCS_DIR = path.resolve(__dirname, '../docs');
+const DATA_DIR = path.resolve(__dirname, '../src/data');
+
+interface ScenarioYml {
+  id: number;
+  logical_id: string;
+  name: string;
+  description: string;
+  date_added: string;
+  include_in_listing: boolean;
+  workload_tags: string[];
+  scenario_tags: string[];
+  type: string;
+  source: {
+    repo_url?: string;
+    repo_ref?: string;
+    workspace_path: string;
+    preview_image_path: string;
+  };
+  items_in_scope: string[];
+  jumpstart_docs_uri: string;
+  entry_point: string;
+  owner_email: string;
+  minutes_to_deploy: number;
+  minutes_to_complete_jumpstart: number;
+  web?: {
+    title?: string;
+    summary?: string;
+    preview_image_url?: string;
+    video_url?: string;
+    tags_display?: string[];
+    difficulty?: string;
+    last_updated?: string;
+  };
+}
+
+interface ScenarioCard {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  difficulty: string;
+  tags: string[];
+  previewImage: string;
+  videoUrl: string;
+  minutesToDeploy: number;
+  minutesToComplete: number;
+  itemsInScope: string[];
+  docsUri: string;
+  slug: string;
+  lastUpdated: string;
+}
+
+interface SideMenuItem {
+  name: string;
+  type: string;
+  path: string;
+  children: SideMenuItem[];
+  frontMatter: {
+    type?: string;
+    title?: string;
+    linkTitle?: string;
+    weight?: number;
+    description?: string;
+  };
+}
+
+function loadScenarios(): ScenarioYml[] {
+  const files = glob.sync('*.yml', { cwd: JUMPSTARTS_DIR });
+  const scenarios: ScenarioYml[] = [];
+
+  for (const file of files) {
+    const content = fs.readFileSync(path.join(JUMPSTARTS_DIR, file), 'utf-8');
+    const data = yaml.load(content) as ScenarioYml;
+    scenarios.push(data);
+  }
+
+  return scenarios.sort((a, b) => a.id - b.id);
+}
+
+function generateMarkdown(scenario: ScenarioYml): string {
+  const title = scenario.web?.title || scenario.name;
+  const summary = scenario.web?.summary || scenario.description;
+  const previewImage =
+    scenario.web?.preview_image_url ||
+    `https://placehold.co/800x400?text=${encodeURIComponent(scenario.name)}`;
+  const videoUrl = scenario.web?.video_url || '';
+
+  let md = `---\ntype: docs\ntitle: "${title}"\nlinkTitle: "${title}"\nweight: ${scenario.id}\ndescription: >-\n  ${scenario.description}\n---\n\n`;
+
+  md += `# ${title}\n\n`;
+  md += `![${title}](${previewImage})\n\n`;
+  md += `${summary}\n\n`;
+
+  // Scenario details
+  md += `## Overview\n\n`;
+  md += `| Property | Value |\n`;
+  md += `|----------|-------|\n`;
+  md += `| **Type** | ${scenario.type} |\n`;
+  md += `| **Difficulty** | ${scenario.web?.difficulty || 'Intermediate'} |\n`;
+  md += `| **Deploy Time** | ~${scenario.minutes_to_deploy} minutes |\n`;
+  md += `| **Complete Time** | ~${scenario.minutes_to_complete_jumpstart} minutes |\n`;
+  md += `| **Workloads** | ${scenario.workload_tags.join(', ')} |\n`;
+  md += `\n`;
+
+  // Items in scope
+  md += `## Fabric Items Deployed\n\n`;
+  for (const item of scenario.items_in_scope) {
+    md += `- ${item}\n`;
+  }
+  md += `\n`;
+
+  // Quick start
+  md += `## Quick Start\n\n`;
+  md += `\`\`\`python\nimport fabric_jumpstart as js\n\n`;
+  md += `# Install this scenario\n`;
+  md += `js.install("${scenario.logical_id}")\n\`\`\`\n\n`;
+
+  // Video embed placeholder
+  if (videoUrl) {
+    md += `## Video Walkthrough\n\n`;
+    md += `[![Watch the video](https://img.youtube.com/vi/${videoUrl.split('/').pop()}/maxresdefault.jpg)](${videoUrl})\n\n`;
+  }
+
+  // Tags
+  md += `## Tags\n\n`;
+  const tags = scenario.web?.tags_display || [
+    ...scenario.workload_tags,
+    ...scenario.scenario_tags,
+  ];
+  md += tags.map((t) => `\`${t}\``).join(' ') + '\n';
+
+  return md;
+}
+
+function generateDocs(scenarios: ScenarioYml[]): void {
+  // Clean docs dir
+  if (fs.existsSync(DOCS_DIR)) {
+    fs.rmSync(DOCS_DIR, { recursive: true });
+  }
+
+  // Create root _index.md
+  const rootDocsDir = path.join(DOCS_DIR, 'fabric_jumpstart');
+  fs.mkdirSync(rootDocsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(DOCS_DIR, '_index.md'),
+    '---\ntype: docs\n---\n'
+  );
+  fs.writeFileSync(
+    path.join(rootDocsDir, '_index.md'),
+    '---\ntype: docs\ntitle: "Jumpstart Scenarios"\nlinkTitle: "Jumpstart Scenarios"\nweight: 2\n---\n'
+  );
+
+  // Generate a doc per listed scenario
+  for (const scenario of scenarios) {
+    if (!scenario.include_in_listing) continue;
+
+    const scenarioDir = path.join(rootDocsDir, scenario.logical_id);
+    fs.mkdirSync(scenarioDir, { recursive: true });
+    const markdown = generateMarkdown(scenario);
+    fs.writeFileSync(path.join(scenarioDir, '_index.md'), markdown);
+  }
+}
+
+function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
+  const children: SideMenuItem[] = [];
+
+  for (const scenario of scenarios) {
+    if (!scenario.include_in_listing) continue;
+
+    children.push({
+      name: scenario.logical_id,
+      type: 'directory',
+      path: `fabric_jumpstart/${scenario.logical_id}`,
+      children: [],
+      frontMatter: {
+        type: 'docs',
+        title: scenario.web?.title || scenario.name,
+        linkTitle: scenario.web?.title || scenario.name,
+        weight: scenario.id,
+        description: scenario.description,
+      },
+    });
+  }
+
+  const root: SideMenuItem = {
+    name: 'docs',
+    type: 'directory',
+    path: '',
+    frontMatter: { type: 'docs' },
+    children: [
+      {
+        name: 'fabric_jumpstart',
+        type: 'directory',
+        path: 'fabric_jumpstart',
+        frontMatter: {
+          type: 'docs',
+          title: 'Jumpstart Scenarios',
+          linkTitle: 'Jumpstart Scenarios',
+          weight: 2,
+        },
+        children,
+      },
+    ],
+  };
+
+  return root;
+}
+
+function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
+  return scenarios
+    .filter((s) => s.include_in_listing)
+    .map((s) => ({
+      id: s.logical_id,
+      title: s.web?.title || s.name,
+      description: s.web?.summary || s.description,
+      type: s.type,
+      difficulty: s.web?.difficulty || 'Intermediate',
+      tags: s.web?.tags_display || [...s.workload_tags, ...s.scenario_tags],
+      previewImage:
+        s.web?.preview_image_url ||
+        `https://placehold.co/600x400?text=${encodeURIComponent(s.name)}`,
+      videoUrl: s.web?.video_url || '',
+      minutesToDeploy: s.minutes_to_deploy,
+      minutesToComplete: s.minutes_to_complete_jumpstart,
+      itemsInScope: s.items_in_scope,
+      docsUri: s.jumpstart_docs_uri,
+      slug: s.logical_id,
+      lastUpdated: s.web?.last_updated || s.date_added,
+    }));
+}
+
+function main(): void {
+  console.log('🔧 Generating website content from scenario YAMLs...');
+
+  const scenarios = loadScenarios();
+  console.log(`  Found ${scenarios.length} scenarios`);
+
+  // Generate docs
+  generateDocs(scenarios);
+  const listed = scenarios.filter((s) => s.include_in_listing).length;
+  console.log(`  Generated docs for ${listed} listed scenarios`);
+
+  // Generate data files
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+
+  const sideMenu = generateSideMenu(scenarios);
+  fs.writeFileSync(
+    path.join(DATA_DIR, 'side-menu.json'),
+    JSON.stringify(sideMenu, null, 2)
+  );
+  console.log('  Generated side-menu.json');
+
+  const scenariosJson = generateScenariosJson(scenarios);
+  fs.writeFileSync(
+    path.join(DATA_DIR, 'scenarios.json'),
+    JSON.stringify(scenariosJson, null, 2)
+  );
+  console.log('  Generated scenarios.json');
+
+  console.log('✅ Content generation complete!');
+}
+
+main();

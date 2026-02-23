@@ -1,0 +1,10 @@
+/node_modules
+/.next
+/out
+/docs
+/src/data/side-menu.json
+/src/data/scenarios.json
+*.tsbuildinfo
+next-env.d.ts
+coverage/
+package-lock.json

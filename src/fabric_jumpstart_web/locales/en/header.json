@@ -1,0 +1,120 @@
+{
+  "gettingstarted": {
+    "name": "Getting started",
+    "overview": {
+      "text": "Overview",
+      "descriptionHeader": "Overview",
+      "description": "Explore the Fabric Jumpstart universe, and have a working demo and testing environment in no time. All you need is an Azure subscription to play around, upskill, and see all the core capabilities of adaptive cloud."
+    },
+    "scenarios": {
+      "text": "Jumpstart Scenarios",
+      "descriptionHeader": "Jumpstart Scenarios",
+      "description": "Accelerate your deployment with our Jumpstart Scenarios. Each scenario has an easy-to-follow guide, and leverages Azure Arc, which extends Azure services and management capabilities to any infrastructure."
+    },
+    "agora": {
+      "text": "Jumpstart Agora",
+      "descriptionHeader": "Jumpstart Agora",
+      "description": "Explore our collection of cloud-to-edge industry verticals."
+    },
+    "arcbox": {
+      "text": "Jumpstart ArcBox",
+      "descriptionHeader": "Jumpstart ArcBox",
+      "description": "Explore all the major Azure Arc capabilities in an easy-to-deploy single sandbox."
+    },
+    "hcibox": {
+      "id": "MenuItem5",
+      "text": "Jumpstart LocalBox",
+      "descriptionHeader": "Jumpstart LocalBox",
+      "description": "Test Azure Local using one-click automation."
+    },
+    "drops": {
+      "id": "MenuItem6",
+      "text": "Jumpstart Drops",
+      "descriptionHeader": "Jumpstart Drops",
+      "description": "Browse a curated collection of scripts, tools, and other resources from the community."
+    },
+    "gems": {
+      "id": "MenuItem7",
+      "text": "Jumpstart Gems",
+      "descriptionHeader": "Jumpstart Gems",
+      "description": "View our technical diagrams for various Azure technologies."
+    },
+    "about": {
+      "id": "MenuItem8",
+      "text": "About",
+      "descriptionHeader": "About",
+      "description": "Get your Azure Arc environment up and running in no time with Fabric Jumpstart. We’re open source, community-driven, and provide step-by-step guides for independent Azure Arc scenarios with extensive automation. "
+    }
+  },
+  "community": {
+    "name": "Community",
+    "blogs": {
+      "text": "Blogs",
+      "descriptionHeader": "Blogs",
+      "description": "Stay up to date on the latest announcements for Fabric Jumpstart and our adaptive cloud. "
+    },
+    "videos": {
+      "text": "Videos",
+      "descriptionHeader": "Videos",
+      "description": "Watch short, impactful videos covering unique customer stories, product demos, tutorials, and more."
+    },
+    "contribute": {
+      "text": "Contribute",
+      "descriptionHeader": "Contribute",
+      "description": "Fabric Jumpstart is community-driven and committed to open source. Whether you’re a first-timer or seasoned contributor, view our guides and jump in on the action."
+    }
+  },
+  "resources": {
+    "name": "Resources",
+    "gems": {
+      "text": "Jumpstart Gems",
+      "descriptionHeader": "Jumpstart Gems",
+      "description": "View our technical diagrams for various Azure technologies."
+    },
+    "training": {
+      "text": "Training",
+      "descriptionHeader": "Training",
+      "description": "Explore learning paths on Microsoft Learn."
+    },
+    "documentation": {
+      "text": "Documentation",
+      "descriptionHeader": "Documentation",
+      "description": "Explore detailed documentation on Microsoft Learn."
+    }
+  },
+  "adaptivecloud": {
+    "name": "Adaptive Cloud"
+  },
+  "search": {
+    "name": "Search",
+    "quicklinks": "Quick links",
+    "suggestedlinks": "Suggested links",
+    "searchboxplaceholder": "Search"
+  },
+  "releaseNotes": {
+    "name": "Release notes"
+  },
+  "github": {
+    "name": "GitHub",
+    "githubIconAltText": "GitHub logo"
+  },
+  "microsoft": {
+    "name": "microsoft",
+    "logoAltText": "Microsoft logo"
+  },
+  "arcjumpstart": {
+    "name": "Fabric Jumpstart"
+  },
+  "themeToggle": {
+    "name": "Theme toggle",
+    "darkIconAltText": "toggle button icon",
+    "dark": "Dark (default)",
+    "light": "Light"
+  },
+  "drawer": {
+    "externalIconAltText": "Arrow icon"
+  },
+  "skiptomaincontent": {
+    "content": "Skip to Main Content"
+  }
+}

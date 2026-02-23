@@ -1,0 +1,92 @@
+{
+  "name": "fabric-jumpstart-web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "implicitDependencies": ["fabric-jumpstart"],
+  "targets": {
+    "clean": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": [
+          "rm -rf out .next docs src/data/side-menu.json src/data/scenarios.json"
+        ],
+        "parallel": false
+      }
+    },
+    "generate-content": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": ["npx tsx scripts/generate-content.ts"],
+        "parallel": false
+      },
+      "inputs": [
+        "{workspaceRoot}/src/fabric_jumpstart/jumpstarts/core/**/*.yml",
+        "{projectRoot}/scripts/generate-content.ts"
+      ],
+      "outputs": [
+        "{projectRoot}/docs",
+        "{projectRoot}/src/data/side-menu.json",
+        "{projectRoot}/src/data/scenarios.json"
+      ]
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": ["npm install"],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": ["npx next lint"],
+        "parallel": false
+      }
+    },
+    "compile": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": ["npx tsc --noEmit"],
+        "parallel": false
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["generate-content", "lint"],
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": ["npx next build"],
+        "parallel": false
+      },
+      "outputs": ["{projectRoot}/out"],
+      "cache": true
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": ["npx serve out -l 28080"],
+        "parallel": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install", "generate-content"],
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": ["npx jest --passWithNoTests"],
+        "parallel": false
+      }
+    }
+  }
+}

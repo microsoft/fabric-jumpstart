@@ -3,7 +3,7 @@ import useTranslation from '@utils/translateWrapper';
 import HeroBanner from '@components/HeroBanner';
 import ButtonGroup from '@components/ButtonGroup';
 import { EXTERNAL_URL, INTERNAL_ROUTE } from '@config/urlconfig';
-import Explore from '@components/Explore';
+import ScenarioCarousel from '@components/ScenarioCarousel';
 import { bannerConst } from '@constants/homepage.constant';
 import ExternalArrowWhite from '@images/externalArrowWhite.svg';
 import ExternalArrowBlack from '@images/externalArrowBlack.svg';
@@ -49,7 +49,7 @@ export default function Home() {
           }}
         />
       </HeroBanner>
-      <Explore showHeader />
+      <ScenarioCarousel />
       <RowSection />
     </PageWrapper>
   );

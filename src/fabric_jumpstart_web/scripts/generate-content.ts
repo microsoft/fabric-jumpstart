@@ -19,6 +19,7 @@ const JUMPSTARTS_DIR = path.resolve(
 );
 const DOCS_DIR = path.resolve(__dirname, '../docs');
 const DATA_DIR = path.resolve(__dirname, '../src/data');
+const PUBLIC_DIR = path.resolve(__dirname, '../public');
 
 interface ScenarioYml {
   id: number;
@@ -97,57 +98,33 @@ function loadScenarios(): ScenarioYml[] {
   return scenarios.sort((a, b) => a.id - b.id);
 }
 
-function generateMarkdown(scenario: ScenarioYml): string {
+// Sample image source for proving relative image support
+const SAMPLE_IMAGE_SRC = path.resolve(
+  __dirname,
+  '../../../.temp/fabric-jumpstart-web/fabric-jumpstart-docs/docs/drops_contribution_guidelines/progress_bar.png'
+);
+
+function generateFrontmatter(scenario: ScenarioYml): string {
+  const title = scenario.web?.title || scenario.name;
+  return `---\ntype: docs\ntitle: "${title}"\nlinkTitle: "${title}"\nweight: ${scenario.id}\ndescription: >-\n  ${scenario.description}\n---\n`;
+}
+
+function generateContentMd(scenario: ScenarioYml): string {
   const title = scenario.web?.title || scenario.name;
   const summary = scenario.web?.summary || scenario.description;
-  const previewImage =
-    scenario.web?.preview_image_url ||
-    `https://placehold.co/800x400?text=${encodeURIComponent(scenario.name)}`;
-  const videoUrl = scenario.web?.video_url || '';
 
-  let md = `---\ntype: docs\ntitle: "${title}"\nlinkTitle: "${title}"\nweight: ${scenario.id}\ndescription: >-\n  ${scenario.description}\n---\n\n`;
-
-  md += `# ${title}\n\n`;
-  md += `![${title}](${previewImage})\n\n`;
+  let md = `# ${title}\n\n`;
   md += `${summary}\n\n`;
 
-  // Scenario details
-  md += `## Overview\n\n`;
-  md += `| Property | Value |\n`;
-  md += `|----------|-------|\n`;
-  md += `| **Type** | ${scenario.type} |\n`;
-  md += `| **Difficulty** | ${scenario.web?.difficulty || 'Intermediate'} |\n`;
-  md += `| **Deploy Time** | ~${scenario.minutes_to_deploy} minutes |\n`;
-  md += `| **Complete Time** | ~${scenario.minutes_to_complete_jumpstart} minutes |\n`;
-  md += `| **Workloads** | ${scenario.workload_tags.join(', ')} |\n`;
-  md += `\n`;
+  // Include a sample image to prove relative image support
+  md += `## Architecture\n\n`;
+  md += `![${title} architecture](./img/sample.png)\n\n`;
 
-  // Items in scope
-  md += `## Fabric Items Deployed\n\n`;
-  for (const item of scenario.items_in_scope) {
-    md += `- ${item}\n`;
-  }
-  md += `\n`;
+  md += `## Description\n\n`;
+  md += `${scenario.description}\n\n`;
 
-  // Quick start
-  md += `## Quick Start\n\n`;
-  md += `\`\`\`python\nimport fabric_jumpstart as js\n\n`;
-  md += `# Install this scenario\n`;
-  md += `js.install("${scenario.logical_id}")\n\`\`\`\n\n`;
-
-  // Video embed placeholder
-  if (videoUrl) {
-    md += `## Video Walkthrough\n\n`;
-    md += `[![Watch the video](https://img.youtube.com/vi/${videoUrl.split('/').pop()}/maxresdefault.jpg)](${videoUrl})\n\n`;
-  }
-
-  // Tags
-  md += `## Tags\n\n`;
-  const tags = scenario.web?.tags_display || [
-    ...scenario.workload_tags,
-    ...scenario.scenario_tags,
-  ];
-  md += tags.map((t) => `\`${t}\``).join(' ') + '\n';
+  md += `This jumpstart deploys a fully functional ${title.toLowerCase()} scenario into your Microsoft Fabric workspace. `;
+  md += `The scenario uses ${scenario.workload_tags.join(' and ')} workloads to demonstrate real-world patterns.\n`;
 
   return md;
 }
@@ -170,14 +147,36 @@ function generateDocs(scenarios: ScenarioYml[]): void {
     '---\ntype: docs\ntitle: "Jumpstart Scenarios"\nlinkTitle: "Jumpstart Scenarios"\nweight: 2\n---\n'
   );
 
-  // Generate a doc per listed scenario
+  // Generate docs per listed scenario
   for (const scenario of scenarios) {
     if (!scenario.include_in_listing) continue;
 
     const scenarioDir = path.join(rootDocsDir, scenario.logical_id);
-    fs.mkdirSync(scenarioDir, { recursive: true });
-    const markdown = generateMarkdown(scenario);
-    fs.writeFileSync(path.join(scenarioDir, '_index.md'), markdown);
+    const imgDir = path.join(scenarioDir, 'img');
+    fs.mkdirSync(imgDir, { recursive: true });
+
+    // Minimal frontmatter-only _index.md (for side-menu)
+    const frontmatter = generateFrontmatter(scenario);
+    fs.writeFileSync(path.join(scenarioDir, '_index.md'), frontmatter);
+
+    // Rich markdown content file
+    const contentMd = generateContentMd(scenario);
+    fs.writeFileSync(path.join(scenarioDir, 'content.md'), contentMd);
+
+    // Copy a sample image to prove relative image support
+    if (fs.existsSync(SAMPLE_IMAGE_SRC)) {
+      fs.copyFileSync(SAMPLE_IMAGE_SRC, path.join(imgDir, 'sample.png'));
+      // Also copy to public/ so Next.js can serve it
+      const publicImgDir = path.join(
+        PUBLIC_DIR,
+        'docs',
+        'fabric_jumpstart',
+        scenario.logical_id,
+        'img'
+      );
+      fs.mkdirSync(publicImgDir, { recursive: true });
+      fs.copyFileSync(SAMPLE_IMAGE_SRC, path.join(publicImgDir, 'sample.png'));
+    }
   }
 }
 

@@ -1,8 +1,7 @@
 import React from 'react';
 import fs from 'fs';
 import path from 'path';
-import Link from 'next/link';
-import { marked } from 'marked';
+import ScenarioPageClient from './ScenarioPageClient';
 
 export async function generateStaticParams() {
   const docsDir = path.join(
@@ -28,43 +27,40 @@ export default async function ScenarioPage({
 }) {
   const resolvedParams = await params;
   const slugPath = resolvedParams.slug.join('/');
-  const mdPath = path.join(
+  const slug = resolvedParams.slug[resolvedParams.slug.length - 1];
+
+  // Load markdown content
+  const contentPath = path.join(
     process.cwd(),
     'docs',
     'fabric_jumpstart',
     slugPath,
-    '_index.md'
+    'content.md'
   );
 
-  let content = '';
-  if (fs.existsSync(mdPath)) {
-    const raw = fs.readFileSync(mdPath, 'utf-8');
-    // Strip YAML frontmatter
-    const stripped = raw.replace(/^---[\s\S]*?---\n*/, '');
-    content = await marked(stripped);
+  let markdownContent = '';
+  if (fs.existsSync(contentPath)) {
+    markdownContent = fs.readFileSync(contentPath, 'utf-8');
   } else {
-    content = '<p>Scenario not found.</p>';
+    // Fallback: try _index.md and strip frontmatter
+    const mdPath = path.join(
+      process.cwd(),
+      'docs',
+      'fabric_jumpstart',
+      slugPath,
+      '_index.md'
+    );
+    if (fs.existsSync(mdPath)) {
+      const raw = fs.readFileSync(mdPath, 'utf-8');
+      markdownContent = raw.replace(/^---[\s\S]*?---\n*/, '');
+    }
   }
 
   return (
-    <div
-      style={{
-        maxWidth: '900px',
-        margin: '0 auto',
-        padding: '40px 24px',
-        lineHeight: '1.7',
-      }}
-    >
-      <Link
-        href="/fabric_jumpstart/"
-        style={{ color: '#0078d4', textDecoration: 'none', fontSize: '14px' }}
-      >
-        ← Back to all scenarios
-      </Link>
-      <div
-        dangerouslySetInnerHTML={{ __html: content }}
-        style={{ marginTop: '24px' }}
-      />
-    </div>
+    <ScenarioPageClient
+      slug={slug}
+      markdownContent={markdownContent}
+      basePath={`/docs/fabric_jumpstart/${slugPath}`}
+    />
   );
 }

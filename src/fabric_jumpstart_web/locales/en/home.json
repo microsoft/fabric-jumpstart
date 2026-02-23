@@ -24,37 +24,8 @@
       "heading": "Community-driven and committed to open source",
       "desc": [
         "Our mission to support the open-source community, where we can all build on the amazing work of others on Fabric.",
-        "We do this by providing detailed guides, automation and reproducible code samples — everything you need to become productive quickly. Our extensive code reviews, high-bar for quality and Continuous Integration testing ensures Jumpstart is always reliable.",
-        "Currently, we're committed to supporting over 30 open-source Jumpstart scenarios."
-      ],
-      "buttonText": {
-        "left": {
-          "label": "Jump to community"
-        },
-        "right": {
-          "label": "Learn more"
-        }
-      }
-    },
-    {
-      "label": "Demos",
-      "heading": "See Fabric Jumpstart in action",
-      "desc": [
-        "Get inspired by game-changing solutions built on Fabric — see every scenario in a bite-sized demo.",
-        "Want to see your demo featured here?"
-      ],
-      "link": {
-        "text": "Fill out this submission form for Jumpstart Lightning."
-      },
-      "image": "Demos",
-      "buttonText": {
-        "left": {
-          "label": "View demos"
-        },
-        "right": {
-          "label": "Open Jumpstart Lightning"
-        }
-      }
+        "We do this by providing detailed guides, automation and reproducible code samples — everything you need to become productive quickly. Our extensive code reviews, high-bar for quality and Continuous Integration testing ensures Jumpstart is always reliable."
+      ]
     },
     {
       "label": "EXPERIENCE THE POWER OF MICROSOFT FABRIC",
@@ -62,15 +33,7 @@
       "desc": [
         "Jumpstart lets you build data-driven experiences and taste the problem-solving capabilities of Microsoft Fabric in minutes.",
         "Rapidly experience Microsoft Fabric - a unified data platform that brings data engineering, analytics, and governance together on a single, scalable foundation."
-      ],
-      "buttonText": {
-        "left": {
-          "label": "Get started with Jumpstart"
-        },
-        "right": {
-          "label": "More about Fabric"
-        }
-      }
+      ]
     }
   ]
 }

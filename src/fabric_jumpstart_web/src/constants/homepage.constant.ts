@@ -1,7 +1,6 @@
-import { EXTERNAL_URL, INTERNAL_ROUTE } from '@config/urlconfig';
+import { INTERNAL_ROUTE } from '@config/urlconfig';
 import HomeBanner from '@images/heroBanner.svg';
 import Scenarios from '@images/scenarios.svg';
-import Demos from '@images/demos.svg';
 import OurMission from '@images/ourMission.svg';
 import PowerAndSecurity from '@images/powerAndSecurity.svg';
 
@@ -22,42 +21,10 @@ export const jumpstartUniverseConst = {
 export const sectionCardsConst = [
   {
     id: 'ourMission',
-    button: {
-      left: {
-        link: INTERNAL_ROUTE.COMMUNITY,
-      },
-      right: {
-        link: INTERNAL_ROUTE.MISSION,
-      },
-    },
     image: OurMission,
   },
   {
-    id: 'demos',
-    link: EXTERNAL_URL.DEMO_FORM,
-    image: Demos,
-    button: {
-      left: {
-        icon: true,
-        link: EXTERNAL_URL.DEMO,
-      },
-      right: {
-        icon: true,
-        link: EXTERNAL_URL.LIGHTNING,
-      },
-    },
-  },
-  {
-    lid: 'powerAndSecurity',
-    button: {
-      left: {
-        link: INTERNAL_ROUTE.OVERVIEW,
-      },
-      right: {
-        icon: true,
-        link: EXTERNAL_URL.LEARN_FABRIC,
-      },
-    },
+    id: 'powerAndSecurity',
     image: PowerAndSecurity,
   },
 ];

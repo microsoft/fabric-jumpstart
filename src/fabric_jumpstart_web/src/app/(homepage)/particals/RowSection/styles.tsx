@@ -10,12 +10,6 @@ export const useStyles = makeStyles({
     },
   },
   card1: {
-    marginBottom: '100px',
-    [device.mobileAndTablet]: {
-      margin: '0px',
-    },
-  },
-  card2: {
     margin: '200px 0px',
     [device.mobileAndTablet]: {
       margin: '0px',
@@ -42,27 +36,6 @@ export const useStyles = makeStyles({
     },
   },
   image1: {
-    marginLeft: '-30px',
-    maxWidth: '80%',
-    height: 'auto',
-    transform: 'scale(1.9)',
-    marginTop: '180px',
-    [device.mobileAndTablet]: {
-      height: 'auto',
-      marginBottom: '100px',
-    },
-    [device.tablet]: {
-      maxWidth: '50%',
-      marginTop: '0px',
-    },
-    [device.mobile]: {
-      maxWidth: '100%',
-      marginTop: '80px',
-      transform: 'scale(3.0)',
-      marginRight: '-50%',
-    },
-  },
-  image2: {
     maxWidth: '100%',
     height: 'auto',
     transform: 'scale(1.8)',
@@ -86,17 +59,6 @@ export const useStyles = makeStyles({
     },
   },
   textContainer1: {
-    width: '46%',
-    [device.mobileAndTablet]: {
-      width: '100%',
-    },
-    [device.mobile]: {
-      '& a': {
-        width: 'auto',
-      },
-    },
-  },
-  textContainer2: {
     width: '47%',
     marginRight: '80px',
     [device.mobileAndTablet]: {

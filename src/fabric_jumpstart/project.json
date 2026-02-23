@@ -1,0 +1,64 @@
+{
+  "name": "fabric-jumpstart",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "clean": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "src/fabric_jumpstart",
+        "commands": [
+          "rm -rf .venv dist build *.egg-info .ruff_cache .pytest_cache",
+          "find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true"
+        ],
+        "parallel": false
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "src/fabric_jumpstart",
+        "commands": ["uv sync --all-groups"],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "cwd": "src/fabric_jumpstart",
+        "commands": ["uv run ruff check ."],
+        "parallel": false
+      }
+    },
+    "type-check": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "cwd": "src/fabric_jumpstart",
+        "commands": ["uv run ty check ."],
+        "parallel": false
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["lint", "type-check"],
+      "options": {
+        "cwd": "src/fabric_jumpstart",
+        "commands": ["uv build"],
+        "parallel": false
+      },
+      "outputs": ["{projectRoot}/dist/**"]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "cwd": "src/fabric_jumpstart",
+        "commands": ["uv run pytest"],
+        "parallel": false
+      }
+    }
+  }
+}

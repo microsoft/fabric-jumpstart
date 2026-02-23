@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def get_registry_path() -> Path:
     """Get the path to the jumpstarts directory."""
-    return Path(__file__).parent.parent / "src" / "fabric_jumpstart" / "jumpstarts"
+    return Path(__file__).parent.parent / "jumpstarts"
 
 
 def load_registry_data() -> list:

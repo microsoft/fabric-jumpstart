@@ -1,5 +1,5 @@
 {
-  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.defaultInterpreterPath": "${workspaceFolder}/src/fabric_jumpstart/.venv/Scripts/python.exe",
   "[python]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "ms-python.python",

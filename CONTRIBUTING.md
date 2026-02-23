@@ -12,9 +12,16 @@ Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARD
 - Discuss larger changes with maintainers first (issue or PR draft) to align on scope.
 
 ## Development Setup
+
+### Linux users
+
+Please See [contrib/README.md](contrib/README.md) for the same bootstrap used by CI that uses [nx](https://nx.dev/).
+
+### Windows users
+
 - Install **uv** (https://docs.astral.sh/uv/). This project expects uv for dependency management.
 - Create/sync the virtual environment:
-  - Run `uv sync` in your terminal (installs Python 3.11–3.12 if needed and resolves dependencies)
+  - Run `cd src/fabric_jumpstart && uv sync` in your terminal (installs Python and resolves dependencies)
 - In VS Code, install the **Ruff** extension for linting.
 - Develop in notebooks or `.py` files; restart the Python kernel after code changes so the notebook picks up fresh imports. Or, use importlib to reload specific modules for agile testing.
     ```python
@@ -27,14 +34,14 @@ Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARD
 
 ## Quality Checks (required for any new features)
 ----------------------------
-- Lint: `uv run ruff check .`
-- Tests: `uv run pytest tests/`
+- Lint: `cd src/fabric_jumpstart && uv run ruff check .`
+- Tests: `cd src/fabric_jumpstart && uv run pytest`
 
 ## Submitting Changes
 ------------------
 - Include a brief rationale in your PR description and note any user-facing impacts.
 - **For new Jumpstarts:** Create a new YAML file in `src/fabric_jumpstart/jumpstarts/community/` named `<logical-id>.yml` with all required metadata. Core jumpstarts (Microsoft-sponsored) go in the `core/` folder instead.
-- Run `uv run pytest tests/test_registry.py` to confirm registry validation passes.
+- Run `cd src/fabric_jumpstart && uv run pytest tests/test_registry.py` to confirm registry validation passes.
 - Keep commits focused; avoid formatting-only churn.
 
 ## Setup of a New Jumpstart
@@ -51,7 +58,7 @@ Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARD
 1. Fork the fabric-jumpstart repo.
 1. Create a new YAML file in `src/fabric_jumpstart/jumpstarts/community/` (or `core/` for Microsoft-sponsored jumpstarts):
    - Name the file `<logical-id>.yml` (e.g., `spark-monitoring.yml`)
-   - Include all required metadata fields (see existing files for examples). _If required fields are not provided, CI tests will fail upon submission of your PR. Validate that your YAML schema conforms in advance via running `uv run pytest test_registry.py`
+   - Include all required metadata fields (see existing files for examples). _If required fields are not provided, CI tests will fail upon submission of your PR. Validate that your YAML schema conforms in advance via running `cd src/fabric_jumpstart && uv run pytest tests/test_registry.py`
    - The `core` flag will be automatically set based on folder location during loading
    - Required fields (_start by copying and editing an existing YAML file_):
      - `id`: Unique positive integer (check existing IDs to avoid conflicts)

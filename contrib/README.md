@@ -44,3 +44,13 @@
    GIT_ROOT=$(git rev-parse --show-toplevel)
    chmod +x ${GIT_ROOT}/contrib/bootstrap-dev-env.sh && ${GIT_ROOT}/contrib/bootstrap-dev-env.sh
    ```
+
+## Running the GCI Targets Locally
+
+After bootstrapping, run the same checks that CI runs:
+
+```bash
+npx nx run-many -t clean --output-style=stream
+npx nx run-many -t build test --output-style=stream
+npm run fail-on-untracked-files
+```

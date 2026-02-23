@@ -1,4 +1,4 @@
-name: CI - Run Tests
+name: Gated Check In - Run Tests for Python Matrix for compatibility
 
 on:
   pull_request:
@@ -27,17 +27,21 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Install dependencies (all groups)
+        working-directory: src/fabric_jumpstart
         run: |
           uv sync --all-groups
 
       - name: Lint (ruff)
+        working-directory: src/fabric_jumpstart
         run: |
           uv run ruff check .
 
       - name: Type check (ty)
+        working-directory: src/fabric_jumpstart
         run: |
           uv run ty check .
 
       - name: Run tests
+        working-directory: src/fabric_jumpstart
         run: |
           uv run pytest

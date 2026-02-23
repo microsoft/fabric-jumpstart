@@ -15,5 +15,8 @@ wheels/
 # Node
 node_modules/
 
+# Nx
+.nx/
+
 # Scratch
 .temp/

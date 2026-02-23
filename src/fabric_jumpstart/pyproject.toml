@@ -7,10 +7,9 @@ name = "fabric-jumpstart"
 authors = [{ name = "Microsoft Corporation" }]
 version = "0.1.1"
 description = "Get started quickly with pre-built solutions, tutorials, demos, and accelerators—automated, high-quality, and open-source."
-readme = "README.md"
+readme = {text = "See https://github.com/microsoft/fabric-jumpstart", content-type = "text/plain"}
 requires-python = ">=3.10,<=3.13"
 license = "MIT"
-license-files = ["LICENSE"]
 urls.Repository = "https://github.com/microsoft/fabric-jumpstart.git"
 classifiers = [
     "Programming Language :: Python",
@@ -26,11 +25,12 @@ dependencies = [
 ]
 
 [tool.hatch.build]
-# Include every file under src/fabric_jumpstart (not just .py) in the wheel
-include = ["src/fabric_jumpstart/**/*"]
+# Include every file under fabric_jumpstart (not just .py) in the wheel
+include = ["**/*.py", "jumpstarts/**/*", "registry.yml", "ui/**/*"]
+exclude = ["tests/**"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/fabric_jumpstart"]
+packages = ["."]
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -51,14 +51,16 @@ test = [
 ]
 
 [tool.ruff]
-src = ["src"]
+src = [".."]
 # Ignore packaged jumpstart payloads (e.g., demo notebooks) to keep lint focused on library code.
-extend-exclude = ["src/fabric_jumpstart/jumpstarts/**", "dev/**"]
+extend-exclude = ["jumpstarts/**"]
+
+[tool.ty.environment]
+root = [".."]
 
 [tool.ty.src]
 # Skip type checking for test helpers that rely on dynamic imports/aliases.
 exclude = [
-    "tests/test_instance_name.py", 
-    "src/fabric_jumpstart/jumpstarts/**",
-    "dev/**"
+    "tests/test_instance_name.py",
+    "jumpstarts/**",
 ]

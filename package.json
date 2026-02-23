@@ -1,5 +1,5 @@
 {
-  "name": "spark-devcontainer",
+  "name": "fabric-jumpstart",
   "devDependencies": {
     "@jest/globals": "^30.2.0",
     "@types/jest": "^30.0.0",
@@ -12,6 +12,9 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.7.1",
     "typescript": "^5.4.0"
+  },
+  "scripts": {
+    "fail-on-untracked-files": "tsx tools/scripts/fail-on-untracked-files.ts"
   },
   "type": "module"
 }

@@ -1,0 +1,31 @@
+name: Gated Check In - Full
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gci-linux:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: "🔄 Checkout"
+        uses: actions/checkout@v4
+
+      - name: "⚙️ Bootstrap CI Environment"
+        run: contrib/bootstrap-dev-env.sh
+
+      - name: "🧹 Clean Projects"
+        run: npx nx run-many -t clean --parallel=3 --output-style=stream
+
+      - name: "📦 Build Projects"
+        run: npx nx run-many -t build --parallel=3 --output-style=stream
+
+      - name: "🧪 Test Projects"
+        run: npx nx run-many -t test --verbose --output-style=stream
+
+      - name: "📁 Verify No Untracked Files"
+        run: npm run fail-on-untracked-files

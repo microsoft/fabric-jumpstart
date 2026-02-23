@@ -23,8 +23,6 @@ fi
 command -v uv &> /dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
 
 [[ ":$PATH:" != *":$HOME/.local/bin:"* ]] && export PATH="$PATH:$HOME/.local/bin" || true
-
-# Ensure uv is available system-wide for tools like Nx that spawn a fresh /bin/sh
 if [ -f "$HOME/.local/bin/uv" ] && [ ! -f /usr/local/bin/uv ]; then
     sudo ln -sf "$HOME/.local/bin/uv" /usr/local/bin/uv
     sudo ln -sf "$HOME/.local/bin/uvx" /usr/local/bin/uvx 2>/dev/null || true
@@ -35,8 +33,7 @@ uv sync --all-groups
 [ -f .venv/bin/activate ] && source .venv/bin/activate
 
 cd "$REPO_ROOT"
-sudo npm install
-sudo chmod -R 777 ${REPO_ROOT}/node_modules
+npm install
 
 echo "python: $(python3 --version)"
 echo "uv: $(uv --version)"

@@ -8,14 +8,14 @@ export interface ButtonGroupProps {
   left: ButtonProps & {
     label: string;
   };
-  right: ButtonProps & {
+  right?: ButtonProps & {
     label: string;
   };
 }
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ left, right }) => {
   const classes = useStyles();
-  if (!left || !right) return null;
+  if (!left) return null;
   return (
     <div className={classes.buttonContainer}>
       <Button
@@ -27,15 +27,17 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({ left, right }) => {
       >
         {left?.label}
       </Button>
-      <Button
-        appearance="secondary"
-        aria-label={right?.label}
-        size="large"
-        iconPosition="after"
-        {...right}
-      >
-        {right?.label}
-      </Button>
+      {right && (
+        <Button
+          appearance="secondary"
+          aria-label={right?.label}
+          size="large"
+          iconPosition="after"
+          {...right}
+        >
+          {right?.label}
+        </Button>
+      )}
     </div>
   );
 };

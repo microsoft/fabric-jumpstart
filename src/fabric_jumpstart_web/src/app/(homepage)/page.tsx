@@ -31,22 +31,6 @@ export default function Home() {
             as: 'a',
             href: INTERNAL_ROUTE.SCENARIOS,
           }}
-          right={{
-            label: t('banner.buttonText.right.label'),
-            icon: (
-              <Icon
-                lightThemeIcon={ExternalArrowBlack}
-                darkThemeIcon={ExternalArrowWhite}
-                alt={t('banner.buttonText.right.iconAltText')}
-                width={30}
-                height={20}
-              />
-            ),
-            as: 'a',
-            href: EXTERNAL_URL.DEMO,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-          }}
         />
       </HeroBanner>
       <ScenarioCarousel />

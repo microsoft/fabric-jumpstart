@@ -5,8 +5,17 @@ import '@styles/global.css';
 import OGImage from '@images/logo.jpg';
 import Header from '@components/Header';
 import Footer from '@components/Footer';
+import type { UhfData } from '@components/Footer';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import parse from 'html-react-parser';
+
+let uhfData: UhfData = { cssIncludes: '', javascriptIncludes: '', footerHtml: '' };
+try {
+  uhfData = require('@data/uhf.json');
+} catch {
+  // UHF data not yet generated — will be empty on first run
+}
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -38,6 +47,7 @@ export default async function RootLayout({
         <meta property="og:image" content={OGImage.src} />
         <meta name="twitter:image" content={OGImage.src} />
         {disableSeo && <meta name="robots" content="noindex, nofollow" />}
+        {uhfData.cssIncludes && parse(uhfData.cssIncludes)}
       </head>
       <body className={inter.className}>
         <NextIntlClientProvider messages={messages}>
@@ -46,7 +56,7 @@ export default async function RootLayout({
             <main style={{ minHeight: '100vh' }}>
               {children}
             </main>
-            <Footer />
+            <Footer uhfData={uhfData} />
           </RootProvider>
         </NextIntlClientProvider>
       </body>

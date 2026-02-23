@@ -4,6 +4,7 @@
 /docs
 /src/data/side-menu.json
 /src/data/scenarios.json
+/src/data/uhf.json
 *.tsbuildinfo
 next-env.d.ts
 coverage/

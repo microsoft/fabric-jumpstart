@@ -249,7 +249,7 @@ function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
     }));
 }
 
-function main(): void {
+async function main(): Promise<void> {
   console.log('🔧 Generating website content from scenario YAMLs...');
 
   const scenarios = loadScenarios();
@@ -277,7 +277,44 @@ function main(): void {
   );
   console.log('  Generated scenarios.json');
 
+  // Fetch Microsoft UHF footer
+  await generateUhfData();
+
   console.log('✅ Content generation complete!');
+}
+
+async function generateUhfData(): Promise<void> {
+  const UHF_URL =
+    'https://uhf.microsoft.com/en-US/shell/xml/AZCloudNative?headerId=AZCloudNativeHeader&footerId=AZCloudNativeFooter';
+
+  try {
+    const response = await fetch(UHF_URL);
+    const xml = await response.text();
+
+    const extract = (tag: string): string => {
+      const re = new RegExp(`<${tag}>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*</${tag}>`);
+      const match = xml.match(re);
+      return match ? match[1] : '';
+    };
+
+    const uhf = {
+      cssIncludes: extract('cssIncludes'),
+      javascriptIncludes: extract('javascriptIncludes'),
+      footerHtml: extract('footerHtml'),
+    };
+
+    fs.writeFileSync(
+      path.join(DATA_DIR, 'uhf.json'),
+      JSON.stringify(uhf, null, 2)
+    );
+    console.log('  Generated uhf.json (Microsoft UHF footer)');
+  } catch (e) {
+    console.warn('  ⚠ Failed to fetch UHF data, using empty fallback:', e);
+    fs.writeFileSync(
+      path.join(DATA_DIR, 'uhf.json'),
+      JSON.stringify({ cssIncludes: '', javascriptIncludes: '', footerHtml: '' })
+    );
+  }
 }
 
 main();

@@ -2,6 +2,11 @@
 
 import React, { useState } from 'react';
 import { tokens } from '@fluentui/react-components';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import {
+  oneDark,
+  oneLight,
+} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useThemeContext } from '@components/Providers/themeProvider';
 
 interface ScenarioData {
@@ -49,24 +54,38 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioData 
       padding: '28px 32px',
       marginBottom: '32px',
     }}>
-      {/* Overview Header */}
-      <div style={{
-        display: 'inline-block',
-        padding: '6px 20px',
-        borderRadius: '8px',
-        backgroundColor: isDark ? 'rgba(0,120,212,0.15)' : 'rgba(0,120,212,0.08)',
-        marginBottom: '20px',
+      {/* Title */}
+      <h1 style={{
+        fontSize: '22px',
+        fontWeight: 600,
+        margin: '0 0 16px',
+        lineHeight: 1.3,
+        color: tokens.colorNeutralForeground1,
       }}>
-        <span style={{
-          fontSize: '13px',
-          fontWeight: 700,
-          textTransform: 'uppercase' as const,
-          letterSpacing: '0.1em',
-          color: tokens.colorPaletteBlueForeground2,
-        }}>
-          Overview
-        </span>
-      </div>
+        {scenario.title}
+      </h1>
+
+      {/* Overview label — same style as section headers below */}
+      <h4 style={{
+        fontSize: '13px',
+        fontWeight: 700,
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.06em',
+        color: tokens.colorNeutralForeground2,
+        margin: '0 0 10px',
+      }}>
+        Overview
+      </h4>
+
+      {/* Description */}
+      <p style={{
+        fontSize: '14px',
+        lineHeight: 1.7,
+        color: tokens.colorNeutralForeground2,
+        margin: '0 0 24px',
+      }}>
+        {scenario.description}
+      </p>
 
       {/* Property grid */}
       <div style={{
@@ -182,19 +201,19 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioData 
           borderRadius: '8px',
           overflow: 'hidden',
         }}>
-          <pre style={{
-            backgroundColor: isDark ? '#1e1e1e' : '#f5f5f5',
-            padding: '16px 20px',
-            margin: 0,
-            borderRadius: '8px',
-            fontSize: '13px',
-            lineHeight: 1.6,
-            overflowX: 'auto',
-            color: isDark ? '#d4d4d4' : '#1e1e1e',
-            fontFamily: "'Consolas', 'Courier New', monospace",
-          }}>
-            <code>{installCode}</code>
-          </pre>
+          <SyntaxHighlighter
+            language="python"
+            style={isDark ? oneDark : oneLight}
+            customStyle={{
+              margin: 0,
+              borderRadius: '8px',
+              fontSize: '13px',
+              lineHeight: 1.6,
+              padding: '16px 20px',
+            }}
+          >
+            {installCode}
+          </SyntaxHighlighter>
           <button
             onClick={handleCopy}
             style={{
@@ -232,15 +251,15 @@ function PropertyCard({
     <div style={{
       padding: '12px 16px',
       borderRadius: '8px',
-      backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)',
+      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
     }}>
       <div style={{
         fontSize: '11px',
         fontWeight: 600,
         textTransform: 'uppercase' as const,
         letterSpacing: '0.06em',
-        color: tokens.colorNeutralForeground3,
+        color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)',
         marginBottom: '4px',
       }}>
         {label}
@@ -248,7 +267,7 @@ function PropertyCard({
       <div style={{
         fontSize: '14px',
         fontWeight: 600,
-        color: tokens.colorNeutralForeground1,
+        color: isDark ? '#ffffff' : '#1a1a1a',
       }}>
         {value}
       </div>

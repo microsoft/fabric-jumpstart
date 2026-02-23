@@ -62,8 +62,8 @@ const useStyles = makeStyles({
     fontSize: '12px',
     ...shorthands.padding('4px', '8px'),
     ...shorthands.borderRadius('4px'),
-    backgroundColor: tokens.colorBrandBackground2,
-    color: tokens.colorBrandForeground2,
+    backgroundColor: tokens.colorNeutralBackground3,
+    color: tokens.colorNeutralForeground1,
   },
   difficultyBadge: {
     fontSize: '12px',
@@ -85,7 +85,7 @@ const useStyles = makeStyles({
   },
   deployTime: {
     fontSize: '12px',
-    color: tokens.colorNeutralForeground3,
+    color: tokens.colorNeutralForeground2,
     marginTop: '12px',
   },
   sectionTitle: {

@@ -8,6 +8,7 @@ import { EffectCoverflow, Navigation, Keyboard } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import { tokens } from '@fluentui/react-components';
 import { ChevronRightFilled } from '@fluentui/react-icons';
+import { useThemeContext } from '@components/Providers/themeProvider';
 import scenariosData from '@data/scenarios.json';
 
 import 'swiper/css';
@@ -37,6 +38,8 @@ const difficultyColor: Record<string, { bg: string; fg: string }> = {
 export default function ScenarioCarousel() {
   const scenarios = scenariosData as Scenario[];
   const [activeIndex, setActiveIndex] = useState(0);
+  const { theme } = useThemeContext();
+  const isDark = theme.key === 'dark';
 
   const handleSlideChange = useCallback((swiper: SwiperType) => {
     setActiveIndex(swiper.realIndex);
@@ -60,7 +63,7 @@ export default function ScenarioCarousel() {
         <div>
           <p style={{
             fontSize: tokens.fontSizeBase400,
-            color: tokens.colorNeutralForeground3,
+            color: tokens.colorPaletteBlueForeground2,
             margin: '0 0 4px',
             fontWeight: 600,
             textTransform: 'uppercase' as const,
@@ -108,7 +111,7 @@ export default function ScenarioCarousel() {
         <span style={{
           fontSize: '13px',
           fontWeight: 600,
-          color: tokens.colorNeutralForeground3,
+          color: tokens.colorPaletteBlueForeground2,
           fontVariantNumeric: 'tabular-nums',
         }}>
           {activeIndex + 1} of {scenarios.length}
@@ -133,14 +136,14 @@ export default function ScenarioCarousel() {
           fontSize: '12px',
           padding: '3px 10px',
           borderRadius: '4px',
-          backgroundColor: tokens.colorBrandBackground2,
-          color: tokens.colorBrandForeground2,
+          backgroundColor: tokens.colorNeutralBackground3,
+          color: tokens.colorBrandForeground1,
         }}>
           {active.type}
         </span>
         <span style={{
           fontSize: '12px',
-          color: tokens.colorNeutralForeground3,
+          color: tokens.colorPaletteBlueForeground2,
         }}>
           ⚡ {active.minutesToDeploy} min deploy
         </span>
@@ -197,8 +200,8 @@ export default function ScenarioCarousel() {
                     overflow: 'hidden',
                     backdropFilter: 'blur(20px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.82)',
-                    border: '1px solid rgba(255, 255, 255, 0.35)',
+                    backgroundColor: isDark ? 'rgba(30, 30, 36, 0.78)' : 'rgba(255, 255, 255, 0.82)',
+                    border: isDark ? '1px solid rgba(255, 255, 255, 0.10)' : '1px solid rgba(255, 255, 255, 0.35)',
                     boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
@@ -241,9 +244,9 @@ export default function ScenarioCarousel() {
                     <div style={{
                       marginTop: '14px',
                       fontSize: '12px',
-                      color: tokens.colorNeutralForeground3,
+                      color: tokens.colorNeutralForeground2,
                     }}>
-                      ⚡ {scenario.minutesToDeploy} min &middot; {scenario.itemsInScope.length} Fabric items
+                      {scenario.itemsInScope.length} Fabric items
                     </div>
                   </div>
                 </div>
@@ -276,7 +279,7 @@ export default function ScenarioCarousel() {
         /* Non-active slides: dimmed + blurred */
         .swiper-slide {
           transition: filter 0.4s ease, opacity 0.4s ease;
-          filter: blur(2px) brightness(0.65);
+          filter: blur(2px) brightness(${isDark ? '0.45' : '0.65'});
           opacity: 0.6;
         }
         .swiper-slide-active {
@@ -286,25 +289,8 @@ export default function ScenarioCarousel() {
 
         /* Active card gets elevated glow */
         .swiper-slide-active .carousel-card {
-          border-color: rgba(0, 120, 212, 0.35) !important;
+          border-color: ${isDark ? 'rgba(100, 180, 255, 0.3)' : 'rgba(0, 120, 212, 0.35)'} !important;
           box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06) !important;
-        }
-
-        /* Dark mode */
-        @media (prefers-color-scheme: dark) {
-          .carousel-card {
-            background-color: rgba(30, 30, 36, 0.78) !important;
-            border-color: rgba(255, 255, 255, 0.10) !important;
-          }
-          .swiper-slide {
-            filter: blur(2px) brightness(0.45);
-          }
-          .swiper-slide-active {
-            filter: blur(0) brightness(1);
-          }
-          .swiper-slide-active .carousel-card {
-            border-color: rgba(100, 180, 255, 0.3) !important;
-          }
         }
 
         /* Nav arrows */

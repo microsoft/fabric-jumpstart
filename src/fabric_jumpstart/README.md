@@ -20,7 +20,7 @@ Run inside a Fabric notebook (or any Python environment with Fabric credentials)
 ```python
 import fabric_jumpstart as jumpstart
 
-# renders an interactive catalog
+# Renders an interactive catalog
 jumpstart.list()
 
 # Copy the install command from the catalog, past in another cell and run!

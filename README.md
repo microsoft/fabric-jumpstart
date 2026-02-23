@@ -5,7 +5,7 @@ Fabric Jumpstart accelerates Microsoft Fabric adoption with ready-to-run acceler
 ## What is a Jumpstart?
 - A curated, tested Fabric solution (data, notebooks, pipelines, reports, supporting assets, etc.) that you can deploy end-to-end with one call.
 - Each Jumpstart is self-contained: data is bundled or generated for you, and post-install notebooks guide any manual configuration.
-- Discover available Jumpstarts at https://fabric.jumpstart.microsoft.com ( ⚠️ UNDER CONSTRUCTION ⚠️ ).
+- Discover available Jumpstarts at https://jumpstart.fabric.microsoft.com ( ⚠️ UNDER CONSTRUCTION ⚠️ ).
 
 ## Install the Library
 Requirements: Python 3.10–3.12 and access to a Microsoft Fabric workspace.

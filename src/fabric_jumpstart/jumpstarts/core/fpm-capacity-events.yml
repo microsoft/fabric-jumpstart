@@ -5,6 +5,7 @@ description: Uses the Capacity Events to get the information of the capacity in 
 date_added: 02/03/2026
 include_in_listing: true
 workload_tags:
+- Data Factory
 - Real-Time Intelligence
 scenario_tags:
 - Monitoring
@@ -35,6 +36,5 @@ web:
     trends on live KQL dashboards for proactive management.
   preview_image_url: "https://placehold.co/600x400?text=Capacity+Events"
   video_url: ""
-  tags_display: ["Real-Time Intelligence", "Monitoring"]
   difficulty: "Beginner"
   last_updated: "2026-02-03"

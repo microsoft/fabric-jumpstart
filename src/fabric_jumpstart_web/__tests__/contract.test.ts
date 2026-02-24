@@ -91,7 +91,6 @@ describe('Scenario YAML contract', () => {
     expect(typeof web.preview_image_url).toBe('string');
     expect(typeof web.difficulty).toBe('string');
     expect(['Beginner', 'Intermediate', 'Advanced']).toContain(web.difficulty);
-    expect(Array.isArray(web.tags_display)).toBe(true);
   });
 
   test.each(scenarios)(
@@ -107,4 +106,59 @@ describe('Scenario YAML contract', () => {
   )('listed scenario $file has non-empty description', ({ data }) => {
     expect((data.description as string).length).toBeGreaterThan(10);
   });
+});
+
+const REGISTRY_PATH = path.resolve(
+  __dirname,
+  '../../fabric_jumpstart/registry.yml'
+);
+const WORKLOAD_IMAGES_DIR = path.resolve(
+  __dirname,
+  '../public/images/tags/workload'
+);
+
+function toSlug(tag: string): string {
+  return tag
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+interface RegistryYml {
+  jumpstarts: { workload_tags?: string[] }[];
+}
+
+function collectDistinctWorkloadTags(): string[] {
+  const content = fs.readFileSync(REGISTRY_PATH, 'utf-8');
+  const registry = yaml.load(content) as RegistryYml;
+  const tags = new Set<string>();
+  for (const js of registry.jumpstarts) {
+    (js.workload_tags ?? []).forEach((t) => tags.add(t));
+  }
+  return [...tags].sort();
+}
+
+describe('Tag image coverage', () => {
+  const workloadTags = collectDistinctWorkloadTags();
+
+  const IMAGE_EXTENSIONS = ['.svg', '.png', '.jpg', '.jpeg', '.webp'];
+
+  function imageExists(dir: string, slug: string): boolean {
+    return IMAGE_EXTENSIONS.some((ext) =>
+      fs.existsSync(path.join(dir, `${slug}${ext}`))
+    );
+  }
+
+  test.each(workloadTags.map((t) => ({ tag: t, slug: toSlug(t) })))(
+    'workload tag "$tag" has a corresponding image',
+    ({ tag, slug }) => {
+      if (!imageExists(WORKLOAD_IMAGES_DIR, slug)) {
+        throw new Error(
+          `Missing image for workload tag "${tag}". ` +
+            `Please find a high-quality image that represents this workload and add it as "${slug}.svg" (or .png/.jpg/.webp) to:\n` +
+            `  src/fabric_jumpstart_web/public/images/tags/workload/`
+        );
+      }
+    }
+  );
 });

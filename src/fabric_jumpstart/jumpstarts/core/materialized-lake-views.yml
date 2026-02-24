@@ -37,6 +37,5 @@ web:
     real-time ingestion to build an optimized data lakehouse architecture.
   preview_image_url: "https://placehold.co/600x400?text=Materialized+Lake+Views"
   video_url: ""
-  tags_display: ["Data Engineering", "Batch Processing"]
   difficulty: "Intermediate"
   last_updated: "2025-09-01"

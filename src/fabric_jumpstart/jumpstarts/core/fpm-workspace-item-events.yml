@@ -5,6 +5,8 @@ description: Monitor the workspace item events, with real-time data ingestion.
 date_added: 02/03/2026
 include_in_listing: true
 workload_tags:
+- Data Factory
+- Power BI
 - Real-Time Intelligence
 scenario_tags:
 - Monitoring
@@ -36,6 +38,5 @@ web:
     Monitor workspace item events in real-time using Microsoft Fabric. Ingest item-level telemetry into an Eventhouse via Eventstream and visualize activity patterns on live KQL dashboards.
   preview_image_url: "https://placehold.co/600x400?text=Workspace+Item+Events"
   video_url: ""
-  tags_display: ["Real-Time Intelligence", "Monitoring"]
   difficulty: "Intermediate"
   last_updated: "2026-02-03"

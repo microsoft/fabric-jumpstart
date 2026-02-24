@@ -5,6 +5,8 @@ description: Monitor the gateway performance and usage, with real-time data inge
 date_added: 02/03/2026
 include_in_listing: true
 workload_tags:
+- Data Factory
+- Power BI
 - Real-Time Intelligence
 scenario_tags:
 - Monitoring
@@ -38,6 +40,5 @@ web:
     through live dashboards and Power BI reports.
   preview_image_url: "https://placehold.co/600x400?text=Gateway+Monitoring"
   video_url: ""
-  tags_display: ["Real-Time Intelligence", "Monitoring"]
   difficulty: "Beginner"
   last_updated: "2026-02-03"

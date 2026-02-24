@@ -75,8 +75,8 @@ jumpstarts:
     description: "This is a sample description for a test jumpstart."
     date_added: "1/8/2026"
     include_in_listing: False
-    workload_tags: ["Test"]
-    scenario_tags: ["Test"]
+    workload_tags: ["Data Warehouse"]
+    scenario_tags: ["Modeling"]
     type: "Demo"
     source:
       workspace_path: "src/"
@@ -266,7 +266,7 @@ jumpstarts:
     description: "Uses the Capacity Events to get the information of the capacity in real-time."
     date_added: "02/03/2026"
     include_in_listing: True
-    workload_tags: ["Real-Time Intelligence"]
+    workload_tags: ["Data Factory", "Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
     type: "Accelerator"
     source:
@@ -297,7 +297,7 @@ jumpstarts:
     description: "Extract and store semi-structured platform activity events in an Eventhouse for near real-time analysis and data-driven actions"
     date_added: "02/03/2026"
     include_in_listing: True
-    workload_tags: ["Real-Time Intelligence"]
+    workload_tags: ["Data Factory", "Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
     type: "Accelerator"
     source:
@@ -329,7 +329,7 @@ jumpstarts:
     description: "Extract the information of the tenant, keeping a semi-structure format for some details like specific item details that could be added or change over time."
     date_added: "02/03/2026"
     include_in_listing: True
-    workload_tags: ["Real-Time Intelligence"]
+    workload_tags: ["Data Factory", "Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
     type: "Accelerator"
     source:
@@ -361,7 +361,7 @@ jumpstarts:
     description: "Monitor the gateway performance and usage, with real-time data ingestion."
     date_added: "02/03/2026"
     include_in_listing: True
-    workload_tags: ["Real-Time Intelligence"]
+    workload_tags: ["Data Factory", "Power BI", "Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
     type: "Accelerator"
     source:
@@ -485,7 +485,7 @@ jumpstarts:
     description: "Monitor the workspace item events, with real-time data ingestion."
     date_added: "02/03/2026"
     include_in_listing: True
-    workload_tags: ["Real-Time Intelligence"]
+    workload_tags: ["Data Factory", "Power BI", "Real-Time Intelligence"]
     scenario_tags: ["Monitoring"]
     type: "Accelerator"
     source:

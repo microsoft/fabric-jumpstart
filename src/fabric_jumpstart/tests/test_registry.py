@@ -216,3 +216,54 @@ class TestRegistryValidation:
             logical_id = jumpstart.get('logical_id', '[unknown]')
             assert 'core' in jumpstart, f"Jumpstart '{logical_id}' missing core flag"
             assert isinstance(jumpstart['core'], bool), f"Jumpstart '{logical_id}' core flag must be boolean"
+
+    def test_registry_yml_in_sync_with_core_yamls(self):
+        """Ensure registry.yml workload_tags and scenario_tags match individual core YAMLs.
+
+        The registry.yml is the authoritative source for tag assignments.
+        When tags are updated in registry.yml they must also be updated in
+        the corresponding jumpstarts/core/<logical_id>.yml file so that
+        downstream consumers (e.g. the website) see the correct values.
+        """
+        registry_yml_path = Path(__file__).parent.parent / "registry.yml"
+        if not registry_yml_path.exists():
+            pytest.skip("registry.yml not found")
+
+        with open(registry_yml_path, "r", encoding="utf-8") as f:
+            registry = yaml.safe_load(f)
+
+        reg_map: dict[str, dict] = {}
+        for entry in registry.get("jumpstarts", []):
+            reg_map[entry["logical_id"]] = entry
+
+        core_dir = get_registry_path() / "core"
+        mismatches: list[str] = []
+
+        for yml_file in sorted(core_dir.glob("*.yml")):
+            with open(yml_file, "r", encoding="utf-8") as f:
+                core_data = yaml.safe_load(f)
+            if not core_data:
+                continue
+
+            logical_id = core_data.get("logical_id")
+            if logical_id not in reg_map:
+                continue
+
+            reg_entry = reg_map[logical_id]
+
+            for field in ("workload_tags", "scenario_tags"):
+                core_tags = sorted(core_data.get(field, []))
+                reg_tags = sorted(reg_entry.get(field, []))
+                if core_tags != reg_tags:
+                    mismatches.append(
+                        f"  {logical_id} → {field}:\n"
+                        f"    registry.yml: {reg_tags}\n"
+                        f"    core YAML:    {core_tags}"
+                    )
+
+        if mismatches:
+            pytest.fail(
+                "registry.yml and jumpstarts/core/ YAMLs are out of sync.\n"
+                "Update the individual YAML files to match registry.yml, then "
+                "re-run content generation:\n\n" + "\n".join(mismatches)
+            )

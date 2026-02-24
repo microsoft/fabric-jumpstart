@@ -6,6 +6,7 @@ description: Extract and store semi-structured platform activity events in an Ev
 date_added: 02/03/2026
 include_in_listing: true
 workload_tags:
+- Data Factory
 - Real-Time Intelligence
 scenario_tags:
 - Monitoring
@@ -37,6 +38,5 @@ web:
     with live dashboards powered by KQL queries and automated data pipelines.
   preview_image_url: "https://placehold.co/600x400?text=Activity+Events"
   video_url: ""
-  tags_display: ["Real-Time Intelligence", "Monitoring"]
   difficulty: "Beginner"
   last_updated: "2026-02-03"

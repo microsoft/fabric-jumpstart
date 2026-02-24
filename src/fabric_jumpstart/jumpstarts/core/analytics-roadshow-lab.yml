@@ -40,6 +40,5 @@ web:
     warehousing, modeling, and streaming patterns across multiple Fabric workloads.
   preview_image_url: "https://placehold.co/600x400?text=Analytics+Roadshow+Lab"
   video_url: ""
-  tags_display: ["Data Engineering", "Data Warehouse", "Streaming", "Modeling"]
   difficulty: "Advanced"
   last_updated: "2026-01-08"

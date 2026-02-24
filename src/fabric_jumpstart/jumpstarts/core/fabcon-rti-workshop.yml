@@ -7,7 +7,7 @@ include_in_listing: false
 workload_tags:
 - Real-Time Intelligence
 scenario_tags:
-- Monitoring
+- Streaming
 type: Tutorial
 source:
   repo_url: https://github.com/ecotte/fabric-rti-iq-workshops.git
@@ -35,6 +35,5 @@ web:
     A hands-on workshop to build a complete analytics platform for streaming data using Microsoft Fabric Real-Time Intelligence, covering Eventstreams, Eventhouses, KQL, and real-time dashboards.
   preview_image_url: "https://placehold.co/600x400?text=Fabcon+RTI+Workshop"
   video_url: ""
-  tags_display: ["Real-Time Intelligence", "Monitoring"]
   difficulty: "Advanced"
   last_updated: "2026-02-21"

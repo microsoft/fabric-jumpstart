@@ -1,0 +1,38 @@
+{
+  "Data Engineering": {
+    "light": "#BDF5FF",
+    "accent": "#0094E5",
+    "mid": "#50E0FF",
+    "icon": "/images/tags/workload/data-engineering.svg"
+  },
+  "Data Factory": {
+    "light": "#E5FAC1",
+    "accent": "#FFC600",
+    "mid": "#BAE884",
+    "icon": "/images/tags/workload/data-factory.svg"
+  },
+  "Data Warehouse": {
+    "light": "#A1ECFF",
+    "accent": "#0094E5",
+    "mid": "#40D8F9",
+    "icon": "/images/tags/workload/data-warehouse.svg"
+  },
+  "Power BI": {
+    "light": "#F9E589",
+    "accent": "#E6AD10",
+    "mid": "#F6D751",
+    "icon": "/images/tags/workload/power-bi.svg"
+  },
+  "Real-Time Intelligence": {
+    "light": "#A1ECFF",
+    "accent": "#0669B6",
+    "mid": "#3CC5EE",
+    "icon": "/images/tags/workload/real-time-intelligence.svg"
+  },
+  "SQL Database": {
+    "light": "#EFCEFD",
+    "accent": "#002561",
+    "mid": "#524BB5",
+    "icon": "/images/tags/workload/sql-database.svg"
+  }
+}

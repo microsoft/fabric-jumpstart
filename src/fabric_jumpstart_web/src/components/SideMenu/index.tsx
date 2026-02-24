@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, KeyboardEvent } from 'react';
+import React, { useEffect, useState, useCallback, KeyboardEvent } from 'react';
 import { usePathname } from 'next/navigation';
 import { mergeClasses } from '@fluentui/react-components';
 import { ChevronLeftFilled, ChevronRightFilled } from '@fluentui/react-icons';
@@ -9,6 +9,7 @@ import { findNode, sortNodeTree } from '@utils/markdown';
 import { useGlobalContext } from '@components/Providers/globalProvider';
 import { ACTION } from '@store/action';
 import Menu from './Menu';
+import SidebarFilters, { FilterState, getMatchingSlugs } from './SidebarFilters';
 import { useStyles } from './styles';
 import { isMobileOrTablet } from '@utils/common';
 
@@ -17,6 +18,11 @@ const SideMenu = () => {
   const menuOpenItems = globaleState.menuItems || [];
   const sortedMenuData = sortNodeTree(SideMenuData);
   const pathname = usePathname();
+  const [matchingSlugs, setMatchingSlugs] = useState<Set<string> | null>(null);
+
+  const handleApplyFilters = useCallback((filters: FilterState) => {
+    setMatchingSlugs(getMatchingSlugs(filters));
+  }, []);
 
   useEffect(() => {
     // Build menu data from the fabric_jumpstart node
@@ -106,6 +112,25 @@ const SideMenu = () => {
   const styles = useStyles();
   if (!globaleState.menuData?.children) return null;
 
+  // Build filtered menu tree when filters are active
+  const filteredMenuData = (() => {
+    if (!matchingSlugs) return globaleState.menuData;
+    const filterChildren = (node: any): any => {
+      if (!node.children) return node;
+      const filtered = node.children
+        .map((child: any) => {
+          if (child.children && child.children.length > 0) {
+            return filterChildren(child);
+          }
+          // Leaf scenario node — check if its name (slug) is in the matching set
+          return matchingSlugs.has(child.name) ? child : null;
+        })
+        .filter(Boolean);
+      return { ...node, children: filtered };
+    };
+    return filterChildren(globaleState.menuData);
+  })();
+
   return (
     <aside className={styles.sideMenuWrapper}>
       <div
@@ -115,8 +140,9 @@ const SideMenu = () => {
         )}
       >
         <div className={styles.menuContainer}>
+          <SidebarFilters onApply={handleApplyFilters} />
           <Menu
-            tree={globaleState.menuData}
+            tree={filteredMenuData}
             openItems={globaleState.menu}
             onToggle={handleToggle}
             onMenuItemClick={onMenuItemClick}

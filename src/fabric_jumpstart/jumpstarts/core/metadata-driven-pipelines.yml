@@ -38,6 +38,5 @@ web:
     that adapt to changing data sources without code modifications.
   preview_image_url: "https://placehold.co/600x400?text=Metadata+Driven+Pipelines"
   video_url: ""
-  tags_display: ["Data Factory", "SQL Database", "Data Integration"]
   difficulty: "Intermediate"
   last_updated: "2025-09-01"

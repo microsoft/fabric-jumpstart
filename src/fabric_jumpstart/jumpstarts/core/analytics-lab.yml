@@ -5,9 +5,9 @@ description: This is a sample description for a test jumpstart.
 date_added: 1/8/2026
 include_in_listing: false
 workload_tags:
-- Test
+- Data Warehouse
 scenario_tags:
-- Test
+- Modeling
 type: Demo
 source:
   workspace_path: src/
@@ -31,6 +31,5 @@ web:
     and understand core Fabric concepts.
   preview_image_url: "https://placehold.co/600x400?text=Analytics+Lab"
   video_url: ""
-  tags_display: ["Test"]
   difficulty: "Intermediate"
   last_updated: "2026-01-08"

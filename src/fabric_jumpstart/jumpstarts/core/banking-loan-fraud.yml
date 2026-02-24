@@ -35,6 +35,5 @@ web:
     Eventhouse and visualize fraud patterns on live KQL dashboards.
   preview_image_url: "https://placehold.co/600x400?text=Banking+Loan+Fraud"
   video_url: ""
-  tags_display: ["Real-Time Intelligence", "Streaming"]
   difficulty: "Beginner"
   last_updated: "2026-02-13"

@@ -12,6 +12,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { glob } from 'glob';
+import type { ScenarioYml, ScenarioCard } from '../src/types/scenario';
 
 const JUMPSTARTS_DIR = path.resolve(
   __dirname,
@@ -28,51 +29,6 @@ const WORKLOAD_ICONS_PUBLIC_DIR = path.resolve(
   __dirname,
   '../public/images/tags/workload'
 );
-
-interface ScenarioYml {
-  id: number;
-  logical_id: string;
-  name: string;
-  description: string;
-  date_added: string;
-  include_in_listing: boolean;
-  workload_tags: string[];
-  scenario_tags: string[];
-  type: string;
-  source: {
-    repo_url?: string;
-    repo_ref?: string;
-    workspace_path: string;
-    preview_image_path: string;
-  };
-  items_in_scope: string[];
-  jumpstart_docs_uri: string;
-  entry_point: string;
-  owner_email: string;
-  minutes_to_deploy: number;
-  minutes_to_complete_jumpstart: number;
-  video_url?: string;
-  difficulty?: string;
-  last_updated?: string;
-}
-
-interface ScenarioCard {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  difficulty: string;
-  tags: string[];
-  previewImage: string;
-  videoUrl: string;
-  minutesToDeploy: number;
-  minutesToComplete: number;
-  itemsInScope: string[];
-  docsUri: string;
-  slug: string;
-  lastUpdated: string;
-  body: string;
-}
 
 interface SideMenuItem {
   name: string;

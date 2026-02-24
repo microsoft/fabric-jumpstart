@@ -27,7 +27,8 @@
       "@data/*": ["./src/data/*"],
       "@config/*": ["./src/config/*"],
       "@store/*": ["./src/store/*"],
-      "@hooks/*": ["./src/hooks/*"]
+      "@hooks/*": ["./src/hooks/*"],
+      "@scenario/*": ["./src/types/*"]
     },
     "target": "ES2017"
   },

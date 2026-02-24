@@ -4,16 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { tokens } from '@fluentui/react-components';
 import { useThemeContext } from '@components/Providers/themeProvider';
 import scenariosData from '@data/scenarios.json';
-
-interface Scenario {
-  id: string;
-  title: string;
-  type: string;
-  difficulty: string;
-  tags: string[];
-  workloadTags?: string[];
-  slug: string;
-}
+import type { ScenarioCard } from '@scenario/scenario';
 
 export interface FilterState {
   search: string;
@@ -29,7 +20,7 @@ const emptyFilters: FilterState = {
   workloadTags: [],
 };
 
-const scenarios = scenariosData as Scenario[];
+const scenarios = scenariosData as ScenarioCard[];
 
 function deriveOptions() {
   const types = [...new Set(scenarios.map((s) => s.type))].sort();

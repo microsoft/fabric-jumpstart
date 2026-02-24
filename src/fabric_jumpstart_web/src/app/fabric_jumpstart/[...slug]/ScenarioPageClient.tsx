@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { tokens } from '@fluentui/react-components';
 import ScenarioOverview from '@components/ScenarioOverview';
 import scenariosData from '@data/scenarios.json';
+import type { ScenarioCard } from '@scenario/scenario';
 
 interface ScenarioPageClientProps {
   slug: string;
@@ -13,7 +14,7 @@ interface ScenarioPageClientProps {
 export default function ScenarioPageClient({
   slug,
 }: ScenarioPageClientProps) {
-  const scenario = (scenariosData as any[]).find((s) => s.slug === slug || s.id === slug);
+  const scenario = (scenariosData as ScenarioCard[]).find((s) => s.slug === slug || s.id === slug);
 
   return (
     <section

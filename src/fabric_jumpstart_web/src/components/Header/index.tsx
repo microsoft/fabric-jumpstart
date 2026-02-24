@@ -21,6 +21,7 @@ import GithubLightRegular from '@images/github-light-regular.svg';
 import PythonLogoDark from '@images/python-logo-dark.svg';
 import PythonLogoLight from '@images/python-logo-light.svg';
 import scenariosData from '@data/scenarios.json';
+import type { ScenarioCard } from '@scenario/scenario';
 import { device } from '@styles/breakpoint';
 import spacingToken from '@styles/spacing';
 
@@ -215,12 +216,12 @@ const Header: React.FC = () => {
 
   const scenarios = useMemo(
     () =>
-      (scenariosData as any[]).map((s) => ({
-        title: s.title as string,
-        slug: s.slug as string,
-        description: (s.description || '') as string,
-        tags: (s.tags || []) as string[],
-        body: (s.body || '') as string,
+      (scenariosData as ScenarioCard[]).map((s) => ({
+        title: s.title,
+        slug: s.slug,
+        description: s.description || '',
+        tags: s.tags || [],
+        body: s.body || '',
       })),
     []
   );

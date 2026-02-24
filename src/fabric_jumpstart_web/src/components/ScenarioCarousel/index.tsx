@@ -11,25 +11,11 @@ import { ChevronRightFilled } from '@fluentui/react-icons';
 import { useThemeContext } from '@components/Providers/themeProvider';
 import scenariosData from '@data/scenarios.json';
 import workloadColorsData from '@data/workload-colors.json';
+import type { ScenarioCard } from '@scenario/scenario';
 
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
-
-interface Scenario {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  difficulty: string;
-  tags: string[];
-  workloadTags?: string[];
-  previewImage: string;
-  minutesToDeploy: number;
-  minutesToComplete: number;
-  itemsInScope: string[];
-  slug: string;
-}
 
 interface WorkloadColor {
   light: string;
@@ -64,7 +50,7 @@ function CardHeader({
   scenario,
   isDark,
 }: {
-  scenario: Scenario;
+  scenario: ScenarioCard;
   isDark: boolean;
 }) {
   const primaryTag = scenario.workloadTags?.[0];
@@ -182,7 +168,7 @@ function CardHeader({
 }
 
 export default function ScenarioCarousel() {
-  const scenarios = scenariosData as Scenario[];
+  const scenarios = scenariosData as ScenarioCard[];
   const [activeIndex, setActiveIndex] = useState(0);
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';

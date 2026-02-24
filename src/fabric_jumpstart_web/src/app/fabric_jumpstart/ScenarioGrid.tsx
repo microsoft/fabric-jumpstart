@@ -6,6 +6,7 @@ import scenariosData from '@data/scenarios.json';
 import workloadColorsData from '@data/workload-colors.json';
 import { makeStyles, tokens, shorthands } from '@fluentui/react-components';
 import { useThemeContext } from '@components/Providers/themeProvider';
+import type { ScenarioCard } from '@scenario/scenario';
 
 const useStyles = makeStyles({
   container: {
@@ -116,21 +117,6 @@ const useStyles = makeStyles({
   },
 });
 
-interface Scenario {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  difficulty: string;
-  tags: string[];
-  workloadTags?: string[];
-  previewImage: string;
-  minutesToDeploy: number;
-  minutesToComplete: number;
-  itemsInScope: string[];
-  slug: string;
-}
-
 interface WorkloadColor {
   light: string;
   accent: string;
@@ -158,7 +144,7 @@ function CardHeader({
   scenario,
   isDark,
 }: {
-  scenario: Scenario;
+  scenario: ScenarioCard;
   isDark: boolean;
 }) {
   const primaryTag = scenario.workloadTags?.[0];
@@ -274,7 +260,7 @@ function CardHeader({
 
 export default function ScenarioGrid() {
   const styles = useStyles();
-  const scenarios = scenariosData as Scenario[];
+  const scenarios = scenariosData as ScenarioCard[];
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
 

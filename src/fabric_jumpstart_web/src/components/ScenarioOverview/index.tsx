@@ -10,22 +10,7 @@ import {
 } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useThemeContext } from '@components/Providers/themeProvider';
 import workloadColorsData from '@data/workload-colors.json';
-
-interface ScenarioData {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  difficulty: string;
-  tags: string[];
-  workloadTags?: string[];
-  previewImage: string;
-  minutesToDeploy: number;
-  minutesToComplete: number;
-  itemsInScope: string[];
-  slug: string;
-  lastUpdated: string;
-}
+import type { ScenarioCard } from '@scenario/scenario';
 
 interface WorkloadColor {
   light: string;
@@ -56,7 +41,7 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function ScenarioHeader({ scenario, isDark }: { scenario: ScenarioData; isDark: boolean }) {
+function ScenarioHeader({ scenario, isDark }: { scenario: ScenarioCard; isDark: boolean }) {
   const primaryTag = scenario.workloadTags?.[0];
   const wc = primaryTag ? workloadColors[primaryTag] ?? defaultWc : defaultWc;
   const icons = (scenario.workloadTags ?? [])
@@ -157,7 +142,7 @@ function ScenarioHeader({ scenario, isDark }: { scenario: ScenarioData; isDark: 
   );
 }
 
-export default function ScenarioOverview({ scenario }: { scenario: ScenarioData }) {
+export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard }) {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
   const [copied, setCopied] = useState(false);

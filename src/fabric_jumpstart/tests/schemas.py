@@ -33,7 +33,7 @@ class JumpstartSource(BaseModel):
 
 class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     id: int
     logical_id: str

@@ -1,23 +1,23 @@
 /**
  * Contract validation test for scenario YAML files.
  *
- * Ensures all scenarios in jumpstarts/core/ conform to the expected contract,
- * including both required base fields and optional web extension fields.
+ * Ensures all scenarios in jumpstarts/core/ conform to the expected contract
+ * defined by the canonical ScenarioYml type and its allowlists.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { glob } from 'glob';
+import {
+  ScenarioYml,
+  ScenarioSource,
+} from '@scenario/scenario';
 
 const JUMPSTARTS_DIR = path.resolve(
   __dirname,
   '../../fabric_jumpstart/jumpstarts/core'
 );
-
-interface ScenarioYml {
-  [key: string]: unknown;
-}
 
 function loadAllScenarios(): { file: string; data: ScenarioYml }[] {
   const files = glob.sync('*.yml', { cwd: JUMPSTARTS_DIR });
@@ -74,16 +74,12 @@ describe('Scenario YAML contract', () => {
     expect(typeof data.minutes_to_complete_jumpstart).toBe('number');
   });
 
-  test.each(scenarios)(
-    '$file has valid source fields',
-    ({ data }) => {
-      const source = data.source as Record<string, unknown>;
-      expect(source).toHaveProperty('workspace_path');
-      expect(source).toHaveProperty('preview_image_path');
-    }
-  );
+  test.each(scenarios)('$file has valid source fields', ({ data }) => {
+    expect(data.source).toHaveProperty('workspace_path');
+    expect(data.source).toHaveProperty('preview_image_path');
+  });
 
-  test.each(scenarios)('$file has web extension fields', ({ data }) => {
+  test.each(scenarios)('$file has valid difficulty', ({ data }) => {
     expect(typeof data.difficulty).toBe('string');
     expect(['Beginner', 'Intermediate', 'Advanced']).toContain(data.difficulty);
   });
@@ -99,8 +95,39 @@ describe('Scenario YAML contract', () => {
   test.each(
     scenarios.filter((s) => s.data.include_in_listing)
   )('listed scenario $file has non-empty description', ({ data }) => {
-    expect((data.description as string).length).toBeGreaterThan(10);
+    expect(data.description.length).toBeGreaterThan(10);
   });
+
+  test.each(scenarios)(
+    '$file has no unrecognised top-level fields',
+    ({ file, data }) => {
+      const allowed = ScenarioYml.allowedFields();
+      const unknown = Object.keys(data).filter((k) => !allowed.has(k));
+      if (unknown.length > 0) {
+        throw new Error(
+          `${file} contains fields not defined in any schema: ${unknown.join(', ')}.\n` +
+            `Add them as properties to ScenarioYml in src/types/scenario.ts ` +
+            `and the Python Pydantic model in tests/schemas.py.`
+        );
+      }
+    }
+  );
+
+  test.each(scenarios)(
+    '$file has no unrecognised source fields',
+    ({ file, data }) => {
+      if (!data.source || typeof data.source !== 'object') return;
+      const allowed = ScenarioSource.allowedFields();
+      const unknown = Object.keys(data.source).filter((k) => !allowed.has(k));
+      if (unknown.length > 0) {
+        throw new Error(
+          `${file} source contains fields not defined in any schema: ${unknown.join(', ')}.\n` +
+            `Add them as properties to ScenarioSource in src/types/scenario.ts ` +
+            `and JumpstartSource in Python.`
+        );
+      }
+    }
+  );
 });
 
 const WORKLOAD_IMAGES_DIR = path.resolve(
@@ -119,8 +146,7 @@ function collectDistinctWorkloadTags(): string[] {
   const scenarios = loadAllScenarios();
   const tags = new Set<string>();
   for (const { data } of scenarios) {
-    const workloadTags = data.workload_tags as string[] | undefined;
-    (workloadTags ?? []).forEach((t) => tags.add(t));
+    (data.workload_tags ?? []).forEach((t) => tags.add(t));
   }
   return [...tags].sort();
 }

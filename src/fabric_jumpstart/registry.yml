@@ -386,10 +386,10 @@ jumpstarts:
     minutes_to_deploy: 2
     minutes_to_complete_jumpstart: 5
 
-# ═══════════════════════════════════════════════════════════════
+  # ═══════════════════════════════════════════════════════════════
   # RTI Banking Loan Fraud
   # ═══════════════════════════════════════════════════════════════
-  - id: 14
+  - id: 13
     logical_id: banking-loan-fraud
     name: "Real-Time Banking Loan Fraud Detection"
     description: "This demo will show you how Fabric RTI is used for detecting fraudulent activities in banking loan applications in real-time."
@@ -419,7 +419,7 @@ jumpstarts:
   # ═══════════════════════════════════════════════════════════════
   # RTI Retail Sales
   # ═══════════════════════════════════════════════════════════════
-  - id: 15
+  - id: 14
     logical_id: retail-sales
     name: "Real-Time Retail Sales Monitoring"
     description: "This demo will show you how Fabric RTI is used for monitoring retail sales across stores in real-time."
@@ -441,6 +441,70 @@ jumpstarts:
       - KQLDashboard
     jumpstart_docs_uri: ""
     entry_point: "RetailSalesEmulator.Notebook"
+    test_suite: ""
+    owner_email: "fabricjumpstart.rti-iq@microsoft.com"
+    minutes_to_deploy: 2
+    minutes_to_complete_jumpstart: 5
+
+  # ═══════════════════════════════════════════════════════════════
+  # Fabcon RTI Workshop
+  # ═══════════════════════════════════════════════════════════════
+  - id: 15
+    logical_id: fabcon-rti-workshop
+    name: "Fabcon RTI Workshop"
+    description: "This workshop is a hands-on, guided experience designed to help you build a complete analytics platform for streaming data using Microsoft Fabric Real-Time Intelligence."
+    date_added: "02/21/2026"
+    include_in_listing: False
+    workload_tags: ["Real-Time Intelligence"]
+    scenario_tags: ["Streaming"]
+    type: "Tutorial"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-rti-iq-workshops.git"
+      repo_ref: "v0.1.0"
+      workspace_path: "fabcon25-workshop/src/"
+      preview_image_path: "fabcon25-workshop/fabcon25-workshop.png"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+    jumpstart_docs_uri: "http://aka.ms/fabconrtiworkshop"
+    entry_point: ""
+    test_suite: ""
+    owner_email: "fabricjumpstart.rti-iq@microsoft.com"
+    minutes_to_deploy: 2
+    minutes_to_complete_jumpstart: 5
+
+  # ═══════════════════════════════════════════════════════════════
+  # RTI FABRIC PLATFORM MONITORING WORKSPACE ITEM EVENTS
+  # ═══════════════════════════════════════════════════════════════
+  - id: 16
+    logical_id: fpm-workspace-item-events
+    name: "Fabric Platform Monitoring - Workspace Item Events"
+    description: "Monitor the workspace item events, with real-time data ingestion."
+    date_added: "02/03/2026"
+    include_in_listing: True
+    workload_tags: ["Real-Time Intelligence"]
+    scenario_tags: ["Monitoring"]
+    type: "Accelerator"
+    source:
+      repo_url: "https://github.com/ecotte/fabric-platform-monitoring.git"
+      repo_ref: "v0.2.1"
+      workspace_path: "workspace-item-events/src/"
+      preview_image_path: "workspace-item-events/WorkspaceItemEvents.png"
+    items_in_scope: 
+      - Notebook
+      - Eventhouse
+      - Eventstream
+      - KQLDatabase
+      - KQLDashboard
+      - DataPipeline
+      - VariableLibrary
+      - SemanticModel
+      - Report
+    jumpstart_docs_uri: ""
+    entry_point: ""
     test_suite: ""
     owner_email: "fabricjumpstart.rti-iq@microsoft.com"
     minutes_to_deploy: 2

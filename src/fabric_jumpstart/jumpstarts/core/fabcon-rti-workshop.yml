@@ -1,0 +1,31 @@
+id: 17
+logical_id: fabcon-rti-workshop
+name: Fabcon RTI Workshop
+description: This workshop is a hands-on, guided experience designed to help you build a complete analytics platform for streaming data using Microsoft Fabric Real-Time Intelligence.
+date_added: 02/21/2026
+include_in_listing: false
+workload_tags:
+- Real-Time Intelligence
+scenario_tags:
+- Monitoring
+type: Tutorial
+source:
+  repo_url: https://github.com/ecotte/fabric-rti-iq-workshops.git
+  repo_ref: v0.1.1
+  workspace_path: fabcon25-workshop/
+  preview_image_path: fabcon25-workshop/fabcon25-workshop.png
+items_in_scope: 
+  - Notebook
+  - Eventhouse
+  - Eventstream
+  - KQLDatabase
+  - KQLDashboard
+  - Environment
+  - Reflex
+  - Lakehouse
+jumpstart_docs_uri: ''
+entry_point: http://aka.ms/fabconrtiworkshop
+test_suite: ''
+owner_email: fabricjumpstart.rti-iq@microsoft.com
+minutes_to_deploy: 4
+minutes_to_complete_jumpstart: 360

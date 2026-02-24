@@ -1,0 +1,32 @@
+id: 16
+logical_id: fpm-workspace-item-events
+name: Fabric Platform Monitoring - Workspace Item Events
+description: Monitor the workspace item events, with real-time data ingestion.
+date_added: 02/03/2026
+include_in_listing: true
+workload_tags:
+- Real-Time Intelligence
+scenario_tags:
+- Monitoring
+type: Accelerator
+source:
+  repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
+  repo_ref: v0.2.2
+  workspace_path: workspace-item-events/src/
+  preview_image_path: workspace-item-events/WorkspaceItemEvents.png
+items_in_scope: 
+  - Notebook
+  - Eventhouse
+  - Eventstream
+  - KQLDatabase
+  - KQLDashboard
+  - DataPipeline
+  - VariableLibrary
+  - SemanticModel
+  - Report
+jumpstart_docs_uri: ''
+entry_point: https://aka.ms/fabric-platform-monitoring
+test_suite: ''
+owner_email: fabricjumpstart.rti-iq@microsoft.com
+minutes_to_deploy: 2
+minutes_to_complete_jumpstart: 5

@@ -69,6 +69,7 @@ interface ScenarioCard {
   docsUri: string;
   slug: string;
   lastUpdated: string;
+  body: string;
 }
 
 interface SideMenuItem {
@@ -225,27 +226,56 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
   return root;
 }
 
+function stripMarkdownToPlainText(md: string): string {
+  return md
+    .replace(/---[\s\S]*?---/, '')      // frontmatter
+    .replace(/!\[.*?\]\(.*?\)/g, '')     // images
+    .replace(/\[([^\]]*)\]\(.*?\)/g, '$1') // links → text
+    .replace(/#{1,6}\s+/g, '')           // headings
+    .replace(/[*_~`>]/g, '')             // inline formatting
+    .replace(/\n{2,}/g, ' ')            // collapse blank lines
+    .replace(/\s+/g, ' ')               // normalise whitespace
+    .trim();
+}
+
 function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
   return scenarios
     .filter((s) => s.include_in_listing)
-    .map((s) => ({
-      id: s.logical_id,
-      title: s.web?.title || s.name,
-      description: s.web?.summary || s.description,
-      type: s.type,
-      difficulty: s.web?.difficulty || 'Intermediate',
-      tags: s.web?.tags_display || [...s.workload_tags, ...s.scenario_tags],
-      previewImage:
-        s.web?.preview_image_url ||
-        `https://placehold.co/600x400?text=${encodeURIComponent(s.name)}`,
-      videoUrl: s.web?.video_url || '',
-      minutesToDeploy: s.minutes_to_deploy,
-      minutesToComplete: s.minutes_to_complete_jumpstart,
-      itemsInScope: s.items_in_scope,
-      docsUri: s.jumpstart_docs_uri,
-      slug: s.logical_id,
-      lastUpdated: s.web?.last_updated || s.date_added,
-    }));
+    .map((s) => {
+      // Read body content from generated content.md
+      const contentPath = path.join(
+        DOCS_DIR,
+        'fabric_jumpstart',
+        s.logical_id,
+        'content.md'
+      );
+      let body = '';
+      if (fs.existsSync(contentPath)) {
+        body = stripMarkdownToPlainText(
+          fs.readFileSync(contentPath, 'utf-8')
+        );
+      }
+
+      return {
+        id: s.logical_id,
+        title: s.web?.title || s.name,
+        description: s.web?.summary || s.description,
+        type: s.type,
+        difficulty: s.web?.difficulty || 'Intermediate',
+        tags: s.web?.tags_display || [...s.workload_tags, ...s.scenario_tags],
+        previewImage:
+          s.web?.preview_image_url ||
+          `https://placehold.co/600x400?text=${encodeURIComponent(s.name)}`,
+        videoUrl: s.web?.video_url || '',
+        minutesToDeploy: s.minutes_to_deploy,
+        minutesToComplete: s.minutes_to_complete_jumpstart,
+        itemsInScope: s.items_in_scope,
+        docsUri: s.jumpstart_docs_uri,
+        slug: s.logical_id,
+        lastUpdated: s.web?.last_updated || s.date_added,
+        body,
+      };
+    });
 }
 
 async function main(): Promise<void> {

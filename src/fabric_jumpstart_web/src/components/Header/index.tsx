@@ -199,6 +199,11 @@ const useStyles = makeStyles({
 interface SearchResult {
   title: string;
   slug: string;
+  description: string;
+  tags: string[];
+  body: string;
+  bodyExcerpt: string;
+  matchField: 'title' | 'description' | 'tags' | 'body' | 'none';
 }
 
 const Header: React.FC = () => {
@@ -213,20 +218,92 @@ const Header: React.FC = () => {
       (scenariosData as any[]).map((s) => ({
         title: s.title as string,
         slug: s.slug as string,
+        description: (s.description || '') as string,
+        tags: (s.tags || []) as string[],
+        body: (s.body || '') as string,
       })),
     []
+  );
+
+  const escapeRegExp = useCallback(
+    (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    []
+  );
+
+  const highlightMatch = useCallback(
+    (text: string, query: string): React.ReactNode => {
+      if (!query || !text) return text;
+      const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, 'gi'));
+      return parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase() ? (
+          <mark
+            key={i}
+            style={{
+              backgroundColor: tokens.colorBrandBackground,
+              color: tokens.colorNeutralForegroundOnBrand,
+              padding: '0 2px',
+              borderRadius: '2px',
+            }}
+          >
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      );
+    },
+    [escapeRegExp]
   );
 
   const handleSearch = useCallback(
     (text: string) => {
       setSearchText(text);
       if (!text.trim()) {
-        setSearchResults(scenarios.slice(0, 5));
+        setSearchResults(
+          scenarios.slice(0, 5).map((s) => ({
+            ...s,
+            bodyExcerpt: '',
+            matchField: 'none' as const,
+          }))
+        );
         return;
       }
       const lower = text.toLowerCase();
       setSearchResults(
-        scenarios.filter((s) => s.title.toLowerCase().includes(lower))
+        scenarios
+          .map((s) => {
+            const titleMatch = s.title.toLowerCase().includes(lower);
+            const descMatch = s.description.toLowerCase().includes(lower);
+            const tagsMatch = s.tags.some((t) =>
+              t.toLowerCase().includes(lower)
+            );
+            const bodyMatch = s.body.toLowerCase().includes(lower);
+
+            if (!titleMatch && !descMatch && !tagsMatch && !bodyMatch)
+              return null;
+
+            let bodyExcerpt = '';
+            if (bodyMatch) {
+              const idx = s.body.toLowerCase().indexOf(lower);
+              const start = Math.max(0, idx - 80);
+              const end = Math.min(s.body.length, idx + lower.length + 80);
+              bodyExcerpt =
+                (start > 0 ? '...' : '') +
+                s.body.substring(start, end) +
+                (end < s.body.length ? '...' : '');
+            }
+
+            const matchField: SearchResult['matchField'] = titleMatch
+              ? 'title'
+              : descMatch
+                ? 'description'
+                : tagsMatch
+                  ? 'tags'
+                  : 'body';
+
+            return { ...s, bodyExcerpt, matchField };
+          })
+          .filter(Boolean) as SearchResult[]
       );
     },
     [scenarios]
@@ -379,12 +456,67 @@ const Header: React.FC = () => {
                     className={styles.searchResultItem}
                     onClick={() => setSearchOpen(false)}
                   >
-                    {r.title}
+                    <div style={{ fontWeight: 600 }}>
+                      {searchText.trim()
+                        ? highlightMatch(r.title, searchText)
+                        : r.title}
+                    </div>
+                    {searchText.trim() && r.matchField === 'description' && (
+                      <div
+                        style={{
+                          fontSize: tokens.fontSizeBase200,
+                          color: tokens.colorNeutralForeground3,
+                          marginTop: '2px',
+                        }}
+                      >
+                        {highlightMatch(r.description.substring(0, 160), searchText)}
+                      </div>
+                    )}
+                    {searchText.trim() && r.bodyExcerpt && (
+                      <div
+                        style={{
+                          fontSize: tokens.fontSizeBase200,
+                          color: tokens.colorNeutralForeground3,
+                          marginTop: '2px',
+                        }}
+                      >
+                        {highlightMatch(r.bodyExcerpt, searchText)}
+                      </div>
+                    )}
+                    {searchText.trim() && r.matchField === 'tags' && (
+                      <div
+                        style={{
+                          fontSize: tokens.fontSizeBase200,
+                          color: tokens.colorNeutralForeground3,
+                          marginTop: '2px',
+                        }}
+                      >
+                        Tags: {r.tags.map((t, i) => (
+                          <span key={i}>
+                            {i > 0 && ', '}
+                            {highlightMatch(t, searchText)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </Link>
                 ))}
                 {searchResults.length === 0 && (
                   <p style={{ fontSize: '14px', color: tokens.colorNeutralForeground3 }}>
                     No results found.
+                  </p>
+                )}
+                {searchText.trim() && searchResults.length > 0 && (
+                  <p
+                    style={{
+                      fontSize: tokens.fontSizeBase200,
+                      color: tokens.colorNeutralForeground3,
+                      marginTop: '8px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {searchResults.length} result
+                    {searchResults.length !== 1 ? 's' : ''} found
                   </p>
                 )}
               </div>

@@ -79,6 +79,16 @@
         "parallel": false
       }
     },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["build"],
+      "options": {
+        "cwd": "src/fabric_jumpstart_web",
+        "commands": ["bash scripts/deploy.sh"],
+        "parallel": false
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "dependsOn": ["install", "generate-content"],

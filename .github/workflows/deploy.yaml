@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - dev/mdrrahman/js-web
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: "🔄 Checkout"
+        uses: actions/checkout@v4
+
+      - name: "⚙️ Bootstrap CI Environment"
+        run: contrib/bootstrap-dev-env.sh
+
+      - name: "🚀 Deploy Projects"
+        env:
+          WEBSITE_STORAGE_CONN_STRING: ${{ secrets.WEBSITE_STORAGE_CONN_STRING }}
+        run: npx nx run-many -t deploy --parallel=3 --output-style=stream

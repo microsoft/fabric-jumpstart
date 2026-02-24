@@ -84,13 +84,8 @@ describe('Scenario YAML contract', () => {
   );
 
   test.each(scenarios)('$file has web extension fields', ({ data }) => {
-    expect(data).toHaveProperty('web');
-    const web = data.web as Record<string, unknown>;
-    expect(typeof web.title).toBe('string');
-    expect(typeof web.summary).toBe('string');
-    expect(typeof web.preview_image_url).toBe('string');
-    expect(typeof web.difficulty).toBe('string');
-    expect(['Beginner', 'Intermediate', 'Advanced']).toContain(web.difficulty);
+    expect(typeof data.difficulty).toBe('string');
+    expect(['Beginner', 'Intermediate', 'Advanced']).toContain(data.difficulty);
   });
 
   test.each(scenarios)(
@@ -110,7 +105,7 @@ describe('Scenario YAML contract', () => {
 
 const WORKLOAD_IMAGES_DIR = path.resolve(
   __dirname,
-  '../public/images/tags/workload'
+  '../../../assets/images/tags/workload'
 );
 
 function toSlug(tag: string): string {
@@ -148,7 +143,7 @@ describe('Tag image coverage', () => {
         throw new Error(
           `Missing image for workload tag "${tag}". ` +
             `Please find a high-quality image that represents this workload and add it as "${slug}.svg" (or .png/.jpg/.webp) to:\n` +
-            `  src/fabric_jumpstart_web/public/images/tags/workload/`
+            `  assets/images/tags/workload/`
         );
       }
     }

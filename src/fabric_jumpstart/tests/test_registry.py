@@ -217,3 +217,26 @@ class TestRegistryValidation:
             assert 'core' in jumpstart, f"Jumpstart '{logical_id}' missing core flag"
             assert isinstance(jumpstart['core'], bool), f"Jumpstart '{logical_id}' core flag must be boolean"
 
+    def test_workload_tag_images_exist(self):
+        """Verify every workload tag used in scenarios has a corresponding image in shared assets."""
+        shared_assets = Path(__file__).resolve().parent.parent.parent.parent / 'assets' / 'images' / 'tags' / 'workload'
+        image_extensions = ('.svg', '.png', '.jpg', '.jpeg', '.webp')
+        registry_data = load_registry_data()
+
+        all_tags = set()
+        for jumpstart in registry_data:
+            for tag in jumpstart.get('workload_tags', []):
+                all_tags.add(tag)
+
+        missing = []
+        for tag in sorted(all_tags):
+            slug = re.sub(r'[^a-z0-9]+', '-', tag.lower()).strip('-')
+            if not any((shared_assets / f"{slug}{ext}").exists() for ext in image_extensions):
+                missing.append(tag)
+
+        if missing:
+            pytest.fail(
+                "Missing images for workload tags in assets/images/tags/workload/:\n"
+                + "\n".join(f"  - {tag}" for tag in missing)
+            )
+

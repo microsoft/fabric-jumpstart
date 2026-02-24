@@ -1,7 +1,10 @@
 id: 3
 logical_id: analytics-lab
 name: Analytics Lab
-description: This is a sample description for a test jumpstart.
+description: >-
+  Get started with Microsoft Fabric analytics capabilities in this hands-on lab
+  environment. Explore data using notebooks and a Lakehouse to build
+  foundational analytics skills and understand core Fabric concepts.
 date_added: 1/8/2026
 include_in_listing: false
 workload_tags:
@@ -23,13 +26,6 @@ test_suite: ''
 owner_email: user@example.com
 minutes_to_deploy: 1
 minutes_to_complete_jumpstart: 120
-web:
-  title: "Analytics Lab"
-  summary: >-
-    Get started with Microsoft Fabric analytics capabilities in this hands-on lab environment.
-    Explore data using notebooks and a Lakehouse to build foundational analytics skills
-    and understand core Fabric concepts.
-  preview_image_url: "https://placehold.co/600x400?text=Analytics+Lab"
-  video_url: ""
-  difficulty: "Intermediate"
-  last_updated: "2026-01-08"
+video_url: ""
+difficulty: "Intermediate"
+last_updated: "2026-01-08"

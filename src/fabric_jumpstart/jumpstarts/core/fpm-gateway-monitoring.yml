@@ -1,7 +1,10 @@
 id: 12
 logical_id: fpm-gateway-monitoring
 name: Fabric Platform Monitoring - Gateway Monitoring
-description: Monitor the gateway performance and usage, with real-time data ingestion.
+description: >-
+  Monitor on-premises data gateway performance and usage with real-time data
+  ingestion into Fabric. Track gateway health, query execution metrics, and
+  resource utilization through live dashboards and Power BI reports.
 date_added: 02/03/2026
 include_in_listing: true
 workload_tags:
@@ -32,13 +35,6 @@ test_suite: ''
 owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 2
 minutes_to_complete_jumpstart: 5
-web:
-  title: "Fabric Platform Monitoring - Gateway Monitoring"
-  summary: >-
-    Monitor on-premises data gateway performance and usage with real-time data ingestion
-    into Fabric. Track gateway health, query execution metrics, and resource utilization
-    through live dashboards and Power BI reports.
-  preview_image_url: "https://placehold.co/600x400?text=Gateway+Monitoring"
-  video_url: ""
-  difficulty: "Beginner"
-  last_updated: "2026-02-03"
+video_url: ""
+difficulty: "Beginner"
+last_updated: "2026-02-03"

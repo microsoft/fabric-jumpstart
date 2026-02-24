@@ -1,7 +1,10 @@
 id: 17
 logical_id: fabcon-rti-workshop
 name: Fabcon RTI Workshop
-description: This workshop is a hands-on, guided experience designed to help you build a complete analytics platform for streaming data using Microsoft Fabric Real-Time Intelligence.
+description: >-
+  A hands-on workshop to build a complete analytics platform for streaming data
+  using Microsoft Fabric Real-Time Intelligence, covering Eventstreams,
+  Eventhouses, KQL, and real-time dashboards.
 date_added: 02/21/2026
 include_in_listing: false
 workload_tags:
@@ -29,11 +32,6 @@ test_suite: ''
 owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 4
 minutes_to_complete_jumpstart: 360
-web:
-  title: "Fabcon RTI Workshop"
-  summary: >-
-    A hands-on workshop to build a complete analytics platform for streaming data using Microsoft Fabric Real-Time Intelligence, covering Eventstreams, Eventhouses, KQL, and real-time dashboards.
-  preview_image_url: "https://placehold.co/600x400?text=Fabcon+RTI+Workshop"
-  video_url: ""
-  difficulty: "Advanced"
-  last_updated: "2026-02-21"
+video_url: ""
+difficulty: "Advanced"
+last_updated: "2026-02-21"

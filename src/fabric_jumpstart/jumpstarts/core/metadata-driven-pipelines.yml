@@ -1,7 +1,10 @@
 id: 5
 logical_id: metadata-driven-pipelines
 name: Metadata Driven Pipelines
-description: Jumpstart for Metadata Driven Pipelines
+description: >-
+  Build scalable, configuration-driven data integration pipelines using metadata
+  stored in SQL Database. Leverage Data Factory to orchestrate dynamic ingestion
+  workflows that adapt to changing data sources without code modifications.
 date_added: 9/1/2025
 include_in_listing: false
 workload_tags:
@@ -30,13 +33,6 @@ test_suite: ''
 owner_email: user@example.com
 minutes_to_deploy: 4
 minutes_to_complete_jumpstart: 60
-web:
-  title: "Metadata Driven Pipelines"
-  summary: >-
-    Build scalable, configuration-driven data integration pipelines using metadata stored
-    in SQL Database. Leverage Data Factory to orchestrate dynamic ingestion workflows
-    that adapt to changing data sources without code modifications.
-  preview_image_url: "https://placehold.co/600x400?text=Metadata+Driven+Pipelines"
-  video_url: ""
-  difficulty: "Intermediate"
-  last_updated: "2025-09-01"
+video_url: ""
+difficulty: "Intermediate"
+last_updated: "2025-09-01"

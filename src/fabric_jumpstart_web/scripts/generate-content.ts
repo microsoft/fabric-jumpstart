@@ -22,6 +22,10 @@ const DATA_DIR = path.resolve(__dirname, '../src/data');
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
 const WORKLOAD_ICONS_DIR = path.resolve(
   __dirname,
+  '../../../assets/images/tags/workload'
+);
+const WORKLOAD_ICONS_PUBLIC_DIR = path.resolve(
+  __dirname,
   '../public/images/tags/workload'
 );
 
@@ -47,14 +51,9 @@ interface ScenarioYml {
   owner_email: string;
   minutes_to_deploy: number;
   minutes_to_complete_jumpstart: number;
-  web?: {
-    title?: string;
-    summary?: string;
-    preview_image_url?: string;
-    video_url?: string;
-    difficulty?: string;
-    last_updated?: string;
-  };
+  video_url?: string;
+  difficulty?: string;
+  last_updated?: string;
 }
 
 interface ScenarioCard {
@@ -109,13 +108,13 @@ const SAMPLE_IMAGE_SRC = path.resolve(
 );
 
 function generateFrontmatter(scenario: ScenarioYml): string {
-  const title = scenario.web?.title || scenario.name;
+  const title = scenario.name;
   return `---\ntype: docs\ntitle: "${title}"\nlinkTitle: "${title}"\nweight: ${scenario.id}\ndescription: >-\n  ${scenario.description}\n---\n`;
 }
 
 function generateContentMd(scenario: ScenarioYml): string {
-  const title = scenario.web?.title || scenario.name;
-  const summary = scenario.web?.summary || scenario.description;
+  const title = scenario.name;
+  const summary = scenario.description;
 
   let md = `# ${title}\n\n`;
   md += `${summary}\n\n`;
@@ -197,8 +196,8 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
       children: [],
       frontMatter: {
         type: 'docs',
-        title: scenario.web?.title || scenario.name,
-        linkTitle: scenario.web?.title || scenario.name,
+        title: scenario.name,
+        linkTitle: scenario.name,
         weight: scenario.id,
         description: scenario.description,
       },
@@ -261,22 +260,20 @@ function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
 
       return {
         id: s.logical_id,
-        title: s.web?.title || s.name,
-        description: s.web?.summary || s.description,
+        title: s.name,
+        description: s.description,
         type: s.type,
-        difficulty: s.web?.difficulty || 'Intermediate',
+        difficulty: s.difficulty || 'Intermediate',
         tags: [...s.workload_tags, ...s.scenario_tags],
         workloadTags: s.workload_tags as string[],
-        previewImage:
-          s.web?.preview_image_url ||
-          `https://placehold.co/600x400?text=${encodeURIComponent(s.name)}`,
-        videoUrl: s.web?.video_url || '',
+        previewImage: `https://placehold.co/600x400?text=${encodeURIComponent(s.name)}`,
+        videoUrl: s.video_url || '',
         minutesToDeploy: s.minutes_to_deploy,
         minutesToComplete: s.minutes_to_complete_jumpstart,
         itemsInScope: s.items_in_scope,
         docsUri: s.jumpstart_docs_uri,
         slug: s.logical_id,
-        lastUpdated: s.web?.last_updated || s.date_added,
+        lastUpdated: s.last_updated || s.date_added,
         body,
       };
     });
@@ -389,6 +386,17 @@ function generateWorkloadColors(scenarios: ScenarioYml[]): void {
   );
 }
 
+function copyWorkloadIcons(): void {
+  fs.mkdirSync(WORKLOAD_ICONS_PUBLIC_DIR, { recursive: true });
+  const files = fs.readdirSync(WORKLOAD_ICONS_DIR);
+  for (const file of files) {
+    fs.copyFileSync(
+      path.join(WORKLOAD_ICONS_DIR, file),
+      path.join(WORKLOAD_ICONS_PUBLIC_DIR, file)
+    );
+  }
+}
+
 async function main(): Promise<void> {
   console.log('🔧 Generating website content from scenario YAMLs...');
 
@@ -420,6 +428,10 @@ async function main(): Promise<void> {
   // Generate workload color palette
   generateWorkloadColors(scenarios);
   console.log('  Generated workload-colors.json');
+
+  // Copy shared workload icons to public/ for serving
+  copyWorkloadIcons();
+  console.log('  Copied workload icons to public/');
 
   // Fetch Microsoft UHF footer
   await generateUhfData();

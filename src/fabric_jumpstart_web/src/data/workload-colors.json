@@ -24,9 +24,9 @@
     "icon": "/images/tags/workload/power-bi.svg"
   },
   "Real-Time Intelligence": {
-    "light": "#A1ECFF",
-    "accent": "#0669B6",
-    "mid": "#3CC5EE",
+    "light": "#FF9C70",
+    "accent": "#670938",
+    "mid": "#FF835C",
     "icon": "/images/tags/workload/real-time-intelligence.svg"
   },
   "SQL Database": {

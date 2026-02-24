@@ -24,6 +24,7 @@ src/fabric_jumpstart_web/.next/
 src/fabric_jumpstart_web/docs/
 src/fabric_jumpstart_web/src/data/side-menu.json
 src/fabric_jumpstart_web/src/data/scenarios.json
+src/fabric_jumpstart_web/public/images/tags/workload/
 
 # Scratch
 .temp/

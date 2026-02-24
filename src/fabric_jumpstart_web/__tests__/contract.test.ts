@@ -108,10 +108,6 @@ describe('Scenario YAML contract', () => {
   });
 });
 
-const REGISTRY_PATH = path.resolve(
-  __dirname,
-  '../../fabric_jumpstart/registry.yml'
-);
 const WORKLOAD_IMAGES_DIR = path.resolve(
   __dirname,
   '../public/images/tags/workload'
@@ -124,16 +120,12 @@ function toSlug(tag: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-interface RegistryYml {
-  jumpstarts: { workload_tags?: string[] }[];
-}
-
 function collectDistinctWorkloadTags(): string[] {
-  const content = fs.readFileSync(REGISTRY_PATH, 'utf-8');
-  const registry = yaml.load(content) as RegistryYml;
+  const scenarios = loadAllScenarios();
   const tags = new Set<string>();
-  for (const js of registry.jumpstarts) {
-    (js.workload_tags ?? []).forEach((t) => tags.add(t));
+  for (const { data } of scenarios) {
+    const workloadTags = data.workload_tags as string[] | undefined;
+    (workloadTags ?? []).forEach((t) => tags.add(t));
   }
   return [...tags].sort();
 }

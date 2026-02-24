@@ -1,9 +1,11 @@
 id: 4
 logical_id: spark-rti-monitoring
 name: Spark RTI Monitoring
-description: Empower your Spark workloads with real-time monitoring using Fabric Real-Time
-  Intelligence. This jumpstart provides a comprehensive setup to monitor Spark jobs,
-  track performance metrics, and visualize data streams in real-time dashboards.
+description: >-
+  Empower your Spark workloads with real-time monitoring using Fabric Real-Time
+  Intelligence. Track Spark job performance metrics, visualize data streams on
+  live dashboards, and gain operational insights to optimize your data
+  engineering pipelines.
 date_added: 9/1/2025
 include_in_listing: false
 workload_tags:
@@ -34,3 +36,6 @@ test_suite: ''
 owner_email: FabricJumpstart.SparkRTIMonitoring@microsoft.com
 minutes_to_deploy: 3
 minutes_to_complete_jumpstart: 20
+video_url: ""
+difficulty: "Intermediate"
+last_updated: "2025-09-01"

@@ -33,7 +33,7 @@ class JumpstartSource(BaseModel):
 
 class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     id: int
     logical_id: str
@@ -54,6 +54,9 @@ class Jumpstart(BaseModel):
     owner_email: str
     minutes_to_complete_jumpstart: Optional[int] = None
     minutes_to_deploy: Optional[int] = None
+    video_url: Optional[str] = None
+    difficulty: Optional[str] = None
+    last_updated: Optional[str] = None
 
     @field_validator("id")
     @classmethod
@@ -174,3 +177,15 @@ class Jumpstart(BaseModel):
         if minutes < 0:
             raise ValueError("Duration fields must be non-negative")
         return minutes
+
+    @field_validator("difficulty")
+    @classmethod
+    def validate_difficulty(cls, value: Optional[str]):
+        if value is None:
+            return None
+        allowed = ("Beginner", "Intermediate", "Advanced")
+        if value not in allowed:
+            raise ValueError(
+                f"Unknown difficulty: {value}. Allowed values: {', '.join(allowed)}."
+            )
+        return value

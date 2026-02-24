@@ -10,6 +10,13 @@
 
 #>
 
+#Requires -RunAsAdministrator
+
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    Write-Error "This script requires PowerShell 7+. You are running PowerShell $($PSVersionTable.PSVersion).`nTo launch PowerShell 7 as Administrator:`n  Start Menu > search 'pwsh' > right-click 'PowerShell 7' > 'Run as administrator'"
+    exit 1
+}
+
 if (wsl -l -q | Select-String -SimpleMatch "Ubuntu-24.04") {
     Write-Host "Unregistering Ubuntu-24.04"
     wsl --unregister Ubuntu-24.04

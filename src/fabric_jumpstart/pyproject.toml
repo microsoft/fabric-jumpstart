@@ -26,7 +26,7 @@ dependencies = [
 
 [tool.hatch.build]
 # Include every file under fabric_jumpstart (not just .py) in the wheel
-include = ["**/*.py", "jumpstarts/**/*", "registry.yml", "ui/**/*"]
+include = ["**/*.py", "jumpstarts/**/*", "ui/**/*"]
 exclude = ["tests/**"]
 
 [tool.hatch.build.targets.wheel]

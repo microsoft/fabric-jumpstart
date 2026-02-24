@@ -19,9 +19,10 @@ A **Jumpstart** is a curated, tested Microsoft Fabric solution — data, noteboo
 
 ## Projects
 
-| Project                                       | Description                                                                                                                                               |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [**fabric-jumpstart**](src/fabric_jumpstart/) | Core Python library — discover, install, and manage Jumpstarts in your Fabric workspace. Published to [PyPI](https://pypi.org/project/fabric-jumpstart/). |
+| Project                                               | Description                                                                                                                                               |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [**fabric-jumpstart**](src/fabric_jumpstart/)         | Core Python library — discover, install, and manage Jumpstarts in your Fabric workspace. Published to [PyPI](https://pypi.org/project/fabric-jumpstart/). |
+| [**fabric-jumpstart-web**](src/fabric_jumpstart_web/) | Website for browsing Jumpstarts — hosted at [jumpstart.fabric.microsoft.com](https://jumpstart.fabric.microsoft.com).                                     |
 
 ## Quick Start
 

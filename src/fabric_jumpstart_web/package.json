@@ -1,0 +1,54 @@
+{
+  "name": "fabric-jumpstart-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 8080",
+    "build": "next build",
+    "serve": "npx serve out -l 28080",
+    "start": "next start -p 8080",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "test": "jest --coverage",
+    "generate-content": "tsx scripts/generate-content.ts",
+    "prebuild": "npm run generate-content"
+  },
+  "dependencies": {
+    "@fluentui/react-components": "^9.54.2",
+    "html-react-parser": "^5.2.17",
+    "markdown-to-jsx": "^7.5.0",
+    "marked": "^14.1.3",
+    "next": "15.4.8",
+    "next-intl": "^4.3.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-syntax-highlighter": "^15.5.0",
+    "react-youtube": "^10.1.0",
+    "swiper": "^11.2.6"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.6",
+    "@testing-library/react": "^16.0.0",
+    "@types/jest": "^29.5.12",
+    "@types/js-yaml": "^4.0.5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "eslint": "^8",
+    "eslint-config-next": "15.4.3",
+    "glob": "^11.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "js-yaml": "^4.1.0",
+    "serve": "^14.2.5",
+    "ts-jest": "^29.2.1",
+    "tsx": "^4.7.1",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "eslint-config-next": {
+      "unrs-resolver": "1.3.3"
+    }
+  }
+}

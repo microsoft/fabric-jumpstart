@@ -1,7 +1,11 @@
 id: 6
 logical_id: materialized-lake-views
 name: Materialized Lake Views
-description: Jumpstart for Materialized Lake Views
+description: >-
+  Accelerate analytics with materialized lake views that pre-compute and persist
+  query results for faster downstream consumption. Combine batch processing
+  pipelines with real-time ingestion to build an optimized data lakehouse
+  architecture.
 date_added: 9/1/2025
 include_in_listing: false
 workload_tags:
@@ -29,3 +33,6 @@ test_suite: ''
 owner_email: user@example.com
 minutes_to_deploy: 2
 minutes_to_complete_jumpstart: 60
+video_url: ""
+difficulty: "Intermediate"
+last_updated: "2025-09-01"

@@ -1,7 +1,10 @@
 id: 7
 logical_id: semantic-link
 name: Semantic Link
-description: Jumpstart for Semantic Link
+description: >-
+  Explore Semantic Link to bridge the gap between Power BI semantic models and
+  Fabric notebooks. Use Python-based APIs to programmatically interact with
+  semantic models, perform data analysis, and automate modeling workflows.
 date_added: 9/1/2025
 include_in_listing: false
 workload_tags:
@@ -29,3 +32,6 @@ test_suite: ''
 owner_email: user@example.com
 minutes_to_deploy: 1
 minutes_to_complete_jumpstart: 30
+video_url: ""
+difficulty: "Intermediate"
+last_updated: "2025-09-01"

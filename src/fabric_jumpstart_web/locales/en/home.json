@@ -1,0 +1,39 @@
+{
+  "banner": {
+    "label": "Discover",
+    "heading": "Fabric Jumpstart",
+    "desc": "High quality demos and tutorials with one-click install that are near guaranteed to work with minimal dependencies:",
+    "buttonText": {
+      "left": {
+        "label": "Get started"
+      },
+      "right": {
+        "label": "View demos",
+        "iconAltText": "Arrow icon"
+      }
+    },
+    "imageAlt": "Fabric Jumpstart banner",
+    "codeSnippet": {
+      "language": "python",
+      "code": "import fabric_jumpstart as js\n\n# Browse available jumpstarts\njs.list()\n\n# Install a scenario\njs.install(\"retail-sales\")"
+    }
+  },
+  "rowSection": [
+    {
+      "label": "Our Mission",
+      "heading": "Community-driven and committed to open source",
+      "desc": [
+        "Our mission to support the open-source community, where we can all build on the amazing work of others on Fabric.",
+        "We do this by providing detailed guides, automation and reproducible code samples — everything you need to become productive quickly. Our extensive code reviews, high-bar for quality and Continuous Integration testing ensures Jumpstart is always reliable."
+      ]
+    },
+    {
+      "label": "EXPERIENCE THE POWER OF MICROSOFT FABRIC",
+      "heading": "Deploy quickly. Test easily. Evaluate confidently.",
+      "desc": [
+        "Jumpstart lets you build data-driven experiences and taste the problem-solving capabilities of Microsoft Fabric in minutes.",
+        "Rapidly experience Microsoft Fabric - a unified data platform that brings data engineering, analytics, and governance together on a single, scalable foundation."
+      ]
+    }
+  ]
+}

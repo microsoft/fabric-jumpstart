@@ -12,6 +12,7 @@ from .formatting import syntax_highlight_python
 # Load copy icon SVG once at module level
 _current_dir = Path(__file__).parent
 _assets_path = _current_dir / 'assets'
+_shared_assets_path = Path(__file__).resolve().parent.parent.parent.parent / 'assets' / 'images' / 'tags' / 'workload'
 _copy_icon_path = _assets_path / 'copy-icon.svg'
 _css_path = _current_dir / 'ui.css'
 _js_path = _current_dir / 'catalog.js'
@@ -42,15 +43,15 @@ def reload_assets():
     _JUMPSTART_JS = _load_text(_js_path)
 
 
-# Map workload tags to icon filenames stored in ui_assets
+# Map workload tags to icon filenames stored in shared assets
 WORKLOAD_ICON_MAP = {
-    "Data Engineering": "data_engineering_24_color.svg",
-    "Data Warehouse": "data_warehouse_24_color.svg",
-    "Real-Time Intelligence": "real_time_intelligence_24_color.svg",
-    "Data Factory": "data_factory_24_color.svg",
-    "SQL Database": "databases_24_color.svg",
-    "Power BI": "power_bi_24_color.svg",
-    "Data Science": "data_science_24_color.svg"
+    "Data Engineering": "data-engineering.svg",
+    "Data Warehouse": "data-warehouse.svg",
+    "Real-Time Intelligence": "real-time-intelligence.svg",
+    "Data Factory": "data-factory.svg",
+    "SQL Database": "sql-database.svg",
+    "Power BI": "power-bi.svg",
+    "Data Science": "data-science.svg"
 }
 
 DEFAULT_WORKLOAD_ICON = WORKLOAD_ICON_MAP.get("Data Engineering")
@@ -66,10 +67,12 @@ TYPE_EMOJI_MAP = {
 
 @lru_cache(maxsize=32)
 def _load_svg(filename: str) -> str:
-    """Load an SVG from ui_assets with simple caching."""
+    """Load an SVG from shared assets (workload icons) or ui assets (others)."""
     if not filename:
         return ''
-    svg_path = _assets_path / filename
+    svg_path = _shared_assets_path / filename
+    if not svg_path.exists():
+        svg_path = _assets_path / filename
     try:
         return svg_path.read_text(encoding='utf-8').strip()
     except FileNotFoundError:

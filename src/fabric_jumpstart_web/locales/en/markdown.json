@@ -1,0 +1,39 @@
+{
+  "feedback": {
+    "label": "Feedback"
+  },
+  "heading": {
+    "copyLabel": "Copied link to clipboard",
+    "ariaLabel": "Click here to copy the link"
+  },
+  "codeblock": {
+    "copyLabel": "Copied code to clipboard",
+    "ariaLabel": "Click here to copy the code"
+  },
+  "skeleton": {
+    "loading": "Loading..."
+  },
+  "breadcrumb": {
+    "homeTitle": "Home",
+    "ariaLabel": "Breadcrumb navigation",
+    "menuAreaLabel": "Breadcrumb navigation menu"
+  },
+  "jumpToSection": {
+    "label": "Jump to section"
+  },
+  "editPage": {
+    "label": "Edit this page on Github"
+  },
+  "bug": {
+    "label": "Report a bug"
+  },
+  "addChild": {
+    "label": "Create a child page"
+  },
+  "faq": {
+    "title": "FAQs"
+  },
+  "blockquote": {
+    "disclaimer": "Disclaimer:"
+  }
+}

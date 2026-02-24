@@ -20,6 +20,7 @@ if [ -n "$PACKAGES" ]; then
     sudo apt-get update > /dev/null 2>&1
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $PACKAGES > /dev/null 2>&1
 fi
+command -v az &> /dev/null || curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash > /dev/null 2>&1
 command -v uv &> /dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
 
 [[ ":$PATH:" != *":$HOME/.local/bin:"* ]] && export PATH="$PATH:$HOME/.local/bin" || true
@@ -33,6 +34,9 @@ uv sync --all-groups
 [ -f .venv/bin/activate ] && source .venv/bin/activate
 
 cd "$REPO_ROOT"
+npm install
+
+cd "$REPO_ROOT/src/fabric_jumpstart_web"
 npm install
 
 echo "python: $(python3 --version)"

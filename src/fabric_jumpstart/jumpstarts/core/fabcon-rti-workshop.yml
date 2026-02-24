@@ -29,3 +29,12 @@ test_suite: ''
 owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 4
 minutes_to_complete_jumpstart: 360
+web:
+  title: "Fabcon RTI Workshop"
+  summary: >-
+    A hands-on workshop to build a complete analytics platform for streaming data using Microsoft Fabric Real-Time Intelligence, covering Eventstreams, Eventhouses, KQL, and real-time dashboards.
+  preview_image_url: "https://placehold.co/600x400?text=Fabcon+RTI+Workshop"
+  video_url: ""
+  tags_display: ["Real-Time Intelligence", "Monitoring"]
+  difficulty: "Advanced"
+  last_updated: "2026-02-21"

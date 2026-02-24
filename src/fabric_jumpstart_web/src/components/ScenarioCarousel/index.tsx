@@ -22,6 +22,7 @@ interface Scenario {
   type: string;
   difficulty: string;
   tags: string[];
+  workloadTags?: string[];
   previewImage: string;
   minutesToDeploy: number;
   minutesToComplete: number;
@@ -147,17 +148,20 @@ export default function ScenarioCarousel() {
         }}>
           ⚡ {active.minutesToDeploy} min deploy
         </span>
-        {active.tags.slice(0, 3).map((tag) => (
-          <span key={tag} style={{
-            fontSize: '11px',
-            padding: '2px 8px',
-            borderRadius: '12px',
-            backgroundColor: tokens.colorNeutralBackground3,
-            color: tokens.colorNeutralForeground2,
-          }}>
-            {tag}
-          </span>
-        ))}
+        {active.tags.slice(0, 3).map((tag) => {
+          const isWorkload = active.workloadTags?.includes(tag);
+          return (
+            <span key={tag} style={{
+              fontSize: '11px',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              backgroundColor: isWorkload ? '#deecf9' : tokens.colorNeutralBackground3,
+              color: isWorkload ? '#0078d4' : tokens.colorNeutralForeground2,
+            }}>
+              {tag}
+            </span>
+          );
+        })}
       </div>
 
       {/* Carousel — edge fade via CSS mask-image (no overlay rectangles) */}

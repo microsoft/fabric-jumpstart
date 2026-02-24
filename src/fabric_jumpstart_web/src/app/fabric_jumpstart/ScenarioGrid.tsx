@@ -65,6 +65,13 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground3,
     color: tokens.colorNeutralForeground1,
   },
+  workloadTag: {
+    fontSize: '12px',
+    ...shorthands.padding('4px', '8px'),
+    ...shorthands.borderRadius('4px'),
+    backgroundColor: '#deecf9',
+    color: '#0078d4',
+  },
   difficultyBadge: {
     fontSize: '12px',
     ...shorthands.padding('4px', '8px'),
@@ -108,6 +115,7 @@ interface Scenario {
   type: string;
   difficulty: string;
   tags: string[];
+  workloadTags?: string[];
   previewImage: string;
   minutesToDeploy: number;
   minutesToComplete: number;
@@ -162,7 +170,10 @@ export default function ScenarioGrid() {
                   </span>
                   <span className={styles.tag}>{scenario.type}</span>
                   {scenario.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className={styles.tag}>
+                    <span
+                      key={tag}
+                      className={scenario.workloadTags?.includes(tag) ? styles.workloadTag : styles.tag}
+                    >
                       {tag}
                     </span>
                   ))}

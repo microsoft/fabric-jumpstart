@@ -263,6 +263,7 @@ function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
         type: s.type,
         difficulty: s.web?.difficulty || 'Intermediate',
         tags: s.web?.tags_display || [...s.workload_tags, ...s.scenario_tags],
+        workloadTags: s.workload_tags as string[],
         previewImage:
           s.web?.preview_image_url ||
           `https://placehold.co/600x400?text=${encodeURIComponent(s.name)}`,

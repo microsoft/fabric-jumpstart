@@ -16,6 +16,7 @@ interface ScenarioData {
   type: string;
   difficulty: string;
   tags: string[];
+  workloadTags?: string[];
   previewImage: string;
   minutesToDeploy: number;
   minutesToComplete: number;
@@ -169,18 +170,23 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioData 
           Tags
         </h4>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {scenario.tags.map((tag) => (
-            <span key={tag} style={{
-              fontSize: '12px',
-              padding: '4px 12px',
-              borderRadius: '12px',
-              backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-              color: tokens.colorNeutralForeground2,
-              fontWeight: 500,
-            }}>
-              {tag}
-            </span>
-          ))}
+          {scenario.tags.map((tag) => {
+            const isWorkload = scenario.workloadTags?.includes(tag);
+            return (
+              <span key={tag} style={{
+                fontSize: '12px',
+                padding: '4px 12px',
+                borderRadius: '12px',
+                backgroundColor: isWorkload
+                  ? (isDark ? 'rgba(0, 120, 212, 0.30)' : '#deecf9')
+                  : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
+                color: isWorkload ? '#0078d4' : tokens.colorNeutralForeground2,
+                fontWeight: 500,
+              }}>
+                {tag}
+              </span>
+            );
+          })}
         </div>
       </div>
 

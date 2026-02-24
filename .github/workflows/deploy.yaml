@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - dev/mdrrahman/js-web
   workflow_dispatch:
 
 jobs:

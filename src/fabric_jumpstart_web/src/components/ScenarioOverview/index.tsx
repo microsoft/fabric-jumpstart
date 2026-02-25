@@ -148,7 +148,7 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
   const [copied, setCopied] = useState(false);
   const colors = difficultyColor[scenario.difficulty?.toLowerCase()] || difficultyColor.intermediate;
 
-  const installCode = `import fabric_jumpstart as js\n\n# Install this scenario\njs.install("${scenario.slug}")`;
+  const installCode = `%pip install fabric-jumpstart\n\nimport fabric_jumpstart as jumpstart\n\n# Install this scenario\njumpstart.install("${scenario.slug}")`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(installCode).then(() => {

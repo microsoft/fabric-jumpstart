@@ -6,7 +6,7 @@ Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARD
 - Create a `New Jumpstart` Issue with enough details to help maintainers determine whether the solution fits in the Fabric Jumpstart mission.
 - Community contributions are more than welcome, but we do require a Microsoft sponsor for any Core Jumpstarts. This is someone who must have contributor level access to your project.
 - Keep Jumpstarts self-contained: deployments must run through `jumpstart.install()` without manual patching.
-- Follow the steps in [JUMPSTART_SETUP.md](JUMPSTART_SETUP.md) to get things set up, tested, and merged in.
+- Follow the steps in [Setup of a New Jumpstart](#setup-of-a-new-jumpstart) to get things set up, tested, and merged in.
 
 ## General Changes Workflow
 - Discuss larger changes with maintainers first (issue or PR draft) to align on scope.

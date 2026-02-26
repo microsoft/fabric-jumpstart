@@ -1,13 +1,13 @@
 # Contributing
 
-Thank you for helping improve Fabric Jumpstart! This is a monorepo with two projects — read the shared guidance below, then follow the contributing guide for the project you're working on.
+Thank you for helping improve Fabric Jumpstart! This is a monorepo with two projects — most contributors only need the Python library.
 
 | Project | Path | Contributing Guide |
 |---------|------|--------------------|
-| **fabric-jumpstart** (Python library) | `src/fabric_jumpstart/` | [Contributing to the Python Library](src/fabric_jumpstart/CONTRIBUTING.md) |
+| **fabric-jumpstart** (Python library + Jumpstarts) | `src/fabric_jumpstart/` | [Contributing to Fabric Jumpstart](src/fabric_jumpstart/CONTRIBUTING.md) |
 | **fabric-jumpstart-web** (Website) | `src/fabric_jumpstart_web/` | [Contributing to the Website](src/fabric_jumpstart_web/CONTRIBUTING.md) |
 
-> **Most contributions add a new Jumpstart** — that's a Python library change. Head to the [Python library contributing guide](src/fabric_jumpstart/CONTRIBUTING.md).
+> **Contributing a new Jumpstart?** You only need Python and uv — head to the [fabric-jumpstart library contributing guide](src/fabric_jumpstart/CONTRIBUTING.md).
 
 ---
 
@@ -17,15 +17,29 @@ Thank you for helping improve Fabric Jumpstart! This is a monorepo with two proj
 2. **Discuss larger changes** with maintainers via an issue or draft PR to align on scope before investing effort.
 3. **Fork the repo** and create a feature branch from `main`.
 
-## Commit and PR Conventions
+## Quick Setup — Python Library (Jumpstart contributors)
 
-- PRs must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) in the headline (e.g., `feat: add spark-monitoring jumpstart`).
-- Use the [PR template](.github/pull_request_template.md) — include a brief rationale and note any user-facing impacts.
-- Keep commits focused; avoid formatting-only churn.
+If you're adding a Jumpstart or working on the Python library, you only need **Python** and **uv**. No Node.js required.
 
-## Full Environment Setup (both projects)
+```bash
+cd src/fabric_jumpstart
+uv sync        # Creates venv and installs all dependencies
+uv run pytest   # Run tests
+```
 
-See [contrib/README.md](contrib/README.md) for the bootstrap script used by CI. This sets up both projects via [Nx](https://nx.dev/).
+Or use the bootstrap script (installs uv for you if needed):
+
+```bash
+chmod +x contrib/bootstrap-python.sh && contrib/bootstrap-python.sh
+```
+
+See the [fabric-jumpstart contributing guide](src/fabric_jumpstart/CONTRIBUTING.md) for full details.
+
+## Full Setup — Website + Python (CI / web contributors)
+
+Only needed if you're working on the [website](src/fabric_jumpstart_web/) or running the full CI pipeline locally. This installs Python, Node.js, and all dependencies for both projects.
+
+See [contrib/README.md](contrib/README.md) for the bootstrap script used by CI.
 
 ### Full monorepo checks (same as CI)
 
@@ -34,6 +48,12 @@ npx nx run-many -t clean --output-style=stream
 npx nx run-many -t build test --output-style=stream
 npm run fail-on-untracked-files
 ```
+
+## Commit and PR Conventions
+
+- PRs must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) in the headline (e.g., `feat: add spark-monitoring jumpstart`).
+- Use the [PR template](.github/pull_request_template.md) — include a brief rationale and note any user-facing impacts.
+- Keep commits focused; avoid formatting-only churn.
 
 ## Standards
 

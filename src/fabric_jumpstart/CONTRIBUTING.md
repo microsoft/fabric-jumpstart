@@ -1,4 +1,4 @@
-# Contributing to fabric-jumpstart (Python Library)
+# Contributing to fabric-jumpstart
 
 > Please read the [root contributing guide](../../CONTRIBUTING.md) first for shared guidelines on issues, commits, and PRs.
 
@@ -14,7 +14,9 @@ This is the most common contribution. You only need to add a single YAML file an
 
 ## Development Setup
 
-- Install **uv** (https://docs.astral.sh/uv/). This project uses uv for dependency management.
+> **No Node.js or npm required.** The Python library is self-contained — you only need Python and [uv](https://docs.astral.sh/uv/).
+
+- Install **uv** (https://docs.astral.sh/uv/), or use the bootstrap script: `contrib/bootstrap-python.sh`
 - Create/sync the virtual environment:
   ```bash
   cd src/fabric_jumpstart && uv sync
@@ -50,10 +52,10 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
 
 ## Setup of a New Jumpstart
 
-1. Create an M365 Group for the Jumpstart owners (e.g., `fabricjumpstart.spark-monitoring`). Any Core Jumpstart needs to have multiple maintainers.
+1. [CORE] Create an M365 Group for the Jumpstart owners (e.g., `fabricjumpstart.spark-monitoring`). Any Core Jumpstart needs to have multiple maintainers.
 1. Create a public GitHub repo.
 1. Create a Fabric Workspace named `jumpstart.spark-monitoring` and connect it to your GitHub repo (use a PAT with Content permissions).
-1. Make the M365 group the admin of the Fabric Workspace.
+1. [CORE] Make the M365 group the admin of the Fabric Workspace.
 1. Populate the workspace with all items the Jumpstart should deploy.
    - Items must be in a top-level folder named the same as the `logical_id` of the jumpstart (e.g., `spark-monitoring`).
    - Any data stores that need to be shared across Jumpstarts (i.e. for modules of an overall solution like Fabric Platform Monitoring) must be stored in a top-level folder called `shared-data-stores`. Otherwise, the Jumpstarts should self contain all Items in the single top-level folder (e.g. `spark-monitoring`).
@@ -78,4 +80,5 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
      - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
      - `entry_point`: Either a URL or `<name>.<item_type>` format
      - `owner_email`: Valid email address
-1. Submit a PR with your new jumpstart YAML file.
+1. Run `fabric_jumpstart.install('<logical-id>', workspace_id='<workspace_guid>')` to validate the Jumpstart deploys correctly.
+1. Submit a PR with your Jumpstart YAML file.

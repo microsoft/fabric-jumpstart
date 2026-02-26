@@ -35,7 +35,6 @@ The repo is managed with [Nx](https://nx.dev/) and contains two projects:
 │       └── __tests__/          # Jest test suite
 ├── tools/                      # Build utility scripts
 ├── CONTRIBUTING.md             # Shared contribution guidelines (issues, commits, PRs)
-│       ├── STANDARDS.md        # Jumpstart design and quality standards
 └── nx.json                     # Nx monorepo configuration
 ```
 

@@ -12,6 +12,9 @@ wheels/
 # Logs
 /**/fabric_cicd.error.log
 
+# Dev
+dev/
+
 # Node
 node_modules/
 

@@ -4,15 +4,30 @@
 
 ## Development Setup
 
+### Linux / macOS / WSL
+
+Use the bootstrap script:
+
+```bash
+GIT_ROOT=$(git rev-parse --show-toplevel)
+chmod +x ${GIT_ROOT}/contrib/bootstrap-web.sh && ${GIT_ROOT}/contrib/bootstrap-web.sh
+```
+
+Or set up manually:
+
 - Install **Node.js** (v20+) and npm.
 - Install dependencies:
   ```bash
   cd src/fabric_jumpstart_web && npm install
   ```
-- Start the dev server:
-  ```bash
-  npm run dev    # http://localhost:8080
-  ```
+
+> **Windows users**: Website development requires WSL. See [contrib/README.md](../../contrib/README.md) for WSL setup instructions.
+
+### Start the dev server
+
+```bash
+npm run dev    # http://localhost:8080
+```
 
 ## Quality Checks
 

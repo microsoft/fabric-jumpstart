@@ -14,13 +14,31 @@ This is the most common contribution. You only need to add a single YAML file an
 
 ## Development Setup
 
-> **No Node.js or npm required.** The Python library is self-contained — you only need Python and [uv](https://docs.astral.sh/uv/).
+> **No Node.js or npm required.** The Python library is self-contained — you only need [uv](https://docs.astral.sh/uv/) (the Ruff VS Code extension is optional).
 
-- Install **uv** (https://docs.astral.sh/uv/), or use the bootstrap script: `contrib/bootstrap-python.sh`
-- Create/sync the virtual environment:
-  ```bash
-  cd src/fabric_jumpstart && uv sync
-  ```
+### Windows
+
+Run from PowerShell — no WSL required:
+
+```powershell
+$GIT_ROOT = git rev-parse --show-toplevel
+& "$GIT_ROOT\contrib\bootstrap-python.ps1"
+```
+
+This installs [uv](https://docs.astral.sh/uv/), the Ruff VS Code extension, and syncs the Python virtual environment.
+
+### Linux / macOS / WSL
+
+```bash
+GIT_ROOT=$(git rev-parse --show-toplevel)
+chmod +x ${GIT_ROOT}/contrib/bootstrap-python.sh && ${GIT_ROOT}/contrib/bootstrap-python.sh
+```
+
+Or set up manually:
+
+```bash
+cd src/fabric_jumpstart && uv sync
+```
 - In VS Code, install the **Ruff** extension for linting.
 - Develop in notebooks or `.py` files; restart the Python kernel after code changes so the notebook picks up fresh imports. Or, use importlib to reload specific modules for agile testing:
     ```python

@@ -1,36 +1,48 @@
-# Contributing
+# Bootstrap Scripts
 
-## How to use, on a Windows machine by installing WSL
+Scripts to set up development environments. Each project's [contributing guide](../CONTRIBUTING.md) explains which to use.
 
-1. Windows pre-reqs
+| Script | Platform | Purpose |
+|--------|----------|---------|
+| `bootstrap-python.ps1` | Windows | Python library — installs uv, Ruff VS Code extension, syncs venv |
+| `bootstrap-python.sh` | Linux / macOS / WSL | Python library — installs Python, uv, syncs venv |
+| `bootstrap-web.sh` | Linux / macOS / WSL | Website — installs Node.js, npm dependencies |
+| `bootstrap-all.sh` | Linux / macOS / WSL | Full monorepo — runs both Python and web bootstrappers |
+| `bootstrap-dev-env.ps1` | Windows | Sets up a fresh WSL VM (required for website work on Windows) |
+
+## WSL Setup (Windows — website or full monorepo)
+
+Website and full monorepo work on Windows requires WSL.
+
+1. Install VS Code:
 
    ```powershell
    winget install -e --id Microsoft.VisualStudioCode
    ```
 
-1. Get a fresh new WSL machine up:
+1. Set up a fresh WSL machine. Open an **PowerShell 7** terminal elevated with **Administrator** permissions and run:
 
-   > ⚠️ Warning: this removes your WSL machine and recreates it fresh.
+   > ⚠️ Warning: this removes your WSL dev box and recreates it fresh.
 
    ```powershell
-   $GIT_ROOT = git rev-parse --show-toplevel
-   & "$GIT_ROOT\contrib\bootstrap-dev-env.ps1"
+   # update the below to be the full path or first `cd` to the root of the repo
+   .\contrib\bootstrap-dev-env.ps1
    ```
 
-1. Clone the repo, and open VSCode in it:
+1. Inside WSL, clone the repo and open VS Code:
 
    ```bash
    cd ~/
-   
+
    read -p "Enter your name (e.g. 'FirstName LastName'): " user_name
    read -p "Enter your github email (e.g. 'your-github-alias@blah.com'): " user_email
    read -p "Enter the branch to switch to: (e.g. 'main') " branch_name
-    
+
    git clone https://github.com/microsoft/fabric-jumpstart.git
-   
+
    git config --global user.name "$user_name"
    git config --global user.email "$user_email"
-   
+
    cd fabric-jumpstart/
 
    git pull origin
@@ -38,16 +50,11 @@
    code .
    ```
 
-1. Run the bootstrapper script, that installs all tools idempotently:
+1. Run the appropriate bootstrapper inside WSL (see table above).
 
-   ```bash
-   GIT_ROOT=$(git rev-parse --show-toplevel)
-   chmod +x ${GIT_ROOT}/contrib/bootstrap-dev-env.sh && ${GIT_ROOT}/contrib/bootstrap-dev-env.sh
-   ```
+## Running CI Checks Locally
 
-## Running the GCI Targets Locally
-
-After bootstrapping, run the same checks that CI runs:
+After bootstrapping with `bootstrap-all.sh`:
 
 ```bash
 npx nx run-many -t clean --output-style=stream

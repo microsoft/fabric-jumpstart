@@ -20,13 +20,13 @@ Website and full monorepo work on Windows requires WSL.
    winget install -e --id Microsoft.VisualStudioCode
    ```
 
-1. Set up a fresh WSL machine:
+1. Set up a fresh WSL machine. Open an **PowerShell 7** terminal elevated with **Administrator** permissions and run:
 
-   > ⚠️ Warning: this removes your WSL machine and recreates it fresh.
+   > ⚠️ Warning: this removes your WSL dev box and recreates it fresh.
 
    ```powershell
-   $GIT_ROOT = git rev-parse --show-toplevel
-   & "$GIT_ROOT\contrib\bootstrap-dev-env.ps1"
+   # update the below to be the full path or first `cd` to the root of the repo
+   .\contrib\bootstrap-dev-env.ps1
    ```
 
 1. Inside WSL, clone the repo and open VS Code:

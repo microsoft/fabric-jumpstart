@@ -4,6 +4,8 @@
 
 ## Development Setup
 
+> **Windows users**: Website development requires WSL. See [contrib/README.md](../../contrib/README.md) for WSL setup instructions, then follow the steps below inside WSL.
+
 ### Linux / macOS / WSL
 
 Use the bootstrap script:
@@ -20,8 +22,6 @@ Or set up manually:
   ```bash
   cd src/fabric_jumpstart_web && npm install
   ```
-
-> **Windows users**: Website development requires WSL. See [contrib/README.md](../../contrib/README.md) for WSL setup instructions.
 
 ### Start the dev server
 

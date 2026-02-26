@@ -44,7 +44,7 @@ See the [fabric-jumpstart README](src/fabric_jumpstart/README.md) for full usage
 
 ## Contributing
 
-Please follow the contribution process in [CONTRIBUTING.md](CONTRIBUTING.md) and the coding expectations in [STANDARDS.md](STANDARDS.md).
+Please follow the contribution process in [CONTRIBUTING.md](CONTRIBUTING.md) and the coding expectations in [STANDARDS.md](src/fabric_jumpstart/STANDARDS.md).
 
 ## Learn More
 

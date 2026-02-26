@@ -59,4 +59,4 @@ The prefixing strategy:
 
 ## Contributing
 
-Please follow the contribution process in [CONTRIBUTING.md](../../CONTRIBUTING.md) and the coding expectations in [STANDARDS.md](../../STANDARDS.md).
+See the [root contributing guide](../../CONTRIBUTING.md) for shared guidelines (commit conventions, issue workflow, PR process), then follow the [Python library contributing guide](CONTRIBUTING.md) for development setup, quality checks, and the new jumpstart workflow.

@@ -98,5 +98,5 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
      - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
      - `entry_point`: Either a URL or `<name>.<item_type>` format
      - `owner_email`: Valid email address
-1. Run `fabric_jumpstart.install('<logical-id>', workspace_id='<workspace_guid>')` to validate the Jumpstart deploys correctly.
+1. Run `fabric_jumpstart.install('<logical-id>', workspace_id='<workspace_guid>')` to validate the Jumpstart deploys correctly (see [dev_example.ipynb](../../dev/dev_example.ipynb) for a quick way to test).
 1. Submit a PR with your Jumpstart YAML file.

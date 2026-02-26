@@ -12,8 +12,10 @@ wheels/
 # Logs
 /**/fabric_cicd.error.log
 
-# Dev
-dev/
+# Exclude local dev files
+dev/*
+# Include the example notebook
+!dev/dev_example.ipynb
 
 TODO.md
 

@@ -31,6 +31,7 @@ exclude = ["tests/**"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
+dev-mode-dirs = [".."]
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -40,6 +41,7 @@ allow-direct-references = true
 dev = [
     {include-group = "lint"},
     {include-group = "test"},
+    "ipykernel>=6.29.0",
 ]
 lint = [
     "ruff>=0.14.10",

@@ -1,0 +1,38 @@
+id: 2
+logical_id: stateful-streaming-lakehouse
+name: Stateful Streaming Lakehouse
+description: >-
+  Discover how Spark Structured Streaming powers a stateful lakehouse for industrial sales and
+  shipment data. Learn how to process incremental events from OneLake and Eventstream,
+  and explore a production-ready streaming-first reference implementation.
+date_added: 2/28/2026
+include_in_listing: false
+workload_tags:
+- Data Engineering
+scenario_tags:
+- Streaming
+- Modeling
+- Batch Processing
+type: Tutorial
+source:
+  repo_url: https://github.com/microsoft/fabric-stateful-streaming-lakehouse.git/
+  repo_ref: v0.1.0
+  workspace_path: workspace/
+  preview_image_path: assets/image-example.png
+items_in_scope:
+- Lakehouse
+- Eventstream
+- Notebook
+- SparkJobDefinition
+- Environment
+feature_flags:
+- enable_lakehouse_unpublish
+jumpstart_docs_uri: https://github.com/microsoft/fabric-analytics-roadshow-lab/blob/v0.1.1/README.md
+entry_point: explore_streaming.Notebook
+test_suite: ''
+owner_email: FabricJumpstart.StatefulStreamingLakehouse@microsoft.com
+minutes_to_deploy: 8
+minutes_to_complete_jumpstart: 30
+video_url: ""
+difficulty: "Advanced"
+last_updated: "2026-02-28"

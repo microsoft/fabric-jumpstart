@@ -11,6 +11,7 @@ This is the most common contribution. You only need to add a single YAML file, r
 3. Keep Jumpstarts self-contained: deployments must run through `jumpstart.install()` without manual patching.
 4. Please read [STANDARDS.md](STANDARDS.md) for Jumpstart design and quality expectations.
 5. Follow the steps in [Setup of a New Jumpstart](#setup-of-a-new-jumpstart) to get things set up, tested, and merged in.
+5. For upgrading existing Jumpstarts, follow the [Upgrading an Existing Jumpstart](#updating-an-existing-jumpstart) guide.
 
 ## Development Setup
 
@@ -89,3 +90,16 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
      - `owner_email`: Valid email address
 1. Run `fabric_jumpstart.install('<logical-id>', workspace_id='<workspace_guid>')` to validate the Jumpstart deploys correctly (see [dev_example.ipynb](../../dev/dev_example.ipynb) for a quick way to test).
 1. Submit a PR with your Jumpstart YAML file.
+
+## Updating an Existing Jumpstart
+
+When a jumpstart's source repository publishes a new tag or ref, you can test the update before submitting a PR:
+
+1. Use the `repo_ref` keyword argument to install with the newer ref without modifying any YAML:
+   ```python
+   import fabric_jumpstart as js
+   js.install('retail-sales', workspace_id='<workspace_guid>', repo_ref='v2.0.0')
+   ```
+2. Validate that the jumpstart deploys and functions correctly with the new ref.
+3. Once verified, update the `repo_ref` value in the jumpstart's YAML file and submit a PR.
+4. Run `uv run pytest tests/test_registry.py` to confirm the new ref is reachable before pushing.

@@ -181,6 +181,7 @@ class jumpstart:
                 - update_existing: If True, conflicting items will be updated
                 - auto_prefix_on_conflict: If True, auto-generate a prefix when conflicts are detected
                 - debug: If True, include all jumpstart logs (INFO+) in the rendered output; otherwise only fabric-cicd logs
+                - repo_ref: Override the registered source repo_ref (git tag/branch/commit) at runtime
         """
         config = self._get_jumpstart_by_logical_id(name)
         if not config:

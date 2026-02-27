@@ -19,14 +19,15 @@ The repo is managed with [Nx](https://nx.dev/) and contains two projects:
 ├── dev/                        # Development and testing notebooks (.ipynb)
 ├── src/
 │   ├── fabric_jumpstart/       # Python library (published to PyPI)
-│   │   ├── core.py             # Main jumpstart logic
-│   │   ├── installer.py        # Deployment orchestration
-│   │   ├── registry.py         # Jumpstart catalog management
-│   │   ├── workspace_manager.py
-│   │   ├── ui/                 # In-notebook HTML rendering
-│   │   ├── jumpstarts/
-│   │   │   ├── core/           # Microsoft-sponsored jumpstarts (YAML)
-│   │   │   └── community/      # Community-contributed jumpstarts (YAML)
+│   │   ├── fabric_jumpstart/   # Importable Python package
+│   │   │   ├── core.py         # Main jumpstart logic
+│   │   │   ├── installer.py    # Deployment orchestration
+│   │   │   ├── registry.py     # Jumpstart catalog management
+│   │   │   ├── workspace_manager.py
+│   │   │   ├── ui/             # In-notebook HTML rendering
+│   │   │   └── jumpstarts/
+│   │   │       ├── core/       # Microsoft-sponsored jumpstarts (YAML)
+│   │   │       └── community/  # Community-contributed jumpstarts (YAML)
 │   │   └── tests/              # pytest test suite
 │   └── fabric_jumpstart_web/   # Next.js website
 │       ├── src/                # App source (pages, components, hooks, etc.)
@@ -44,16 +45,16 @@ Each sub-project also has its own `CONTRIBUTING.md` with project-specific setup,
 
 ## Most Common Contribution: Adding a New Jumpstart
 
-The majority of contributions add a new jumpstart. This only touches the **Python library** project — specifically a single YAML file in `src/fabric_jumpstart/jumpstarts/`.
+The majority of contributions add a new jumpstart. This only touches the **Python library** project — specifically a single YAML file in `src/fabric_jumpstart/fabric_jumpstart/jumpstarts/`.
 
 ### Jumpstart YAML Location
 
-- **Core** (Microsoft-sponsored): `src/fabric_jumpstart/jumpstarts/core/<logical-id>.yml`
-- **Community**: `src/fabric_jumpstart/jumpstarts/community/<logical-id>.yml`
+- **Core** (Microsoft-sponsored): `src/fabric_jumpstart/fabric_jumpstart/jumpstarts/core/<logical-id>.yml`
+- **Community**: `src/fabric_jumpstart/fabric_jumpstart/jumpstarts/community/<logical-id>.yml`
 
 ### Required YAML Fields
 
-See any existing file in `jumpstarts/core/` for a complete example. Key fields:
+See any existing file in `fabric_jumpstart/jumpstarts/core/` for a complete example. Key fields:
 
 ```yaml
 id: <unique integer>

@@ -25,12 +25,10 @@ dependencies = [
 ]
 
 [tool.hatch.build]
-# Include every file under fabric_jumpstart (not just .py) in the wheel
-include = ["**/*.py", "jumpstarts/**/*", "ui/**/*"]
-exclude = ["tests/**"]
+include = ["fabric_jumpstart/**/*.py", "fabric_jumpstart/jumpstarts/**/*", "fabric_jumpstart/ui/**/*"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["."]
+packages = ["fabric_jumpstart"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -51,16 +49,16 @@ test = [
 ]
 
 [tool.ruff]
-src = [".."]
+src = ["."]
 # Ignore packaged jumpstart payloads (e.g., demo notebooks) to keep lint focused on library code.
-extend-exclude = ["jumpstarts/**"]
+extend-exclude = ["fabric_jumpstart/jumpstarts/**"]
 
 [tool.ty.environment]
-root = [".."]
+root = ["."]
 
 [tool.ty.src]
 # Skip type checking for test helpers that rely on dynamic imports/aliases.
 exclude = [
     "tests/test_instance_name.py",
-    "jumpstarts/**",
+    "fabric_jumpstart/jumpstarts/**",
 ]

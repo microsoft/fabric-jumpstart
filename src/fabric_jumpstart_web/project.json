@@ -24,7 +24,7 @@
         "parallel": false
       },
       "inputs": [
-        "{workspaceRoot}/src/fabric_jumpstart/jumpstarts/core/**/*.yml",
+        "{workspaceRoot}/src/fabric_jumpstart/fabric_jumpstart/jumpstarts/core/**/*.yml",
         "{projectRoot}/scripts/generate-content.ts"
       ],
       "outputs": [

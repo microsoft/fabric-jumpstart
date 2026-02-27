@@ -1,7 +1,7 @@
 /**
  * Pre-build content generation script.
  *
- * Reads scenario YAML files from ../fabric_jumpstart/jumpstarts/core/
+ * Reads scenario YAML files from ../fabric_jumpstart/fabric_jumpstart/jumpstarts/core/
  * and generates:
  * - docs/ directory with markdown per scenario
  * - src/data/side-menu.json (navigation tree)
@@ -16,7 +16,7 @@ import type { ScenarioYml, ScenarioCard } from '../src/types/scenario';
 
 const JUMPSTARTS_DIR = path.resolve(
   __dirname,
-  '../../fabric_jumpstart/jumpstarts/core'
+  '../../fabric_jumpstart/fabric_jumpstart/jumpstarts/core'
 );
 const DOCS_DIR = path.resolve(__dirname, '../docs');
 const DATA_DIR = path.resolve(__dirname, '../src/data');

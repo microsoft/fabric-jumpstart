@@ -11,7 +11,7 @@ Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARD
 ## General Changes Workflow
 - Discuss larger changes with maintainers first (issue or PR draft) to align on scope.
 
-## Development Setup
+## Development Setup to contribute to all sub-projects (e.g. CLI, Website)
 
 ### Windows users
 
@@ -50,6 +50,10 @@ Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARD
    git switch "$branch_name"
    code .
    ```
+
+   At this point, ensure you're in the WSL:
+
+   ![WSL terminal](.imgs/wsl-terminal.png)
 
 4. Run the bootstrapper script, that installs all tools idempotently:
 

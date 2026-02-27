@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "⚙️ Bootstrap CI Environment"
-        run: contrib/bootstrap-dev-env.sh
+        run: contrib/bootstrap-ci.sh
 
       - name: "🧹 Clean Projects"
         run: npx nx run-many -t clean --parallel=3 --output-style=stream

@@ -6,6 +6,7 @@
     }
   ],
   "settings": {
+    "git.repositoryScanPaths": ["../.."],
     "editor.formatOnSave": true
   }
 }

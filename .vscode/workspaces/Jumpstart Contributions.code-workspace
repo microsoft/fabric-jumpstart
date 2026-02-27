@@ -6,6 +6,7 @@
     }
   ],
   "settings": {
+    "git.repositoryScanPaths": ["../.."],
     "python.defaultInterpreterPath": "${workspaceFolder: fabric_jumpstart}/.venv/bin/python",
     "editor.formatOnSave": true
   }

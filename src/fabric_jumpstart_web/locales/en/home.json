@@ -15,7 +15,7 @@
     "imageAlt": "Fabric Jumpstart banner",
     "codeSnippet": {
       "language": "python",
-      "code": "import fabric_jumpstart as js\n\n# Browse available jumpstarts\njs.list()\n\n# Install a scenario\njs.install(\"retail-sales\")"
+      "code": "%pip install fabric-jumpstart\n\nimport fabric_jumpstart as jumpstart\n\n# Browse available jumpstarts\njumpstart.list()\n\n# Install a scenario\njumpstart.install(\"healthcare-billing-system\")"
     }
   },
   "rowSection": [

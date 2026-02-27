@@ -44,4 +44,3 @@ echo "python: $(python3 --version)"
 echo "uv: $(uv --version)"
 echo "npm: $(npm version)"
 echo "nx: $(npx nx --version)"
-

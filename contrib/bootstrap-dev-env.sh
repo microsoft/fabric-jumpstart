@@ -40,7 +40,11 @@ npm install
 cd "$REPO_ROOT/src/fabric_jumpstart_web"
 npm install
 
+curl -fsSL https://gh.io/copilot-install | bash;
+
+echo "copilot: $(copilot --version)"
 echo "python: $(python3 --version)"
 echo "uv: $(uv --version)"
 echo "npm: $(npm version)"
 echo "nx: $(npx nx --version)"
+

@@ -1,0 +1,12 @@
+{
+  "folders": [
+    {
+      "name": "fabric_jumpstart",
+      "path": "../../src/fabric_jumpstart"
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder: fabric_jumpstart}/.venv/bin/python",
+    "editor.formatOnSave": true
+  }
+}

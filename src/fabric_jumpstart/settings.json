@@ -1,0 +1,28 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.python",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.ruffEnabled": true,
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true
+  },
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportUnboundVariable": "none",
+    "reportUndefinedVariable": "none",
+    "reportMissingImports": "none",
+    "reportMissingModuleSource": "none",
+  }
+}

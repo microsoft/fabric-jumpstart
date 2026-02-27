@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "name": "fabric_jumpstart_web",
+      "path": "../../src/fabric_jumpstart_web"
+    }
+  ],
+  "settings": {
+    "editor.formatOnSave": true
+  }
+}

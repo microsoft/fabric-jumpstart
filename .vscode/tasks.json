@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Open Project Workspace",
+      "type": "shell",
+      "command": "code",
+      "args": ["${workspaceFolder}/.vscode/workspaces/${input:projectChoice}.code-workspace"],
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "projectChoice",
+      "type": "pickString",
+      "description": "Select a project to open",
+      "options": [
+        "Jumpstart Contributions",
+        "Website"
+      ]
+    }
+  ]
+}

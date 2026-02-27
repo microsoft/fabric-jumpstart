@@ -15,6 +15,8 @@ Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARD
 
 ### Windows users
 
+[![Jumpstart Walkthrough](./.imgs/jumpstart-walkthrough.png)](https://jumpstartfabric.blob.core.windows.net/public/jumpstart-dev-env-setup.mp4)
+
 1. Windows pre-reqs
 
    ```powershell

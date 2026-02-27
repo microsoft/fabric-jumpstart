@@ -41,6 +41,8 @@ cd "$REPO_ROOT/src/fabric_jumpstart_web"
 npm install
 
 curl -fsSL https://gh.io/copilot-install | bash;
+code --install-extension ms-python.python
+code --install-extension ms-toolsai.jupyter
 
 echo "copilot: $(copilot --version)"
 echo "python: $(python3 --version)"

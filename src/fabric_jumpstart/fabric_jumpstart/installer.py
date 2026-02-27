@@ -48,6 +48,7 @@ class JumpstartInstaller:
         self.item_prefix = options.get('item_prefix')
         self.unattended = options.get('unattended', False)
         self.debug_logs = bool(options.get('debug', False))
+        self.repo_ref_override = options.get('repo_ref')
         
         # State tracking
         self.log_buffer: List[Dict] = []
@@ -99,7 +100,9 @@ class JumpstartInstaller:
         if 'repo_url' in source_config:
             # Remote jumpstart
             repo_url = source_config['repo_url']
-            repo_ref = source_config.get('repo_ref', 'main')
+            repo_ref = self.repo_ref_override or source_config['repo_ref']
+            if self.repo_ref_override:
+                logger.info(f"Overriding registered repo_ref with '{self.repo_ref_override}'")
             logger.info(f"Cloning from {repo_url} (ref: {repo_ref})")
             self.working_repo_path = clone_repository(
                 repository_url=repo_url,

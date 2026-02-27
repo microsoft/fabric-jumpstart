@@ -1,2 +1,8 @@
 dev/**
 !/dev/test_example.ipynb
+
+# ruff cache
+/.ruff_cache/
+
+# pytest cache
+/.pytest_cache

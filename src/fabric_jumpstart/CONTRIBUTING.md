@@ -52,7 +52,7 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
 
 ## Submitting Changes
 
-- **For new Jumpstarts:** Create a new YAML file in `src/fabric_jumpstart/jumpstarts/community/` named `<logical-id>.yml` with all required metadata. Core jumpstarts (Microsoft-sponsored) go in the `core/` folder.
+- **For new Jumpstarts:** Create a new YAML file in `src/fabric_jumpstart/fabric_jumpstart/jumpstarts/community/` named `<logical-id>.yml` with all required metadata. Core jumpstarts (Microsoft-sponsored) go in the `core/` folder.
 - Run `uv run pytest tests/test_registry.py` to confirm registry validation passes.
 
 ---
@@ -70,7 +70,7 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
    - Do **not** use spaces in item names. Item names must either be `lower_case_snake_case` or `ProperCamelCase`. Both of these options accomodate all known naming restrictions.
 1. Commit items to the repo.
 1. Fork the fabric-jumpstart repo.
-1. Create a new YAML file in `src/fabric_jumpstart/jumpstarts/community/` (or `core/` for Microsoft-sponsored jumpstarts):
+1. Create a new YAML file in `src/fabric_jumpstart/fabric_jumpstart/jumpstarts/community/` (or `core/` for Microsoft-sponsored jumpstarts):
    - Name the file `<logical-id>.yml` (e.g., `spark-monitoring.yml`)
    - Include all required metadata fields (see existing files for examples). _If required fields are not provided, CI tests will fail upon submission of your PR. Validate that your YAML schema conforms in advance via running `cd src/fabric_jumpstart && uv run pytest tests/test_registry.py`_
    - The `core` flag will be automatically set based on folder location during loading

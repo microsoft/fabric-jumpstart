@@ -16,7 +16,7 @@ import {
 
 const JUMPSTARTS_DIR = path.resolve(
   __dirname,
-  '../../fabric_jumpstart/jumpstarts/core'
+  '../../fabric_jumpstart/fabric_jumpstart/jumpstarts/core'
 );
 
 function loadAllScenarios(): { file: string; data: ScenarioYml }[] {

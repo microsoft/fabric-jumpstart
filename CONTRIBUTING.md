@@ -1,78 +1,29 @@
 # Contributing
 
-Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARDS.md](STANDARDS.md) before opening a pull request.
+Thank you for helping improve Fabric Jumpstart! 
 
-## New Jumpstart Workflow
-- Create a `New Jumpstart` Issue with enough details to help maintainers determine whether the solution fits in the Fabric Jumpstart mission.
-- Community contributions are more than welcome, but we do require a Microsoft sponsor for any Core Jumpstarts. This is someone who must have contributor level access to your project.
-- Keep Jumpstarts self-contained: deployments must run through `jumpstart.install()` without manual patching.
-- Follow the steps in [JUMPSTART_SETUP.md](JUMPSTART_SETUP.md) to get things set up, tested, and merged in.
+| Project | Path | Contributing Guide |
+|---------|------|--------------------|
+| **fabric-jumpstart** (Python library + Jumpstarts) | `src/fabric_jumpstart/` | [Contributing to Fabric Jumpstart](src/fabric_jumpstart/CONTRIBUTING.md) |
+| **fabric-jumpstart-web** (Website) | `src/fabric_jumpstart_web/` | [Contributing to the Website](src/fabric_jumpstart_web/CONTRIBUTING.md) |
 
-## General Changes Workflow
-- Discuss larger changes with maintainers first (issue or PR draft) to align on scope.
+> **ℹ️ Contributing a new Jumpstart?** Head to the [fabric-jumpstart contributing guide](src/fabric_jumpstart/CONTRIBUTING.md).
 
-## Development Setup to contribute to all sub-projects (e.g. CLI, Website)
+---
 
-### Windows users
+## Getting Started
 
-[![Jumpstart Walkthrough](./.imgs/jumpstart-walkthrough.png)](https://jumpstartfabric.blob.core.windows.net/public/jumpstart-dev-env-setup.mp4)
+1. **Open an issue first.** Before writing code, create an issue (or use the `New Jumpstart` template for jumpstarts) so maintainers can confirm the change fits the project's direction.
+2. **Discuss larger changes** with maintainers via an issue or draft PR to align on scope before investing effort.
+3. **Fork the repo** and create a feature branch from `main`.
+4. **Set up your environment** by following the contributing guide for the project you're working on (linked above).
 
-1. Windows pre-reqs
+## Commit and PR Conventions
 
-   ```powershell
-   winget install -e --id Microsoft.VisualStudioCode
-   ```
+- PRs must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) in the headline (e.g., `feat: add spark-monitoring jumpstart`).
+- Use the [PR template](.github/pull_request_template.md) — include a brief rationale and note any user-facing impacts.
+- Keep commits focused; avoid formatting-only churn.
 
-2. Get a fresh new WSL machine up:
+## Standards
 
-   > ⚠️ Warning: this removes your WSL machine and recreates it fresh.
-
-   ```powershell
-   $GIT_ROOT = git rev-parse --show-toplevel
-   & "$GIT_ROOT\contrib\bootstrap-dev-env.ps1"
-   ```
-
-3. Clone the repo, and open VSCode in it:
-
-   ```bash
-   cd ~/
-   
-   read -p "Enter your name (e.g. 'FirstName LastName'): " user_name
-   read -p "Enter your github email (e.g. 'your-github-alias@blah.com'): " user_email
-   read -p "Enter the branch to switch to: (e.g. 'main') " branch_name
-    
-   git clone https://github.com/microsoft/fabric-jumpstart.git
-   
-   git config --global user.name "$user_name"
-   git config --global user.email "$user_email"
-   
-   cd fabric-jumpstart/
-
-   git pull origin
-   git switch "$branch_name"
-   code .
-   ```
-
-   At this point, ensure you're in the WSL:
-
-   ![WSL terminal](.imgs/wsl-terminal.png)
-
-4. Run the bootstrapper script, that installs all tools idempotently:
-
-   ```bash
-   GIT_ROOT=$(git rev-parse --show-toplevel)
-   chmod +x ${GIT_ROOT}/contrib/bootstrap-dev-env.sh && ${GIT_ROOT}/contrib/bootstrap-dev-env.sh
-   ```
-
-## Running the GCI Targets Locally
-
-After bootstrapping, run the same checks that CI runs:
-
-```bash
-npx nx run-many -t build --output-style=stream
-npx nx run-many -t test --output-style=stream
-```
-
-### Linux users
-
-The steps above, minus WSL should work as-is.
+Please read [STANDARDS.md](src/fabric_jumpstart/STANDARDS.md) for Jumpstart design and quality expectations before opening a pull request.

@@ -11,66 +11,68 @@ Thank you for helping improve Fabric Jumpstart! Please read and follow [STANDARD
 ## General Changes Workflow
 - Discuss larger changes with maintainers first (issue or PR draft) to align on scope.
 
-## Development Setup
-
-### Linux users
-
-Please See [contrib/README.md](contrib/README.md) for the same bootstrap used by CI that uses [nx](https://nx.dev/).
+## Development Setup to contribute to all sub-projects (e.g. CLI, Website)
 
 ### Windows users
 
-- Install **uv** (https://docs.astral.sh/uv/). This project expects uv for dependency management.
-- Create/sync the virtual environment:
-  - Run `cd src/fabric_jumpstart && uv sync` in your terminal (installs Python and resolves dependencies)
-- In VS Code, install the **Ruff** extension for linting.
-- Develop in notebooks or `.py` files; restart the Python kernel after code changes so the notebook picks up fresh imports. Or, use importlib to reload specific modules for agile testing.
-    ```python
-    import importlib
-    import fabric_jumpstart as jumpstart
-    importlib.reload(jumpstart.core)
-    importlib.reload(jumpstart.utils)
-    importlib.reload(jumpstart)
-    ```
+[![Jumpstart Walkthrough](./.imgs/jumpstart-walkthrough.png)](https://jumpstartfabric.blob.core.windows.net/public/jumpstart-dev-env-setup.mp4)
 
-## Quality Checks (required for any new features)
-----------------------------
-- Lint: `cd src/fabric_jumpstart && uv run ruff check .`
-- Tests: `cd src/fabric_jumpstart && uv run pytest`
+1. Windows pre-reqs
 
-## Submitting Changes
-------------------
-- Include a brief rationale in your PR description and note any user-facing impacts.
-- **For new Jumpstarts:** Create a new YAML file in `src/fabric_jumpstart/jumpstarts/community/` named `<logical-id>.yml` with all required metadata. Core jumpstarts (Microsoft-sponsored) go in the `core/` folder instead.
-- Run `cd src/fabric_jumpstart && uv run pytest tests/test_registry.py` to confirm registry validation passes.
-- Keep commits focused; avoid formatting-only churn.
+   ```powershell
+   winget install -e --id Microsoft.VisualStudioCode
+   ```
 
-## Setup of a New Jumpstart
-1. Create an M365 Group for the Jumpstart owners (e.g., `fabricjumpstart.spark-monitoring`). Any Core Jumpstart needs to be have multiple maintainers.
-1. Create a public GitHub repo.
-1. Create a Fabric Workspace named `jumpstart.spark-monitoring` and connect it to your GitHub repo (use a PAT with Content permissions).
-1. Make the M365 group the admin of the Fabric Workspace.
-1. Populate the workspace with all items the Jumpstart should deploy.
-   - Items must be in a top-level folder named the same as the `logical_id` of the jumpstart (e.g., `spark-monitoring`).
-   - Any data stores that need to be shared across Jumpstarts (i.e. for modules of an overall solution like Fabric Platform Monitoring) must be stored in a top-level folder called `shared-data-stores`. Otherwise, the Jumpstarts should self contain all Items in the single top-level folder (e.g. `spark-monitoring`).
-   - Fabric items must not contain a solution prefix; Jumpstart can optionally add an automatic prefix at deployment (e.g., `js1_sm__`) so multiple Jumpstarts can coexist in the event of conflicting Item names. By default, no prefixing takes place, users need to opt-in to this upon being notified of Item name conflicts.
-   - Do **not** use spaces in item names. Item names must either be `lower_case_snake_case` or `ProperCamelCase`. Both of these options accomodate all known naming restrictions.
-1. Commit items to the repo.
-1. Fork the fabric-jumpstart repo.
-1. Create a new YAML file in `src/fabric_jumpstart/jumpstarts/community/` (or `core/` for Microsoft-sponsored jumpstarts):
-   - Name the file `<logical-id>.yml` (e.g., `spark-monitoring.yml`)
-   - Include all required metadata fields (see existing files for examples). _If required fields are not provided, CI tests will fail upon submission of your PR. Validate that your YAML schema conforms in advance via running `cd src/fabric_jumpstart && uv run pytest tests/test_registry.py`
-   - The `core` flag will be automatically set based on folder location during loading
-   - Required fields (_start by copying and editing an existing YAML file_):
-     - `id`: Unique positive integer (check existing IDs to avoid conflicts)
-     - `logical_id`: Lowercase kebab-case identifier (e.g., `spark-monitoring`)
-     - `name`: Display name
-     - `description`: Max 250 characters, cannot start with the jumpstart name
-     - `date_added`: MM/DD/YYYY format
-     - `workload_tags`: List of valid workload tags
-     - `scenario_tags`: List of valid scenario tags
-     - `type`: One of: Tutorial, Demo, Accelerator
-     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`, `preview_image_path`
-     - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
-     - `entry_point`: Either a URL or `<name>.<item_type>` format
-     - `owner_email`: Valid email address
-1. Submit a PR with your new jumpstart YAML file.
+2. Get a fresh new WSL machine up:
+
+   > ⚠️ Warning: this removes your WSL machine and recreates it fresh.
+
+   ```powershell
+   $GIT_ROOT = git rev-parse --show-toplevel
+   & "$GIT_ROOT\contrib\bootstrap-dev-env.ps1"
+   ```
+
+3. Clone the repo, and open VSCode in it:
+
+   ```bash
+   cd ~/
+   
+   read -p "Enter your name (e.g. 'FirstName LastName'): " user_name
+   read -p "Enter your github email (e.g. 'your-github-alias@blah.com'): " user_email
+   read -p "Enter the branch to switch to: (e.g. 'main') " branch_name
+    
+   git clone https://github.com/microsoft/fabric-jumpstart.git
+   
+   git config --global user.name "$user_name"
+   git config --global user.email "$user_email"
+   
+   cd fabric-jumpstart/
+
+   git pull origin
+   git switch "$branch_name"
+   code .
+   ```
+
+   At this point, ensure you're in the WSL:
+
+   ![WSL terminal](.imgs/wsl-terminal.png)
+
+4. Run the bootstrapper script, that installs all tools idempotently:
+
+   ```bash
+   GIT_ROOT=$(git rev-parse --show-toplevel)
+   chmod +x ${GIT_ROOT}/contrib/bootstrap-dev-env.sh && ${GIT_ROOT}/contrib/bootstrap-dev-env.sh
+   ```
+
+## Running the GCI Targets Locally
+
+After bootstrapping, run the same checks that CI runs:
+
+```bash
+npx nx run-many -t build --output-style=stream
+npx nx run-many -t test --output-style=stream
+```
+
+### Linux users
+
+The steps above, minus WSL should work as-is.

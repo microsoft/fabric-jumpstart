@@ -17,6 +17,7 @@ if ! command -v python3 &> /dev/null; then PACKAGES="${PACKAGES:+$PACKAGES }pyth
 if ! command -v pip &> /dev/null; then PACKAGES="${PACKAGES:+$PACKAGES }python3-pip"; fi
 if ! command -v npm &> /dev/null; then PACKAGES="${PACKAGES:+$PACKAGES }nodejs"; curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - > /dev/null 2>&1; fi
 if [ -n "$PACKAGES" ]; then
+    echo "Installing packages from apt, this will take a couple minutes: $PACKAGES"
     sudo apt-get update > /dev/null 2>&1
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $PACKAGES > /dev/null 2>&1
 fi
@@ -43,3 +44,4 @@ echo "python: $(python3 --version)"
 echo "uv: $(uv --version)"
 echo "npm: $(npm version)"
 echo "nx: $(npx nx --version)"
+

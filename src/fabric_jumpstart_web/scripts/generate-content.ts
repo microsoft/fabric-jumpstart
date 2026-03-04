@@ -88,6 +88,31 @@ function generateContentMd(scenario: ScenarioYml): string {
   return md;
 }
 
+/** Static (non-scenario) documentation source files. */
+const STATIC_DOCS_SRC = path.resolve(__dirname, '../static-docs');
+
+function generateStaticDocs(rootDocsDir: string): void {
+  const gettingStartedDir = path.join(rootDocsDir, 'getting-started');
+  fs.mkdirSync(gettingStartedDir, { recursive: true });
+
+  fs.writeFileSync(
+    path.join(gettingStartedDir, '_index.md'),
+    '---\ntype: docs\ntitle: "Getting Started"\nlinkTitle: "Getting Started"\nweight: 0\ndescription: >-\n  Learn the prerequisites for using a jumpstart, including creating a Fabric workspace, creating a notebook, and installing the fabric-jumpstart library.\n---\n'
+  );
+
+  // Copy content.md from static-docs source if available, otherwise generate
+  const srcContent = path.join(STATIC_DOCS_SRC, 'getting-started', 'content.md');
+  if (fs.existsSync(srcContent)) {
+    fs.copyFileSync(srcContent, path.join(gettingStartedDir, 'content.md'));
+  } else {
+    // Fallback: generate a placeholder
+    fs.writeFileSync(
+      path.join(gettingStartedDir, 'content.md'),
+      '# Getting Started\n\nContent coming soon.\n'
+    );
+  }
+}
+
 function generateDocs(scenarios: ScenarioYml[]): void {
   // Clean docs dir
   if (fs.existsSync(DOCS_DIR)) {
@@ -105,6 +130,9 @@ function generateDocs(scenarios: ScenarioYml[]): void {
     path.join(rootDocsDir, '_index.md'),
     '---\ntype: docs\ntitle: "Jumpstart Scenarios"\nlinkTitle: "Jumpstart Scenarios"\nweight: 2\n---\n'
   );
+
+  // Generate static documentation pages
+  generateStaticDocs(rootDocsDir);
 
   // Generate docs per listed scenario
   for (const scenario of scenarios) {
@@ -140,12 +168,12 @@ function generateDocs(scenarios: ScenarioYml[]): void {
 }
 
 function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
-  const children: SideMenuItem[] = [];
+  const scenarioChildren: SideMenuItem[] = [];
 
   for (const scenario of scenarios) {
     if (!scenario.include_in_listing) continue;
 
-    children.push({
+    scenarioChildren.push({
       name: scenario.logical_id,
       type: 'directory',
       path: `fabric_jumpstart/${scenario.logical_id}`,
@@ -159,6 +187,26 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
       },
     });
   }
+
+  // Static documentation pages (non-scenario)
+  const staticPages: SideMenuItem[] = [
+    {
+      name: 'getting-started',
+      type: 'directory',
+      path: 'fabric_jumpstart/getting-started',
+      children: [],
+      frontMatter: {
+        type: 'docs',
+        title: 'Getting Started',
+        linkTitle: 'Getting Started',
+        weight: 0,
+        description:
+          'Learn the prerequisites for using a jumpstart, including creating a Fabric workspace, creating a notebook, and installing the fabric-jumpstart library.',
+      },
+    },
+  ];
+
+  const children = [...staticPages, ...scenarioChildren];
 
   const root: SideMenuItem = {
     name: 'docs',

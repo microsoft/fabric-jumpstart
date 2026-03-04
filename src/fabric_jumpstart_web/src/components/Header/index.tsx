@@ -377,6 +377,17 @@ const Header: React.FC = () => {
             >
               Scenarios
             </Button>
+            <Button
+              className={mergeClasses(
+                styles.navButton,
+                styles.navButtonUnselected
+              )}
+              onClick={() =>
+                (window.location.href = INTERNAL_ROUTE.GETTING_STARTED)
+              }
+            >
+              Getting Started
+            </Button>
           </div>
 
           {/* Trailing: Search | GitHub | PyPI | ThemeToggle */}

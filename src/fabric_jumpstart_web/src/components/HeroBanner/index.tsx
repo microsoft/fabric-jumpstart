@@ -119,7 +119,43 @@ const HeroBanner = forwardRef<HTMLDivElement, BannerProps>(
           <Typography type="desc" text={desc} className={styles.desc} />
           {codeSnippet && (
             <div>
-              {pypiLink && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '12px',
+                  flexWrap: 'wrap',
+                }}
+              >
+
+                {pypiLink && (
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: 'rgba(0, 120, 212, 0.1)',
+                      borderRadius: '8px',
+                      padding: '6px 14px',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    <span>📦</span>
+                    <a
+                      href={pypiLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: '#0078d4',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      fabric-jumpstart on PyPI
+                    </a>
+                  </div>
+                )}
                 <div
                   style={{
                     display: 'inline-flex',
@@ -128,25 +164,22 @@ const HeroBanner = forwardRef<HTMLDivElement, BannerProps>(
                     backgroundColor: 'rgba(0, 120, 212, 0.1)',
                     borderRadius: '8px',
                     padding: '6px 14px',
-                    marginBottom: '12px',
                     fontSize: '13px',
                     fontWeight: 500,
                   }}
                 >
-                  <span>📦</span>
+                  <span>🚀</span>
                   <a
-                    href={pypiLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/getting-started"
                     style={{
                       color: '#0078d4',
                       textDecoration: 'none',
                     }}
                   >
-                    fabric-jumpstart on PyPI
+                    Getting Started
                   </a>
                 </div>
-              )}
+              </div>
               <CodeBlock>
                 <code className={`language-${codeSnippet.language}`}>
                   {codeSnippet.code}

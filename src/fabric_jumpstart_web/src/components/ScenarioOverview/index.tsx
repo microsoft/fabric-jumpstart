@@ -148,7 +148,7 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
   const [copied, setCopied] = useState(false);
   const colors = difficultyColor[scenario.difficulty?.toLowerCase()] || difficultyColor.intermediate;
 
-  const installCode = `import fabric_jumpstart as js\n\n# Install this scenario\njs.install("${scenario.slug}")`;
+  const installCode = `import fabric_jumpstart as jumpstart\n\n# Install this scenario\njumpstart.install("${scenario.slug}")`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(installCode).then(() => {
@@ -352,6 +352,21 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
             {copied ? '✓ Copied' : 'Copy'}
           </button>
         </div>
+        <a
+          href="/getting-started/"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginTop: '10px',
+            fontSize: '13px',
+            fontWeight: 500,
+            color: '#0078d4',
+            textDecoration: 'none',
+          }}
+        >
+          🚀 New to Jumpstart? Read the Getting Started guide →
+        </a>
       </div>
       </div>
     </div>

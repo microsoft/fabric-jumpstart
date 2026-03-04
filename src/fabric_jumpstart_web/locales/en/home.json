@@ -5,7 +5,7 @@
     "desc": "High quality demos and tutorials with one-click install that are near guaranteed to work with minimal dependencies:",
     "buttonText": {
       "left": {
-        "label": "Get started"
+        "label": "Explore the gallery"
       },
       "right": {
         "label": "View demos",
@@ -15,7 +15,7 @@
     "imageAlt": "Fabric Jumpstart banner",
     "codeSnippet": {
       "language": "python",
-      "code": "import fabric_jumpstart as js\n\n# Browse available jumpstarts\njs.list()\n\n# Install a scenario\njs.install(\"retail-sales\")"
+      "code": "import fabric_jumpstart as jumpstart\n\n# Browse available jumpstarts\njumpstart.list()\n\njumpstart.install(\"healthcare-billing-system\")"
     }
   },
   "rowSection": [

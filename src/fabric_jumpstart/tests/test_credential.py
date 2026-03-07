@@ -64,7 +64,7 @@ class TestWorkspaceManagerCredentialPassthrough:
     @patch("fabric_jumpstart.workspace_manager.resolve_token_credential", return_value=None)
     @patch("fabric_jumpstart.workspace_manager.FabricWorkspace")
     def test_no_credential_when_env_var_unset(self, mock_fw, mock_resolve):
-        """When resolver returns None, token_credential is NOT passed."""
+        """When resolver returns None, token_credential=None is passed (fabric_cicd default)."""
         from fabric_jumpstart.workspace_manager import WorkspaceManager
         from pathlib import Path
 
@@ -73,7 +73,7 @@ class TestWorkspaceManagerCredentialPassthrough:
 
         mock_fw.assert_called_once()
         call_kwargs = mock_fw.call_args[1]
-        assert "token_credential" not in call_kwargs
+        assert call_kwargs["token_credential"] is None
 
     @patch("fabric_jumpstart.workspace_manager.resolve_token_credential")
     @patch("fabric_jumpstart.workspace_manager.FabricWorkspace")

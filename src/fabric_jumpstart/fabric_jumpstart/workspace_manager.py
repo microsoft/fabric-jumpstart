@@ -37,15 +37,13 @@ class WorkspaceManager:
             Initialized FabricWorkspace instance
         """
         if self._fabric_workspace is None:
-            kwargs = dict(
+            credential = resolve_token_credential()
+            self._fabric_workspace = FabricWorkspace(
                 workspace_id=self.workspace_id,
                 repository_directory=str(self.workspace_path),
                 item_type_in_scope=self.items_in_scope,
+                token_credential=credential,
             )
-            credential = resolve_token_credential()
-            if credential is not None:
-                kwargs["token_credential"] = credential
-            self._fabric_workspace = FabricWorkspace(**kwargs)
         return self._fabric_workspace
     
     def get_existing_items(self) -> List[str]:

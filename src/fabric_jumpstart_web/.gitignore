@@ -3,6 +3,7 @@
 /out
 /docs
 /public/docs
+/public/content
 /src/data/side-menu.json
 /src/data/scenarios.json
 /src/data/uhf.json

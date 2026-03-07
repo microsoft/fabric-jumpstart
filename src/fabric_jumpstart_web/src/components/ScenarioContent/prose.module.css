@@ -1,0 +1,166 @@
+/* Prose styling for scenario content — adapted from rakirahman.me blog */
+
+.prose {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--prose-text, inherit);
+  max-width: none;
+}
+
+/* Headings */
+.prose h2 {
+  position: relative;
+  margin-top: 40px;
+  margin-bottom: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--prose-heading, inherit);
+  scroll-margin-top: 80px;
+}
+
+.prose h3 {
+  position: relative;
+  margin-top: 28px;
+  margin-bottom: 8px;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--prose-heading, inherit);
+  scroll-margin-top: 80px;
+}
+
+.prose h4 {
+  margin-top: 20px;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--prose-heading, inherit);
+}
+
+/* Paragraphs */
+.prose p {
+  margin-bottom: 16px;
+  max-width: 100%;
+}
+
+/* Links */
+.prose a {
+  color: var(--prose-accent, #0078d4);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+/* Bold, italic, strikethrough */
+.prose strong {
+  font-weight: 600;
+  color: var(--prose-strong, inherit);
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose del {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Lists */
+.prose ul {
+  list-style: disc;
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.prose ol {
+  list-style: decimal;
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.prose li {
+  margin-bottom: 6px;
+  line-height: 1.7;
+}
+
+.prose li > p {
+  margin-bottom: 4px;
+}
+
+/* Inline code */
+.prose code:not(pre code) {
+  font-family: Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.875em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--prose-code-bg, rgba(0, 0, 0, 0.06));
+  color: var(--prose-code-text, inherit);
+  font-weight: 500;
+}
+
+/* Code blocks (handled by SyntaxHighlighter, but set wrapper defaults) */
+.prose pre {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+/* Blockquotes */
+.prose blockquote {
+  border-left: 4px solid var(--prose-accent, #0078d4);
+  padding: 12px 20px;
+  margin: 20px 0;
+  border-radius: 0 6px 6px 0;
+  background-color: var(--prose-blockquote-bg, rgba(0, 0, 0, 0.03));
+  font-style: italic;
+}
+
+.prose blockquote p {
+  margin-bottom: 4px;
+}
+
+/* Tables */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 14px;
+}
+
+.prose th {
+  text-align: left;
+  padding: 10px 16px;
+  font-weight: 600;
+  border-bottom: 2px solid var(--prose-border, rgba(0, 0, 0, 0.1));
+  color: var(--prose-heading, inherit);
+}
+
+.prose td {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--prose-border, rgba(0, 0, 0, 0.06));
+}
+
+/* Horizontal rules */
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--prose-border, rgba(0, 0, 0, 0.1));
+  margin: 32px 0;
+}
+
+/* Images */
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+/* YouTube embed responsive container */
+.prose iframe {
+  max-width: 100%;
+}

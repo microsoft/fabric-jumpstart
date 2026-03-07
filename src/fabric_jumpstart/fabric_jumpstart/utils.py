@@ -1,4 +1,5 @@
 import logging
+import os
 import shutil
 import subprocess
 import tempfile
@@ -8,6 +9,52 @@ from typing import Optional
 import requests
 
 logger = logging.getLogger(__name__)
+
+# Environment variable for overriding the token credential type.
+# Supported values: AzureCliCredential, DefaultAzureCredential,
+# ManagedIdentityCredential, EnvironmentCredential
+CREDENTIAL_OVERRIDE_ENV_VAR = "FABRIC_JUMPSTART_TOKEN_CREDENTIAL"
+
+_CREDENTIAL_CLASS_MAP = {
+    "AzureCliCredential": "azure.identity.AzureCliCredential",
+    "DefaultAzureCredential": "azure.identity.DefaultAzureCredential",
+    "ManagedIdentityCredential": "azure.identity.ManagedIdentityCredential",
+    "EnvironmentCredential": "azure.identity.EnvironmentCredential",
+}
+
+
+def resolve_token_credential():
+    """Resolve a token credential from the environment variable.
+
+    Reads ``FABRIC_JUMPSTART_TOKEN_CREDENTIAL`` and returns the corresponding
+    ``azure.identity`` credential instance, or ``None`` when the variable is
+    unset (preserving the default behaviour of ``fabric_cicd``).
+
+    Returns:
+        A ``TokenCredential`` instance or ``None``.
+
+    Raises:
+        ValueError: If the env-var value is not in the supported set.
+    """
+    override = os.environ.get(CREDENTIAL_OVERRIDE_ENV_VAR)
+    if not override:
+        return None
+
+    qualified = _CREDENTIAL_CLASS_MAP.get(override)
+    if qualified is None:
+        supported = ", ".join(sorted(_CREDENTIAL_CLASS_MAP))
+        raise ValueError(
+            f"Unsupported {CREDENTIAL_OVERRIDE_ENV_VAR} value '{override}'. "
+            f"Supported values: {supported}"
+        )
+
+    module_path, class_name = qualified.rsplit(".", 1)
+    import importlib
+    module = importlib.import_module(module_path)
+    cls = getattr(module, class_name)
+    credential = cls()
+    logger.info("Using %s credential from %s", override, CREDENTIAL_OVERRIDE_ENV_VAR)
+    return credential
 
 
 def _is_fabric_runtime() -> bool:

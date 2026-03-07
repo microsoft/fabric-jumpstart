@@ -6,6 +6,8 @@ from typing import List, Optional
 
 from fabric_cicd import FabricWorkspace, append_feature_flag, publish_all_items
 
+from .utils import resolve_token_credential
+
 logger = logging.getLogger(__name__)
 
 
@@ -35,10 +37,12 @@ class WorkspaceManager:
             Initialized FabricWorkspace instance
         """
         if self._fabric_workspace is None:
+            credential = resolve_token_credential()
             self._fabric_workspace = FabricWorkspace(
                 workspace_id=self.workspace_id,
                 repository_directory=str(self.workspace_path),
-                item_type_in_scope=self.items_in_scope
+                item_type_in_scope=self.items_in_scope,
+                token_credential=credential,
             )
         return self._fabric_workspace
     

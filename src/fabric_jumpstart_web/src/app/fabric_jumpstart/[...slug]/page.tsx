@@ -2,6 +2,7 @@ import React from 'react';
 import fs from 'fs';
 import path from 'path';
 import ScenarioPageClient from './ScenarioPageClient';
+import { loadScenarioContent } from '@components/ScenarioContent/loadContent';
 
 export async function generateStaticParams() {
   const docsDir = path.join(
@@ -28,7 +29,15 @@ export default async function ScenarioPage({
   const resolvedParams = await params;
   const slug = resolvedParams.slug[resolvedParams.slug.length - 1];
 
+  // Load optional scenario content (md/mdx)
+  const contentData = loadScenarioContent(slug);
+
   return (
-    <ScenarioPageClient slug={slug} />
+    <ScenarioPageClient
+      slug={slug}
+      rawMarkdown={contentData?.rawSource}
+      isMdx={contentData?.isMdx ?? false}
+      showToc={contentData ? contentData.isMdx && contentData.toc : false}
+    />
   );
 }

@@ -217,6 +217,25 @@ class TestRegistryValidation:
             assert 'core' in jumpstart, f"Jumpstart '{logical_id}' missing core flag"
             assert isinstance(jumpstart['core'], bool), f"Jumpstart '{logical_id}' core flag must be boolean"
 
+    def test_yaml_filenames_match_logical_ids(self):
+        """Ensure each YAML filename matches the logical_id inside it."""
+        registry_path = get_registry_path()
+        for folder in ("core", "community"):
+            folder_path = registry_path / folder
+            if not folder_path.is_dir():
+                continue
+            for yml_file in sorted(folder_path.glob("*.yml")):
+                with open(yml_file, "r", encoding="utf-8") as f:
+                    data = yaml.safe_load(f)
+                if not data:
+                    continue
+                logical_id = data.get("logical_id")
+                expected = yml_file.stem
+                assert logical_id == expected, (
+                    f"Filename '{yml_file.name}' does not match logical_id '{logical_id}' "
+                    f"(expected logical_id to be '{expected}')"
+                )
+
     def test_workload_tag_images_exist(self):
         """Verify every workload tag used in scenarios has a corresponding image in shared assets."""
         shared_assets = Path(__file__).resolve().parent.parent.parent.parent / 'assets' / 'images' / 'tags' / 'workload'

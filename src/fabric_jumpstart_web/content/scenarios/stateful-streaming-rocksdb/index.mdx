@@ -68,7 +68,7 @@ State from the above `GROUP BY` is stored transparently in [RocksDB](https://git
 
 This pattern scales extremely well, because each Spark Job is guaranteed to own it's checkpoint folder, therefore each Spark Job has it's own personal database to scale arbitraily high. Given the large throughput and concurrency gurantees of OneLake, this patterns scales near infinitely via horizontal scaling.
 
-![How RocksDB on OneLake enables highly concurrent flushes across hundreds of Executor nodes despite update conflicts](images/stateful-stream-processing.png)
+![How RocksDB on OneLake enables highly concurrent flushes across hundreds of Executor nodes with zero chances of update conflicts](images/stateful-stream-processing.png)
 
 ## Resources
 

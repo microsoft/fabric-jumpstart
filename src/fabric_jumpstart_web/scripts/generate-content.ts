@@ -389,10 +389,45 @@ async function main(): Promise<void> {
   copyWorkloadIcons();
   console.log('  Copied workload icons to public/');
 
+  // Copy scenario content images to public/ for serving
+  copyScenarioContentAssets();
+  console.log('  Copied scenario content assets to public/');
+
   // Fetch Microsoft UHF footer
   await generateUhfData();
 
   console.log('✅ Content generation complete!');
+}
+
+const CONTENT_SCENARIOS_DIR = path.resolve(__dirname, '../content/scenarios');
+
+function copyScenarioContentAssets(): void {
+  if (!fs.existsSync(CONTENT_SCENARIOS_DIR)) return;
+
+  const entries = fs.readdirSync(CONTENT_SCENARIOS_DIR, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name.startsWith('_')) continue;
+
+    const imagesDir = path.join(CONTENT_SCENARIOS_DIR, entry.name, 'images');
+    if (!fs.existsSync(imagesDir)) continue;
+
+    const publicImagesDir = path.join(
+      PUBLIC_DIR,
+      'content',
+      'scenarios',
+      entry.name,
+      'images'
+    );
+    fs.mkdirSync(publicImagesDir, { recursive: true });
+
+    const files = fs.readdirSync(imagesDir);
+    for (const file of files) {
+      fs.copyFileSync(
+        path.join(imagesDir, file),
+        path.join(publicImagesDir, file)
+      );
+    }
+  }
 }
 
 async function generateUhfData(): Promise<void> {

@@ -1,0 +1,58 @@
+---
+title: Stateful Streaming with RocksDB and Heartbeat Processing
+toc: true
+---
+
+This jumpstart deploys a stateful stream processing demo using Spark Structured Streaming with RocksDB into your Microsoft Fabric workspace. It demonstrates real-time heartbeat monitoring with automatic health state transitions.
+
+<Callout>
+
+💡 This jumpstart creates 2 EventStreams, 1 Lakehouse, and 1 Notebook. The Notebook automatically discovers EventStream connection strings — no manual configuration needed!
+
+</Callout>
+
+## Getting Started
+
+After installing the jumpstart, open the **heartbeat_notebook** and run all cells. The notebook will:
+
+1. **Discover** EventStream Custom Endpoint connection strings via the Fabric REST API
+2. **Start** a Spark Structured Streaming job that monitors heartbeat events
+3. **Display** the connection strings you need for the companion website
+
+## Architecture
+
+```
+🌐 Browser (heartbeat website)
+    ↓ sends heartbeats every 1s
+📥 Producer EventStream → 📤 Spark reads heartbeats
+    ↓
+⚡ Spark Structured Streaming (RocksDB state store)
+    ↓ emits state changes only
+📥 Consumer EventStream → 📤 Browser reads health state
+    ↓
+🌐 Browser shows real-time health status
+```
+
+## How It Works
+
+- **Producers** on the website send heartbeat events every second
+- **Spark** groups events by `machine_name` and tracks state transitions using RocksDB
+- State machine: `None → Initializing → Healthy ↔ Unhealthy (on 5s timeout)`
+- Only emits output when state **changes** (not every heartbeat)
+- **Pause** a producer to watch it go Unhealthy after 5 seconds
+
+## Using the Companion Website
+
+Visit the [heartbeat website](https://heartbeatspark.z9.web.core.windows.net) and paste the connection strings displayed by the notebook:
+
+1. **Producer Write Connection** — paste into the first connection box
+2. **Consumer Read Connection** — paste into the fourth connection box
+3. Add producers and watch the health status update in real-time!
+
+<YouTubeEmbed url="https://www.youtube.com/watch?v=qQ4EK0xTHA4" />
+
+## Resources
+
+- [Spark Structured Streaming in Fabric](https://learn.microsoft.com/en-us/fabric/data-engineering/lakehouse-streaming-data)
+- [EventStream Custom Endpoints](https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/add-source-custom-app)
+- [RocksDB State Store](https://learn.microsoft.com/en-us/fabric/data-engineering/spark-streaming-rocksdb-state-store)

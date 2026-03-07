@@ -1,0 +1,33 @@
+id: 18
+logical_id: stateful-streaming-rocksdb
+name: Stateful Streaming with RocksDB and Heartbeat Processing
+description: >-
+  Learn stateful, low-latency (sub-second) stream processing with Spark Structured Streaming and RocksDB.
+  Monitor heartbeat events from browser-based producers, track health state
+  transitions in real-time, and visualize results on a companion website.
+date_added: 03/07/2026
+include_in_listing: true
+workload_tags:
+- Data Engineering
+- Real-Time Intelligence
+scenario_tags:
+- Streaming
+type: Tutorial
+source:
+  repo_url: https://github.com/mdrakiburrahman/heartbeat-website.git
+  repo_ref: dev/mdrrahman/jumpstart
+  workspace_path: workspace/
+  preview_image_path: public/og-image.png
+items_in_scope:
+- Notebook
+- Lakehouse
+- Eventstream
+jumpstart_docs_uri: ''
+entry_point: heartbeat_notebook.Notebook
+test_suite: ''
+owner_email: mdrrahman@microsoft.com
+minutes_to_deploy: 3
+minutes_to_complete_jumpstart: 15
+video_url: "https://www.youtube.com/watch?v=qQ4EK0xTHA4"
+difficulty: "Intermediate"
+last_updated: "2026-03-07"

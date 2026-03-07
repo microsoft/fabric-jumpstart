@@ -12,6 +12,7 @@ import { tokens } from '@fluentui/react-components';
 import Callout from './Callout';
 import QuoteBlock from './QuoteBlock';
 import YouTubeEmbed from './YouTubeEmbed';
+import MermaidDiagram from './MermaidDiagram';
 import TableOfContents, { type TocItem } from './TableOfContents';
 import styles from './prose.module.css';
 
@@ -64,6 +65,10 @@ function CodeBlock(props: any) {
 
   const language = getLanguage(props.children);
   const text = getChildrenText(props.children).trim();
+
+  if (language === 'mermaid') {
+    return <MermaidDiagram chart={text} />;
+  }
 
   return (
     <div style={{ margin: '16px 0', borderRadius: '8px', overflow: 'hidden' }}>

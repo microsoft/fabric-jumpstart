@@ -61,3 +61,20 @@ Relative paths are rewritten to public URLs at build time. External URLs work as
 ![Architecture](images/architecture.png)
 ![Demo](images/demo.gif)
 ```
+
+## Mermaid diagrams
+
+Fenced code blocks with the `mermaid` language tag are rendered as diagrams. All [mermaid diagram types](https://mermaid.js.org/intro/) are supported (flowcharts, sequence, journey, pie, etc.). Diagrams automatically adapt to the site's light/dark theme.
+
+````mdx
+```mermaid
+journey
+    title Deploy Pipeline
+    section Build
+      Compile: 5: CI
+      Test: 4: CI
+    section Deploy
+      Publish: 5: CD
+      Verify: 3: CD
+```
+````

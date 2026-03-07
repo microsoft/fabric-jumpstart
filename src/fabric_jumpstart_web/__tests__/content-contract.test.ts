@@ -201,3 +201,60 @@ describe('Content loader skips _ prefixed folders', () => {
     expect(underscored).toEqual([]);
   });
 });
+
+// ── mermaid support ──────────────────────────────────────────
+
+describe('Mermaid rendering support', () => {
+  it('ScenarioContentRenderer intercepts mermaid code blocks', () => {
+    const src = fs.readFileSync(RENDERER_PATH, 'utf-8');
+    expect(src).toContain("language === 'mermaid'");
+    expect(src).toContain('MermaidDiagram');
+  });
+
+  it('MermaidDiagram component exists', () => {
+    const componentPath = path.resolve(
+      RENDERER_PATH,
+      '../MermaidDiagram.tsx'
+    );
+    expect(fs.existsSync(componentPath)).toBe(true);
+  });
+
+  // Validate that mermaid blocks in content files contain parseable syntax.
+  // We do a lightweight structural check — the block must start with a
+  // recognised mermaid diagram keyword.
+  const MERMAID_KEYWORDS = [
+    'graph', 'flowchart', 'sequenceDiagram', 'classDiagram',
+    'stateDiagram', 'erDiagram', 'journey', 'gantt', 'pie',
+    'gitGraph', 'mindmap', 'timeline', 'quadrantChart',
+    'sankey', 'xychart', 'block',
+  ];
+
+  const dirs = listContentDirs();
+  for (const dir of dirs) {
+    const file =
+      fs.existsSync(path.join(CONTENT_DIR, dir, 'index.mdx'))
+        ? path.join(CONTENT_DIR, dir, 'index.mdx')
+        : fs.existsSync(path.join(CONTENT_DIR, dir, 'index.md'))
+          ? path.join(CONTENT_DIR, dir, 'index.md')
+          : null;
+    if (!file) continue;
+
+    const raw = fs.readFileSync(file, 'utf-8');
+    const mermaidBlocks: string[] = [];
+    const re = /```mermaid\s*\n([\s\S]*?)```/g;
+    let m;
+    while ((m = re.exec(raw)) !== null) {
+      mermaidBlocks.push(m[1].trim());
+    }
+
+    if (mermaidBlocks.length > 0) {
+      test.each(mermaidBlocks.map((block, i) => ({ block, i })))(
+        `"${dir}" mermaid block $i starts with a valid diagram keyword`,
+        ({ block }) => {
+          const firstWord = block.split(/[\s\n]/)[0];
+          expect(MERMAID_KEYWORDS).toContain(firstWord);
+        }
+      );
+    }
+  }
+});

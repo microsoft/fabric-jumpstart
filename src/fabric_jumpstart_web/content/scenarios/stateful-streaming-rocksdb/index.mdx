@@ -19,18 +19,6 @@ After installing the jumpstart, visit the [companion website](https://heartbeats
 
 ![Heartbeat Stateful Streaming Architecture](https://heartbeatspark.z9.web.core.windows.net/architecture.png)
 
-```
-🌐 Browser (heartbeat website)
-    ↓ sends heartbeats every 1s
-📥 Producer EventStream → 📤 Spark reads heartbeats
-    ↓
-⚡ Spark Structured Streaming (RocksDB state store)
-    ↓ emits state changes only
-📥 Consumer EventStream → 📤 Browser reads health state
-    ↓
-🌐 Browser shows real-time health status
-```
-
 ## How It Works
 
 - **Producers** on the website send heartbeat events every second
@@ -38,6 +26,23 @@ After installing the jumpstart, visit the [companion website](https://heartbeats
 - State machine: `None → Initializing → Healthy ↔ Unhealthy (on 5s timeout)`
 - Only emits output when state **changes** (not every heartbeat)
 - **Pause** a producer to watch it go Unhealthy after 5 seconds
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Producer ES as Producer EventStream
+    participant Spark
+    participant Consumer ES as Consumer EventStream
+
+    Browser->>Producer ES: Send heartbeat (every 1s)
+    Producer ES->>Spark: Ingest event
+    Spark->>Spark: RocksDB state lookup
+    alt State changed
+        Spark->>Consumer ES: Emit state transition
+        Consumer ES->>Browser: Push health update
+    end
+    Note over Spark: Healthy ↔ Unhealthy on 5s timeout
+```
 
 ## Resources
 

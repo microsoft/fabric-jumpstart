@@ -15,7 +15,7 @@ scenario_tags:
 type: Tutorial
 source:
   repo_url: https://github.com/mdrakiburrahman/heartbeat-website.git
-  repo_ref: dev/mdrrahman/jumpstart
+  repo_ref: main
   workspace_path: workspace/
   preview_image_path: public/og-image.png
 items_in_scope:

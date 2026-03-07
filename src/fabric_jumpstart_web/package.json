@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "npm run generate-content",
     "dev": "next dev -p 8080",
     "build": "next build",
     "serve": "npx serve out -l 28080",

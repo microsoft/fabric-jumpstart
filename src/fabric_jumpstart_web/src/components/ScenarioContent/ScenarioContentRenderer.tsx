@@ -14,6 +14,7 @@ import QuoteBlock from './QuoteBlock';
 import YouTubeEmbed from './YouTubeEmbed';
 import MermaidDiagram from './MermaidDiagram';
 import TableOfContents, { type TocItem } from './TableOfContents';
+import ImageWithLightbox from './ImageWithLightbox';
 import styles from './prose.module.css';
 
 interface ScenarioContentRendererProps {
@@ -139,16 +140,14 @@ export default function ScenarioContentRenderer({
     '--prose-code-text': tokens.colorNeutralForeground1,
     '--prose-border': isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)',
     '--prose-blockquote-bg': isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    '--prose-caption': isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)',
   } as React.CSSProperties;
 
   // Build overrides — MDX components only available for .mdx files
   const overrides: Record<string, any> = {
     pre: CodeBlock,
     img: {
-      component: (props: any) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img {...props} alt={props.alt || ''} loading="lazy" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', margin: '20px 0' }} />
-      ),
+      component: ImageWithLightbox,
     },
     h2: {
       component: (props: any) => <HeadingWithId level={2} {...props} />,

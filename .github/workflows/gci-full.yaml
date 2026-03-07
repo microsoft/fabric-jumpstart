@@ -24,8 +24,11 @@ jobs:
       - name: "📦 Build Projects"
         run: npx nx run-many -t build --parallel=3 --output-style=stream
 
-      - name: "🧪 Test Projects"
+      - name: "🧪 Test Projects"  
         run: npx nx run-many -t test --verbose --output-style=stream
+      
+      - name: "🪥 Lint Projects"
+        run: npx nx run-many -t lint --verbose --output-style=stream
 
       - name: "📁 Verify No Untracked Files"
         run: npm run fail-on-untracked-files

@@ -24,13 +24,14 @@ export default function MermaidDiagram({ chart }: MermaidDiagramProps) {
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'loose',
-      fontFamily:
-        "'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontFamily: "Inter, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontSize: 13,
       theme: 'base',
       themeVariables: isDark
         ? {
-            // Dark theme — mint/teal accent on dark backgrounds
-            primaryColor: '#1a3a35',
+            // ── Dark: mint-on-dark, matching site Callout/QuoteBlock bg tones ──
+            background: 'transparent',
+            primaryColor: '#19433c',
             primaryTextColor: '#e0e0e0',
             primaryBorderColor: '#8be8a4',
             secondaryColor: '#1e2d3d',
@@ -39,33 +40,33 @@ export default function MermaidDiagram({ chart }: MermaidDiagramProps) {
             tertiaryColor: '#2a1e3d',
             tertiaryTextColor: '#e0e0e0',
             tertiaryBorderColor: '#b39ddb',
-            lineColor: '#8be8a4',
+            lineColor: 'rgba(139,232,164,0.6)',
             textColor: '#e0e0e0',
-            mainBkg: '#1a3a35',
+            mainBkg: '#19433c',
             nodeBorder: '#8be8a4',
-            clusterBkg: 'rgba(139,232,164,0.08)',
-            clusterBorder: 'rgba(139,232,164,0.25)',
-            titleColor: '#e0e0e0',
+            clusterBkg: 'rgba(139,232,164,0.06)',
+            clusterBorder: 'rgba(139,232,164,0.2)',
+            titleColor: '#8be8a4',
             edgeLabelBackground: '#141414',
             nodeTextColor: '#e0e0e0',
-            // Sequence diagram
-            actorBkg: '#1a3a35',
+            // Sequence
+            actorBkg: '#19433c',
             actorBorder: '#8be8a4',
-            actorTextColor: '#e0e0e0',
-            actorLineColor: '#8be8a4',
-            signalColor: '#e0e0e0',
+            actorTextColor: '#8be8a4',
+            actorLineColor: 'rgba(139,232,164,0.35)',
+            signalColor: 'rgba(139,232,164,0.5)',
             signalTextColor: '#e0e0e0',
-            labelBoxBkgColor: '#1a3a35',
+            labelBoxBkgColor: '#19433c',
             labelBoxBorderColor: '#8be8a4',
             labelTextColor: '#e0e0e0',
-            loopTextColor: '#e0e0e0',
+            loopTextColor: '#8be8a4',
             noteBkgColor: '#1e2d3d',
             noteBorderColor: '#7beadd',
             noteTextColor: '#e0e0e0',
-            activationBkgColor: '#1a3a35',
+            activationBkgColor: 'rgba(139,232,164,0.12)',
             activationBorderColor: '#8be8a4',
             // Journey
-            sectionBkgColor: '#1a3a35',
+            sectionBkgColor: '#19433c',
             altSectionBkgColor: '#1e2d3d',
             sectionBkgColor2: '#2a1e3d',
             taskBkgColor: '#219580',
@@ -90,7 +91,8 @@ export default function MermaidDiagram({ chart }: MermaidDiagramProps) {
             pieStrokeColor: '#141414',
           }
         : {
-            // Light theme — teal accent on light backgrounds
+            // ── Light: teal-on-cream, matching site Callout/QuoteBlock bg tones ──
+            background: 'transparent',
             primaryColor: '#e0f5f0',
             primaryTextColor: '#1a1a1a',
             primaryBorderColor: '#219580',
@@ -100,30 +102,30 @@ export default function MermaidDiagram({ chart }: MermaidDiagramProps) {
             tertiaryColor: '#f3e8fd',
             tertiaryTextColor: '#1a1a1a',
             tertiaryBorderColor: '#7b1fa2',
-            lineColor: '#219580',
+            lineColor: 'rgba(33,149,128,0.45)',
             textColor: '#1a1a1a',
             mainBkg: '#e0f5f0',
             nodeBorder: '#219580',
-            clusterBkg: 'rgba(33,149,128,0.06)',
-            clusterBorder: 'rgba(33,149,128,0.25)',
-            titleColor: '#1a1a1a',
+            clusterBkg: 'rgba(33,149,128,0.04)',
+            clusterBorder: 'rgba(33,149,128,0.2)',
+            titleColor: '#106960',
             edgeLabelBackground: '#ffffff',
             nodeTextColor: '#1a1a1a',
-            // Sequence diagram
+            // Sequence
             actorBkg: '#e0f5f0',
             actorBorder: '#219580',
-            actorTextColor: '#1a1a1a',
-            actorLineColor: '#219580',
-            signalColor: '#1a1a1a',
+            actorTextColor: '#106960',
+            actorLineColor: 'rgba(33,149,128,0.25)',
+            signalColor: 'rgba(33,149,128,0.4)',
             signalTextColor: '#1a1a1a',
             labelBoxBkgColor: '#e0f5f0',
             labelBoxBorderColor: '#219580',
             labelTextColor: '#1a1a1a',
-            loopTextColor: '#1a1a1a',
+            loopTextColor: '#106960',
             noteBkgColor: '#e8f4fd',
             noteBorderColor: '#0078d4',
             noteTextColor: '#1a1a1a',
-            activationBkgColor: '#e0f5f0',
+            activationBkgColor: 'rgba(33,149,128,0.08)',
             activationBorderColor: '#219580',
             // Journey
             sectionBkgColor: '#e0f5f0',
@@ -150,6 +152,15 @@ export default function MermaidDiagram({ chart }: MermaidDiagramProps) {
             pieLegendTextColor: '#1a1a1a',
             pieStrokeColor: '#ffffff',
           },
+      sequence: {
+        actorFontWeight: '600',
+        messageFontWeight: '500',
+        noteFontSize: 12,
+        messageAlign: 'center' as const,
+        mirrorActors: false,
+        bottomMarginAdj: 2,
+        useMaxWidth: true,
+      },
     });
 
     mermaid
@@ -163,6 +174,33 @@ export default function MermaidDiagram({ chart }: MermaidDiagramProps) {
         setSvg('');
       });
   }, [chart, isDark]);
+
+  // Post-render: apply refined styling to SVG elements
+  useEffect(() => {
+    if (!svg || !containerRef.current) return;
+    const svgEl = containerRef.current.querySelector('svg');
+    if (!svgEl) return;
+
+    // Round all rects (actor boxes, nodes, labels, notes)
+    svgEl.querySelectorAll('rect').forEach((rect) => {
+      if (!rect.getAttribute('rx')) rect.setAttribute('rx', '6');
+      if (!rect.getAttribute('ry')) rect.setAttribute('ry', '6');
+    });
+
+    // Soften lines — use round linecaps/joins
+    svgEl.querySelectorAll('line, path, polyline').forEach((el) => {
+      const stroke = el.getAttribute('stroke');
+      if (stroke && stroke !== 'none') {
+        el.setAttribute('stroke-linecap', 'round');
+        el.setAttribute('stroke-linejoin', 'round');
+      }
+    });
+
+    // Refine text rendering
+    svgEl.querySelectorAll('text').forEach((t) => {
+      t.style.letterSpacing = '0.01em';
+    });
+  }, [svg]);
 
   // ── zoom / pan state ──────────────────────────────────────
   const [scale, setScale] = useState(1);

@@ -24,7 +24,7 @@ After installing the jumpstart, visit the [companion website](https://heartbeats
 - **Producers** on the website send heartbeat events every second
 - **Spark** groups events by `machine_name` and tracks state transitions using RocksDB
 - State machine: `None → Initializing → Healthy ↔ Unhealthy (on 5s timeout)`
-- Only emits output when state **changes** (not every heartbeat)
+- Only emits output when state **changes**, **not** on every heartbeat, this allows us to effectively treat RocksDB as a distributed buffer so we get notified on interesting events at low-latency.
 - **Pause** a producer to watch it go Unhealthy after 5 seconds
 
 ```mermaid

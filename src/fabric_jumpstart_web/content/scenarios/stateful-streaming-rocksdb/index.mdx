@@ -44,7 +44,21 @@ sequenceDiagram
     Note over Spark: Healthy ↔ Unhealthy on 5s timeout
 ```
 
+### Browser Producer Client to Event Hub
+
+![Browser Producer Client to Event Hub](images/browser-ingestion.png)
+
+### Spark parallelized MicroBatch Ingestion from Event Hub
+
+![Spark parallelized MicroBatch Ingestion from Event Hub](images/spark-ingestion.png)
+
+### Spark Stateful Processing with RocksDB
+
+![Spark Stateful Processing with RocksDB](images/stateful-stream-processing.png)
+
 ## Resources
 
 - [Spark Structured Streaming Programming guide](https://spark.apache.org/docs/latest/streaming/index.html)
 - [Spark Stateful Streaming](https://spark.apache.org/docs/latest/streaming/structured-streaming-transform-with-state.html)
+- [Event Hub partitioning concepts](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features)
+- [Event Hub performance tunables](https://github.com/Azure/azure-event-hubs-spark/blob/a1d92a93dcfdf5b68a46169c6c43750df3231afc/docs/structured-streaming-eventhubs-integration.md#eventhubsconf)

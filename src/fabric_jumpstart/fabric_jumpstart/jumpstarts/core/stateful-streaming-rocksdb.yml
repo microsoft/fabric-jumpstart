@@ -1,6 +1,6 @@
 id: 18
 logical_id: stateful-streaming-rocksdb
-name: Stateful Streaming with RocksDB and Heartbeat Processing
+name: Spark Stateful Streaming with RocksDB
 description: >-
   Learn stateful, low-latency (sub-second) stream processing with Spark Structured Streaming and RocksDB.
   Monitor heartbeat events from browser-based producers, track health state
@@ -22,7 +22,7 @@ items_in_scope:
 - Notebook
 - Lakehouse
 - Eventstream
-jumpstart_docs_uri: ''
+jumpstart_docs_uri: 'https://jumpstart.fabric.microsoft.com/fabric_jumpstart/stateful-streaming-rocksdb'
 entry_point: heartbeat_notebook.Notebook
 test_suite: ''
 owner_email: mdrrahman@microsoft.com

@@ -12,7 +12,7 @@ from .formatting import syntax_highlight_python
 # Load copy icon SVG once at module level
 _current_dir = Path(__file__).parent
 _assets_path = _current_dir / 'assets'
-_shared_assets_path = Path(__file__).resolve().parent.parent.parent.parent / 'assets' / 'images' / 'tags' / 'workload'
+_shared_assets_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'assets' / 'images' / 'tags' / 'workload'
 _copy_icon_path = _assets_path / 'copy-icon.svg'
 _css_path = _current_dir / 'ui.css'
 _js_path = _current_dir / 'catalog.js'

@@ -27,6 +27,8 @@ dependencies = [
 [tool.hatch.build]
 include = ["fabric_jumpstart/**/*.py", "fabric_jumpstart/jumpstarts/**/*", "fabric_jumpstart/ui/**/*"]
 
+[tool.hatch.build.hooks.custom]
+
 [tool.hatch.build.targets.wheel]
 packages = ["fabric_jumpstart"]
 

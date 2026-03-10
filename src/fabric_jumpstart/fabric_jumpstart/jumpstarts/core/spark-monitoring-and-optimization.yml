@@ -1,12 +1,12 @@
-id: 4
-logical_id: spark-rti-monitoring
-name: Spark RTI Monitoring
+id: 19
+logical_id: spark-monitoring-and-optimization
+name: Spark Monitoring and Optimization
 description: >-
-  Empower your Spark workloads with real-time monitoring using Fabric Real-Time
+  Empower your Spark workloads monitoring using Fabric Real-Time
   Intelligence. Track Spark job performance metrics, visualize data streams on
   live dashboards, and gain operational insights to optimize your data
   engineering pipelines.
-date_added: 9/1/2025
+date_added: 3/3/2026
 include_in_listing: false
 workload_tags:
 - Data Engineering
@@ -15,10 +15,10 @@ scenario_tags:
 - Monitoring
 type: Accelerator
 source:
-  repo_url: https://github.com/microsoft/fabric-toolbox.git
-  repo_ref: main
-  workspace_path: monitoring/fabric-spark-monitoring/src/
-  preview_image_path: monitoring/fabric-spark-monitoring/assets/image-example.png
+  repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
+  repo_ref: v0.2.5
+  workspace_path: spark-monitoring/src/
+  preview_image_path: spark-monitoring/image-example.png
 items_in_scope:
 - Notebook
 - Eventhouse
@@ -28,14 +28,13 @@ items_in_scope:
 - KQLQueryset
 - Environment
 - DataPipeline
-- Report
-- SemanticModel
+- DataAgent
 jumpstart_docs_uri: ''
-entry_point: 1_ExploreData.Notebook
+entry_point: Fabric Spark Monitoring Setup.Notebook
 test_suite: ''
 owner_email: FabricJumpstart.SparkRTIMonitoring@microsoft.com
 minutes_to_deploy: 3
 minutes_to_complete_jumpstart: 20
 video_url: ""
 difficulty: "Intermediate"
-last_updated: "2025-09-01"
+last_updated: "2026-03-03"

@@ -1,0 +1,34 @@
+id: 20
+logical_id: telecom-call-data-records
+name: Real-Time Telecom Call Data Records
+description: >-
+  Monitor real-time telecom call data records using Fabric Real-Time Intelligence.
+  Stream call data through Eventstream into an Eventhouse and visualize usage
+  patterns on live KQL dashboards.
+date_added: 03/03/2026
+include_in_listing: true
+workload_tags:
+- Real-Time Intelligence
+scenario_tags:
+- Streaming
+type: Demo
+source:
+  repo_url: https://github.com/ecotte/fabric-rti-demos.git
+  repo_ref: v0.1.8
+  workspace_path: telecom-call-data-records/
+  preview_image_path: telecom-call-data-records/TelecomCallDataRecords.png
+items_in_scope:
+- Notebook
+- Eventhouse
+- Eventstream
+- KQLDatabase
+- KQLDashboard
+jumpstart_docs_uri: ''
+entry_point: TelecomCallDataRecordsEmulator.Notebook
+test_suite: ''
+owner_email: fabricjumpstart.rti-iq@microsoft.com
+minutes_to_deploy: 2
+minutes_to_complete_jumpstart: 5
+video_url: ""
+difficulty: "Beginner"
+last_updated: "2026-03-03"

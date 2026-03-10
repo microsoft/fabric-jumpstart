@@ -14,7 +14,7 @@ scenario_tags:
 type: Demo
 source:
   repo_url: https://github.com/ecotte/fabric-rti-demos.git
-  repo_ref: v0.1.5
+  repo_ref: v0.1.8
   workspace_path: retail-sales/
   preview_image_path: retail-sales/RetailSales.png
 items_in_scope:

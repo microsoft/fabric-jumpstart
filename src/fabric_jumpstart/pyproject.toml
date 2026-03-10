@@ -59,8 +59,10 @@ extend-exclude = ["fabric_jumpstart/jumpstarts/**"]
 root = ["."]
 
 [tool.ty.src]
-# Skip type checking for test helpers that rely on dynamic imports/aliases.
+# Skip type checking for test helpers that rely on dynamic imports/aliases
+# and the build hook which depends on hatchling (a build-only dependency).
 exclude = [
     "tests/test_instance_name.py",
     "fabric_jumpstart/jumpstarts/**",
+    "hatch_build.py",
 ]

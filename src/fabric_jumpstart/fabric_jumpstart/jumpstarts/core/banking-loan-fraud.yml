@@ -15,7 +15,7 @@ scenario_tags:
 type: Demo
 source:
   repo_url: https://github.com/ecotte/fabric-rti-demos.git
-  repo_ref: v0.1.4
+  repo_ref: v0.1.8
   workspace_path: banking-loan-fraud/
   preview_image_path: banking-loan-fraud/BankingLoanFraud.png
 items_in_scope:

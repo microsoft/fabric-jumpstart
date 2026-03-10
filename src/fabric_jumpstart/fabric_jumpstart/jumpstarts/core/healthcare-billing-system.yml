@@ -15,7 +15,7 @@ scenario_tags:
 type: Demo
 source:
   repo_url: https://github.com/ecotte/fabric-rti-demos.git
-  repo_ref: v0.1.2
+  repo_ref: v0.1.8
   workspace_path: healthcare-billing-system/
   preview_image_path: healthcare-billing-system/HealthcareBillingSystem.png
 items_in_scope:

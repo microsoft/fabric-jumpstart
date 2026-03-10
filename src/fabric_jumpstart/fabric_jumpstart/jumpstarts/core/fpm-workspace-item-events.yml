@@ -16,7 +16,7 @@ scenario_tags:
 type: Accelerator
 source:
   repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
-  repo_ref: v0.2.2
+  repo_ref: v0.2.3
   workspace_path: workspace-item-events/src/
   preview_image_path: workspace-item-events/WorkspaceItemEvents.png
 items_in_scope: 

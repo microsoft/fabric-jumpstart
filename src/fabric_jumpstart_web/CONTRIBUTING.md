@@ -67,6 +67,20 @@ npx nx run-many -t build --output-style=stream
 npx nx run-many -t test --output-style=stream
 ```
 
+## Running the Website Dev Server
+
+Start (or restart) the Next.js dev server on port 8080:
+
+```bash
+./src/fabric_jumpstart_web/start-dev-server.sh
+```
+
+The script idempotently kills any existing server on the port, cleans the `.next` cache, and starts fresh. Pass a custom port as an argument if needed:
+
+```bash
+./src/fabric_jumpstart_web/start-dev-server.sh 3000
+```
+
 ### Linux users
 
 The steps above, minus WSL should work as-is.

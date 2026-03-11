@@ -58,6 +58,32 @@ Thank you for helping improve Fabric Jumpstart!
 
 > Note: if an `Error loading webview: Error: Could not register service worker` error occurs while trying to view Markdown or Notebook files, restart all VS Code windows.
 
+## Reopening an Existing Dev Environment
+
+If WSL is closed (e.g. after a reboot), you don't need to re-bootstrap. Just reopen WSL and your workspace:
+
+1. Open a WSL terminal from PowerShell:
+
+   ```powershell
+   wsl
+   ```
+
+2. Navigate to the repo and open VS Code:
+
+   ```bash
+   cd ~/fabric-jumpstart
+   code .
+   ```
+
+3. Load nvm (if node/npm aren't found):
+
+   ```bash
+   export NVM_DIR="$HOME/.nvm"
+   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+   ```
+
+   > Tip: This is already in your `.bashrc` if you used the bootstrap script, but new terminals may need it if the shell profile didn't load.
+
 ## Running the GCI Targets Locally
 
 After bootstrapping, run the same checks that CI runs:

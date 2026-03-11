@@ -15,6 +15,7 @@ _assets_path = _current_dir / 'assets'
 _packaged_workload_path = _assets_path / 'workload'
 _repo_workload_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'assets' / 'images' / 'tags' / 'workload'
 _shared_assets_path = _packaged_workload_path if _packaged_workload_path.is_dir() else _repo_workload_path
+_diagrams_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'assets' / 'images' / 'diagrams'
 _copy_icon_path = _assets_path / 'copy-icon.svg'
 _css_path = _current_dir / 'ui.css'
 _js_path = _current_dir / 'catalog.js'
@@ -111,6 +112,16 @@ def _load_preview_image_data(path: Path) -> str:
     return f"data:{mime};base64,{encoded}"
 
 
+@lru_cache(maxsize=64)
+def _load_diagram_svg(logical_id: str) -> str:
+    """Load the light-mode diagram SVG as a data URI if it exists."""
+    svg_path = _diagrams_path / f"{logical_id}_light.svg"
+    if not svg_path.is_file():
+        return ''
+    encoded = base64.b64encode(svg_path.read_bytes()).decode('ascii')
+    return f"data:image/svg+xml;base64,{encoded}"
+
+
 def _build_github_raw_url(repo_url: str, ref: str, file_path: str) -> str:
     """Convert a GitHub repo URL + ref + file path into a raw.githubusercontent URL."""
     parsed = urlparse(repo_url)
@@ -131,7 +142,7 @@ def _build_github_raw_url(repo_url: str, ref: str, file_path: str) -> str:
 
 
 def _format_duration_label(minutes) -> str:
-    """Return formatted duration text like "⏱ 120 min"."""
+    """Return formatted duration text like "Complete: 120 min"."""
     if minutes is None or minutes == '':
         return ''
     try:
@@ -140,11 +151,11 @@ def _format_duration_label(minutes) -> str:
         safe_text = html.escape(str(minutes), quote=True)
         return safe_text
 
-    return f"⏱ {minutes_int} min"
+    return f"Complete: {minutes_int} min"
 
 
 def _format_deploy_time_label(minutes) -> str:
-    """Return formatted deployment duration text like "📦 Deploy 10 min"."""
+    """Return formatted deployment duration text like "Deploy: 10 min"."""
     if minutes is None or minutes == '':
         return ''
     try:
@@ -153,7 +164,7 @@ def _format_deploy_time_label(minutes) -> str:
         safe_text = html.escape(str(minutes), quote=True)
         return safe_text
 
-    return f"📦 {minutes_int} min"
+    return f"Deploy: {minutes_int} min"
 
 
 def _format_type_label(type_value: str) -> str:
@@ -417,20 +428,46 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             logical_id = j.get('logical_id') or j.get('id', '')
             install_code_plain = f"{instance_name}.install('{logical_id}')"
             install_code = syntax_highlight_python(install_code_plain)
-            
+
+            diagram_src = _load_diagram_svg(str(logical_id))
+            diagram_html = f'<div class="diagram-overlay"><img src="{diagram_src}" alt="Architecture diagram"/></div>' if diagram_src else ''
+
+            items_in_scope = j.get('items_in_scope', [])
+            deploy_min_val = j.get('minutes_to_deploy')
+            complete_min_val = j.get('minutes_to_complete_jumpstart')
+            meta_parts = []
+            if deploy_min_val not in (None, ''):
+                try:
+                    meta_parts.append(f"📦 {int(deploy_min_val)} min deploy")
+                except (TypeError, ValueError):
+                    meta_parts.append(f"📦 {html.escape(str(deploy_min_val))} deploy")
+            if complete_min_val not in (None, ''):
+                try:
+                    meta_parts.append(f"⏱ {int(complete_min_val)} min")
+                except (TypeError, ValueError):
+                    meta_parts.append(f"⏱ {html.escape(str(complete_min_val))}")
+            if items_in_scope:
+                meta_parts.append(f"{len(items_in_scope)} Item types")
+            meta_footer_text = '  •  '.join(meta_parts)
+            meta_footer_html = f'<div class="jumpstart-meta-footer">{meta_footer_text}</div>' if meta_footer_text else ''
+
             html_parts.append(f'''
                 <div class="jumpstart-card"{accent_style} data-type="{type_value}" data-workloads="{workloads_value}" data-scenarios="{scenarios_value}">
-                    <div class="jumpstart-image">{preview_img_html}{new_badge}<div class="workload-ribbon">{workload_badges_html}</div></div>
+                    <div class="jumpstart-image">{preview_img_html}{diagram_html}{new_badge}<div class="workload-ribbon">{workload_badges_html}</div></div>
                     <div class="jumpstart-content">
                         {meta_block}
                         <div class="jumpstart-name">{card_name}</div>
                         <div class="jumpstart-description" title="{description_title}">{description_text}</div>
-                        <div class="jumpstart-install">
-                            <code>{install_code}</code>
-                            <span class="copy-btn" role="button" tabindex="0" data-code="{install_code_plain}" onclick="copyToClipboard(this)">
-                                ''' + _COPY_ICON_SVG + '''
-                            </span>
+                        <div class="jumpstart-code-block">
+                            <div class="code-header">Python</div>
+                            <div class="jumpstart-install">
+                                <code>{install_code}</code>
+                                <span class="copy-btn" role="button" tabindex="0" data-code="{install_code_plain}" onclick="copyToClipboard(this)">
+                                    ''' + _COPY_ICON_SVG + f'''
+                                </span>
+                            </div>
                         </div>
+                        {meta_footer_html}
                     </div>
                 </div>
             ''')

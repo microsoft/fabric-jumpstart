@@ -395,6 +395,31 @@
     min-height: 24px;
 }
 
+.class-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    width: fit-content;
+    margin: 0;
+    letter-spacing: 0.1px;
+}
+
+.class-pill-core {
+    background: #e6f4ef;
+    color: #0C695A;
+    border: 1px solid #b8e0d2;
+}
+
+.class-pill-community {
+    background: #f3f2f1;
+    color: #605e5c;
+    border: 1px solid #edebe9;
+}
+
 /* Category sections */
 .category-section {
     margin-bottom: 56px;

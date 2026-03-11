@@ -389,9 +389,15 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             )
 
             meta_pills = ''.join([pill for pill in [type_callout, deploy_callout, duration_callout] if pill])
+
+            # Core vs Community class badge
+            is_core = j.get('core', True)
+            class_label = 'Core' if is_core else 'Community'
+            class_badge = f'<div class="class-pill {"class-pill-core" if is_core else "class-pill-community"}" aria-label="Jumpstart class: {class_label}">{class_label}</div>'
+
             meta_block = (
-                f'<div class="meta-pills" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">{meta_pills}</div>'
-                if meta_pills
+                f'<div class="meta-pills" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">{class_badge}{meta_pills}</div>'
+                if meta_pills or class_badge
                 else ''
             )
 

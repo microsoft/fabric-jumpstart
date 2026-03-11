@@ -57,6 +57,7 @@ class Jumpstart(BaseModel):
     video_url: Optional[str] = None
     difficulty: Optional[str] = None
     last_updated: Optional[str] = None
+    architecture: Optional[str] = None
 
     @field_validator("id")
     @classmethod

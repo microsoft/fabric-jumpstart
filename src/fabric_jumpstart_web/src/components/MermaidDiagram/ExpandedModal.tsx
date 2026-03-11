@@ -2,17 +2,19 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useThemeContext } from '@components/Providers/themeProvider';
-import MermaidDiagram from './index';
 
 interface Props {
-  chart: string;
+  slug: string;
+  chart?: string;
   title?: string;
   onClose: () => void;
 }
 
-export default function DiagramExpandedModal({ chart, title, onClose }: Props) {
+export default function DiagramExpandedModal({ slug, title, onClose }: Props) {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
+
+  const diagramSrc = `/images/diagrams/${slug}_${isDark ? 'dark' : 'light'}.svg`;
 
   const panelBg = isDark ? '#1a1a20' : '#f8fafd';
   const titleBarBg = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.06)';
@@ -154,7 +156,11 @@ export default function DiagramExpandedModal({ chart, title, onClose }: Props) {
             justifyContent: 'center',
             padding: '32px',
           }}>
-            <MermaidDiagram chart={chart} seamless />
+            <img
+              src={diagramSrc}
+              alt={title ? `${title} — Architecture` : 'Architecture Diagram'}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
           </div>
 
           {/* Zoom indicator */}

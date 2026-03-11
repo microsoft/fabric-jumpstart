@@ -14,7 +14,6 @@ import { useThemeContext } from '@components/Providers/themeProvider';
 import workloadColorsData from '@data/workload-colors.json';
 import type { ScenarioCard } from '@scenario/scenario';
 
-const MermaidDiagram = dynamic(() => import('@components/MermaidDiagram'), { ssr: false });
 const ExpandedModal = dynamic(() => import('@components/MermaidDiagram/ExpandedModal'), { ssr: false });
 
 interface WorkloadColor {
@@ -139,7 +138,11 @@ function ScenarioHeader({
           }}
         >
           <div style={{ width: '100%', height: '100%', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
-            <MermaidDiagram chart={architecture} bare />
+            <img
+              src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
+              alt="Architecture diagram"
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
           </div>
           {/* Expand hint */}
           <div style={{
@@ -478,7 +481,7 @@ export default function ScenarioOverview({ scenario, architecture }: { scenario:
       </div>
       </div>
       {diagramExpanded && architecture && createPortal(
-        <ExpandedModal chart={architecture} title={scenario.title} onClose={() => setDiagramExpanded(false)} />,
+        <ExpandedModal slug={scenario.slug} title={scenario.title} onClose={() => setDiagramExpanded(false)} />,
         document.body,
       )}
     </div>

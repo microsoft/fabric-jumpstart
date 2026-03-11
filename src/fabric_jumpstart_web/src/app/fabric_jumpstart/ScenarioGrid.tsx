@@ -13,10 +13,6 @@ import { sortLabels, type SortOption } from '@components/Providers/filterProvide
 import { getMatchingSlugs } from '@components/SideMenu/SidebarFilters';
 import type { ScenarioCard } from '@scenario/scenario';
 
-const MermaidDiagram = dynamic(
-  () => import('@components/MermaidDiagram'),
-  { ssr: false }
-);
 const ExpandedModal = dynamic(
   () => import('@components/MermaidDiagram/ExpandedModal'),
   { ssr: false }
@@ -295,7 +291,11 @@ function CardHeader({
           }}
         >
           <div style={{ width: '100%', height: '100%', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MermaidDiagram chart={architecture} bare />
+            <img
+              src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
+              alt="Architecture diagram"
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
           </div>
           {/* Expand hint */}
           <div style={{
@@ -409,7 +409,7 @@ export default function ScenarioGrid() {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
   const { filters, hasActiveFilters, sort, setSort } = useFilterContext();
-  const [expandedChart, setExpandedChart] = useState<{ chart: string; title: string } | null>(null);
+  const [expandedChart, setExpandedChart] = useState<{ slug: string; title: string } | null>(null);
 
   const matchingSlugs = useMemo(() => getMatchingSlugs(filters), [filters]);
   const filteredScenarios = useMemo(() => {
@@ -503,7 +503,7 @@ export default function ScenarioGrid() {
             style={{ textDecoration: 'none' }}
           >
             <div className={styles.card}>
-              <CardHeader scenario={scenario} isDark={isDark} architecture={architecture} onExpandDiagram={() => setExpandedChart({ chart: architecture!, title: scenario.title })} />
+              <CardHeader scenario={scenario} isDark={isDark} architecture={architecture} onExpandDiagram={() => setExpandedChart({ slug: scenario.slug, title: scenario.title })} />
               <div className={styles.cardBody}>
                 {/* Pills above title: Core (if true), Type, Difficulty */}
                 <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '6px', marginBottom: '10px' }}>
@@ -609,7 +609,7 @@ export default function ScenarioGrid() {
       </div>
       )}
       {expandedChart && createPortal(
-        <ExpandedModal chart={expandedChart.chart} title={expandedChart.title} onClose={() => setExpandedChart(null)} />,
+        <ExpandedModal slug={expandedChart.slug} title={expandedChart.title} onClose={() => setExpandedChart(null)} />,
         document.body,
       )}
     </div>

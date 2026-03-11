@@ -33,3 +33,9 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-02-13"
+architecture: |
+  graph LR
+    NB[BankingLoanFraudEmulator]:::Notebook --> ES[loan_fraud_events]:::Eventstream
+    ES --> EH[fraud_detection]:::Eventhouse
+    EH --> KDB[fraud_kqldb]:::KQLDatabase
+    KDB --> DASH[fraud_dashboard]:::KQLDashboard

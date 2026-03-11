@@ -36,3 +36,10 @@ minutes_to_complete_jumpstart: 30
 video_url: ""
 difficulty: "Advanced"
 last_updated: "2026-02-28"
+architecture: |
+  graph LR
+    ES[shipment_scan_events]:::Eventstream --> LH[sales_and_logistics]:::Lakehouse
+    LH --> SJD[stream_all_zones]:::SparkJobDefinition
+    SJD --> NB1[explore_streaming]:::Notebook
+    SJD --> NB2[arcflow_streaming]:::Notebook
+    ENV[stream_env]:::Environment -.-> SJD

@@ -34,3 +34,10 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-02-03"
+architecture: |
+  graph LR
+    NB[capacity_events_setup]:::Notebook --> DP[capacity_pipeline]:::DataPipeline
+    DP --> ES[capacity_events]:::Eventstream
+    ES --> EH[monitoring_eventhouse]:::Eventhouse
+    EH --> KDB[capacity_kqldb]:::KQLDatabase
+    KDB --> DASH[capacity_dashboard]:::KQLDashboard

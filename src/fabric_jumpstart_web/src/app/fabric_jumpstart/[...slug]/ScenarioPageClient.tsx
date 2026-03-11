@@ -25,6 +25,9 @@ export default function ScenarioPageClient({
 
   const hasContent = !!rawMarkdown;
 
+  // Use architecture from scenario data
+  const architectureDef = scenario?.architecture || undefined;
+
   return (
     <section
       style={{
@@ -50,7 +53,7 @@ export default function ScenarioPageClient({
 
       {scenario ? (
         <>
-          <ScenarioOverview scenario={scenario} />
+          <ScenarioOverview scenario={scenario} architecture={architectureDef} />
           {hasContent && (
             <ScenarioContentSection
               rawMarkdown={rawMarkdown!}

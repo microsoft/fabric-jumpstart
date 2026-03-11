@@ -33,3 +33,9 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-02-03"
+architecture: |
+  graph LR
+    NB[HealthcareBillingDataEmulator]:::Notebook --> ES[billing_events]:::Eventstream
+    ES --> EH[billing_eventhouse]:::Eventhouse
+    EH --> KDB[billing_kqldb]:::KQLDatabase
+    KDB --> DASH[billing_dashboard]:::KQLDashboard

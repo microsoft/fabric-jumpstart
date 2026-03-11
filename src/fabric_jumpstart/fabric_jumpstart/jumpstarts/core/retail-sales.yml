@@ -32,3 +32,9 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-02-13"
+architecture: |
+  graph LR
+    NB[RetailSalesEmulator]:::Notebook --> ES[shipment_scan_events]:::Eventstream
+    ES --> EH[shipment_data]:::Eventhouse
+    EH --> KDB[shipment_kqldb]:::KQLDatabase
+    KDB --> DASH[sales_dashboard]:::KQLDashboard

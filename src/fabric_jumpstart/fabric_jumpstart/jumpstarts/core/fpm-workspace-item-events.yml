@@ -38,3 +38,13 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Intermediate"
 last_updated: "2026-02-03"
+architecture: |
+  graph LR
+    NB[workspace_events_setup]:::Notebook --> DP[workspace_pipeline]:::DataPipeline
+    DP --> ES[workspace_item_events]:::Eventstream
+    ES --> EH[monitoring_eventhouse]:::Eventhouse
+    EH --> KDB[workspace_kqldb]:::KQLDatabase
+    KDB --> DASH[workspace_dashboard]:::KQLDashboard
+    KDB --> SM[workspace_model]:::SemanticModel
+    SM --> RPT[workspace_report]:::Report
+    VL[config_variables]:::VariableLibrary -.-> DP

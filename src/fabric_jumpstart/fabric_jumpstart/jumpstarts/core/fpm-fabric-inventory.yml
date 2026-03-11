@@ -35,3 +35,11 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-02-03"
+architecture: |
+  graph LR
+    NB[fabric_inventory_setup]:::Notebook --> DP[inventory_pipeline]:::DataPipeline
+    DP --> ES[inventory_events]:::Eventstream
+    ES --> EH[monitoring_eventhouse]:::Eventhouse
+    EH --> KDB[inventory_kqldb]:::KQLDatabase
+    KDB --> DASH[inventory_dashboard]:::KQLDashboard
+    VL[config_variables]:::VariableLibrary -.-> DP

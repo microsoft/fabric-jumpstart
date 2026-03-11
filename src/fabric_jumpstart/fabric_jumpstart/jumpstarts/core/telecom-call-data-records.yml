@@ -32,3 +32,9 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-03-03"
+architecture: |
+  graph LR
+    NB[TelecomCallDataRecordsEmulator]:::Notebook --> ES[call_data_events]:::Eventstream
+    ES --> EH[telecom_eventhouse]:::Eventhouse
+    EH --> KDB[telecom_kqldb]:::KQLDatabase
+    KDB --> DASH[telecom_dashboard]:::KQLDashboard

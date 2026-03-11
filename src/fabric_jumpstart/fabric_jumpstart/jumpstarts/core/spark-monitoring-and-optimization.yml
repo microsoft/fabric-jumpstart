@@ -38,3 +38,13 @@ minutes_to_complete_jumpstart: 20
 video_url: ""
 difficulty: "Intermediate"
 last_updated: "2026-03-03"
+architecture: |
+  graph LR
+    NB[spark_monitoring_setup]:::Notebook --> DP[spark_pipeline]:::DataPipeline
+    DP --> ES[spark_events]:::Eventstream
+    ES --> EH[spark_eventhouse]:::Eventhouse
+    EH --> KDB[spark_kqldb]:::KQLDatabase
+    KDB --> DASH[spark_dashboard]:::KQLDashboard
+    KDB --> KQL[spark_queryset]:::KQLQueryset
+    KDB --> DA[spark_agent]:::DataAgent
+    ENV[spark_env]:::Environment -.-> NB

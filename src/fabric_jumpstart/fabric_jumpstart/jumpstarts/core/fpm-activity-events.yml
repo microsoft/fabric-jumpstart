@@ -36,3 +36,11 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-02-03"
+architecture: |
+  graph LR
+    NB[activity_events_setup]:::Notebook --> DP[activity_pipeline]:::DataPipeline
+    DP --> ES[activity_events]:::Eventstream
+    ES --> EH[monitoring_eventhouse]:::Eventhouse
+    EH --> KDB[activity_kqldb]:::KQLDatabase
+    KDB --> DASH[activity_dashboard]:::KQLDashboard
+    VL[config_variables]:::VariableLibrary -.-> DP

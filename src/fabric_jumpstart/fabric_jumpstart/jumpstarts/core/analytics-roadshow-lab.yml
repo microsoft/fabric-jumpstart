@@ -38,3 +38,11 @@ minutes_to_complete_jumpstart: 180
 video_url: ""
 difficulty: "Advanced"
 last_updated: "2026-01-08"
+architecture: |
+  graph LR
+    NB1[1_process_data]:::Notebook --> LH[sales_lakehouse]:::Lakehouse
+    LH --> NB2[2_transform_data]:::Notebook
+    NB2 --> WH[analytics_warehouse]:::Warehouse
+    SJD[scheduled_job]:::SparkJobDefinition --> NB1
+    ENV[lab_environment]:::Environment -.-> SJD
+    DP[orchestration_pipeline]:::DataPipeline --> SJD

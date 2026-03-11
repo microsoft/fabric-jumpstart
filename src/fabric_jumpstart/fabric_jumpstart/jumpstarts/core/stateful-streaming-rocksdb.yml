@@ -31,3 +31,8 @@ minutes_to_complete_jumpstart: 15
 video_url: "https://www.youtube.com/watch?v=qQ4EK0xTHA4"
 difficulty: "Intermediate"
 last_updated: "2026-03-07"
+architecture: |
+  graph LR
+    NB[heartbeat_notebook]:::Notebook --> ES[heartbeat_events]:::Eventstream
+    ES --> LH[heartbeat_lakehouse]:::Lakehouse
+    LH --> NB

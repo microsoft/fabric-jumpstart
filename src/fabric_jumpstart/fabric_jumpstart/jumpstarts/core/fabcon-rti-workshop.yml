@@ -35,3 +35,12 @@ minutes_to_complete_jumpstart: 360
 video_url: ""
 difficulty: "Advanced"
 last_updated: "2026-02-21"
+architecture: |
+  graph LR
+    NB[workshop_emulator]:::Notebook --> ES[workshop_events]:::Eventstream
+    ES --> EH[workshop_eventhouse]:::Eventhouse
+    EH --> KDB[workshop_kqldb]:::KQLDatabase
+    KDB --> DASH[workshop_dashboard]:::KQLDashboard
+    KDB --> RFX[workshop_reflex]:::Reflex
+    ES --> LH[workshop_lakehouse]:::Lakehouse
+    ENV[workshop_env]:::Environment -.-> NB

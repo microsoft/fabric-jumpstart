@@ -38,3 +38,13 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-02-03"
+architecture: |
+  graph LR
+    NB[gateway_monitoring_setup]:::Notebook --> DP[gateway_pipeline]:::DataPipeline
+    DP --> ES[gateway_events]:::Eventstream
+    ES --> EH[monitoring_eventhouse]:::Eventhouse
+    EH --> KDB[gateway_kqldb]:::KQLDatabase
+    KDB --> DASH[gateway_dashboard]:::KQLDashboard
+    KDB --> SM[gateway_model]:::SemanticModel
+    SM --> RPT[gateway_report]:::Report
+    VL[config_variables]:::VariableLibrary -.-> DP

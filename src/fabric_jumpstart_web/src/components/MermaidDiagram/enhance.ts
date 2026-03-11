@@ -111,7 +111,7 @@ export function enhanceDiagram(
   let gi = 0;
   const PAD = Math.round(ICON * 0.46);
   const EXTRA_W = ICON + PAD + 8;
-  const EXTRA_H = 8; // extra height for item-type line inside the box
+  const EXTRA_H = 4; // extra height for item-type line inside the box
   const TYPE_COLOR = isDark ? 'rgba(180,190,200,0.7)' : 'rgba(80,90,100,0.75)';
 
   for (const g of root.querySelectorAll('g.node')) {

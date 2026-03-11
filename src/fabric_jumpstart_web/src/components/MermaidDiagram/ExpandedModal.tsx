@@ -50,6 +50,7 @@ export default function DiagramExpandedModal({ slug, title, onClose }: Props) {
 
   const onDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return;
+    e.preventDefault();
     setDragging(true);
     start.current = { x: e.clientX - translate.x, y: e.clientY - translate.y };
   }, [translate]);
@@ -159,7 +160,8 @@ export default function DiagramExpandedModal({ slug, title, onClose }: Props) {
             <img
               src={diagramSrc}
               alt={title ? `${title} — Architecture` : 'Architecture Diagram'}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              draggable={false}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', userSelect: 'none' }}
             />
           </div>
 

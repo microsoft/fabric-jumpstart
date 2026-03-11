@@ -10,6 +10,7 @@ export interface FilterState {
   scenarioTags: string[];
   minMinutesToComplete: number | null;
   maxMinutesToComplete: number | null;
+  classes: string[]; // empty = all, ['Core'] or ['Community'] to filter
 }
 
 export const emptyFilters: FilterState = {
@@ -20,6 +21,7 @@ export const emptyFilters: FilterState = {
   scenarioTags: [],
   minMinutesToComplete: null,
   maxMinutesToComplete: null,
+  classes: [],
 };
 
 export type SortOption =
@@ -57,7 +59,8 @@ export const FilterProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     filters.workloadTags.length > 0 ||
     filters.scenarioTags.length > 0 ||
     filters.minMinutesToComplete !== null ||
-    filters.maxMinutesToComplete !== null;
+    filters.maxMinutesToComplete !== null ||
+    filters.classes.length > 0;
 
   const setFilters = useCallback((next: FilterState) => {
     setFiltersState(next);

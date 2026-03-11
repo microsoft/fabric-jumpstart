@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { tokens } from '@fluentui/react-components';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import {
@@ -12,7 +14,12 @@ import { useThemeContext } from '@components/Providers/themeProvider';
 import workloadColorsData from '@data/workload-colors.json';
 import type { ScenarioCard } from '@scenario/scenario';
 
+const MermaidDiagram = dynamic(() => import('@components/MermaidDiagram'), { ssr: false });
+const ExpandedModal = dynamic(() => import('@components/MermaidDiagram/ExpandedModal'), { ssr: false });
+
 interface WorkloadColor {
+  primary: string;
+  secondary: string;
   light: string;
   accent: string;
   mid: string;
@@ -22,6 +29,8 @@ interface WorkloadColor {
 const workloadColors = workloadColorsData as Record<string, WorkloadColor>;
 
 const defaultWc: WorkloadColor = {
+  primary: '#0078D4',
+  secondary: '#004E8C',
   light: '#E8F4FD',
   accent: '#0078D4',
   mid: '#5CB8E6',
@@ -41,31 +50,41 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function ScenarioHeader({ scenario, isDark }: { scenario: ScenarioCard; isDark: boolean }) {
+function ScenarioHeader({
+  scenario,
+  isDark,
+  architecture,
+  onExpandDiagram,
+}: {
+  scenario: ScenarioCard;
+  isDark: boolean;
+  architecture?: string;
+  onExpandDiagram?: () => void;
+}) {
   const primaryTag = scenario.workloadTags?.[0];
   const wc = primaryTag ? workloadColors[primaryTag] ?? defaultWc : defaultWc;
   const icons = (scenario.workloadTags ?? [])
     .map((t) => workloadColors[t])
     .filter((c): c is WorkloadColor => !!c && !!c.icon);
 
-  const lightA = isDark ? 0.15 : 0.45;
-  const midA = isDark ? 0.25 : 0.5;
-  const accentA = isDark ? 0.35 : 0.3;
+  const primaryA = isDark ? 0.45 : 0.65;
+  const secondaryA = isDark ? 0.55 : 0.5;
+
+  const headerHeight = architecture ? 240 : 120;
 
   return (
     <div
       style={{
         position: 'relative',
         width: '100%',
-        height: '120px',
+        height: `${headerHeight}px`,
         overflow: 'hidden',
         borderRadius: '16px 16px 0 0',
         background: `
-          radial-gradient(ellipse 80% 60% at 50% 40%, ${hexToRgba(wc.light, lightA + 0.2)} 0%, transparent 70%),
+          radial-gradient(ellipse 80% 60% at 50% 40%, ${hexToRgba(wc.primary, primaryA + 0.15)} 0%, transparent 70%),
           linear-gradient(135deg,
-            ${hexToRgba(wc.light, lightA)} 0%,
-            ${hexToRgba(wc.mid, midA)} 50%,
-            ${hexToRgba(wc.accent, accentA)} 100%
+            ${hexToRgba(wc.primary, primaryA)} 0%,
+            ${hexToRgba(wc.secondary, secondaryA)} 100%
           )
         `,
       }}
@@ -93,59 +112,116 @@ function ScenarioHeader({ scenario, isDark }: { scenario: ScenarioCard; isDark: 
             : 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.02))',
         }}
       />
-      {/* Workload icons */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '16px',
-        }}
-      >
-        {icons.map((ic, i) => (
-          <div
-            key={i}
-            style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: isDark
-                ? 'rgba(255, 255, 255, 0.08)'
-                : 'rgba(255, 255, 255, 0.55)',
-              backdropFilter: 'blur(16px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(16px) saturate(180%)',
-              border: isDark
-                ? '1px solid rgba(255, 255, 255, 0.12)'
-                : '1px solid rgba(255, 255, 255, 0.6)',
-              boxShadow: isDark
-                ? '0 4px 24px rgba(0, 0, 0, 0.3)'
-                : '0 4px 24px rgba(0, 0, 0, 0.08)',
-            }}
-          >
-            <Image
-              src={ic.icon}
-              alt=""
-              width={48}
-              height={48}
-              style={{ width: '36px', height: '36px' }}
-              unoptimized
-            />
+
+      {architecture ? (
+        /* Diagram in frosted-glass panel */
+        <div
+          onClick={onExpandDiagram}
+          style={{
+            position: 'absolute',
+            inset: '14px',
+            bottom: '14px',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            cursor: 'zoom-in',
+            backgroundColor: isDark ? 'rgba(30,30,36,0.82)' : 'rgba(255,255,255,0.88)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            border: isDark
+              ? '1px solid rgba(255,255,255,0.1)'
+              : '1px solid rgba(255,255,255,0.5)',
+            boxShadow: isDark
+              ? '0 2px 16px rgba(0,0,0,0.3)'
+              : '0 2px 16px rgba(0,0,0,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div style={{ width: '100%', height: '100%', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
+            <MermaidDiagram chart={architecture} bare />
           </div>
-        ))}
-      </div>
+          {/* Expand hint */}
+          <div style={{
+            position: 'absolute',
+            bottom: '8px',
+            right: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            padding: '4px 10px',
+            borderRadius: '6px',
+            backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.85)',
+            backdropFilter: 'blur(4px)',
+            border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+            color: isDark ? '#e0e0e0' : '#424242',
+            fontSize: '11px',
+            fontWeight: 600,
+            opacity: 0.75,
+            pointerEvents: 'none',
+          }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Expand
+          </div>
+        </div>
+      ) : (
+        /* Workload icons (default) */
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '16px',
+          }}
+        >
+          {icons.map((ic, i) => (
+            <div
+              key={i}
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: isDark
+                  ? 'rgba(255, 255, 255, 0.08)'
+                  : 'rgba(255, 255, 255, 0.55)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+                border: isDark
+                  ? '1px solid rgba(255, 255, 255, 0.12)'
+                  : '1px solid rgba(255, 255, 255, 0.6)',
+                boxShadow: isDark
+                  ? '0 4px 24px rgba(0, 0, 0, 0.3)'
+                  : '0 4px 24px rgba(0, 0, 0, 0.08)',
+              }}
+            >
+              <Image
+                src={ic.icon}
+                alt=""
+                width={48}
+                height={48}
+                style={{ width: '36px', height: '36px' }}
+                unoptimized
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard }) {
+export default function ScenarioOverview({ scenario, architecture }: { scenario: ScenarioCard; architecture?: string }) {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
   const [copied, setCopied] = useState(false);
+  const [diagramExpanded, setDiagramExpanded] = useState(false);
   const colors = difficultyColor[scenario.difficulty?.toLowerCase()] || difficultyColor.intermediate;
 
   const installCode = `import fabric_jumpstart as jumpstart\n\n# Install this scenario\njumpstart.install("${scenario.slug}")`;
@@ -166,7 +242,7 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
       overflow: 'hidden',
       marginBottom: '32px',
     }}>
-      <ScenarioHeader scenario={scenario} isDark={isDark} />
+      <ScenarioHeader scenario={scenario} isDark={isDark} architecture={architecture} onExpandDiagram={() => setDiagramExpanded(true)} />
       <div style={{ padding: '28px 32px' }}>
       {/* Title */}
       <h1 style={{
@@ -229,6 +305,36 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
         <PropertyCard label="Complete Time" value={`~${scenario.minutesToComplete} min`} isDark={isDark} />
       </div>
 
+      {/* Workloads */}
+      {scenario.workloadTags && scenario.workloadTags.length > 0 && (
+        <div style={{ marginBottom: '20px' }}>
+          <h4 style={{
+            fontSize: '13px',
+            fontWeight: 700,
+            textTransform: 'uppercase' as const,
+            letterSpacing: '0.06em',
+            color: tokens.colorNeutralForeground2,
+            margin: '0 0 10px',
+          }}>
+            Workloads
+          </h4>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {scenario.workloadTags.map((tag) => (
+              <span key={tag} style={{
+                fontSize: '12px',
+                padding: '4px 12px',
+                borderRadius: '12px',
+                backgroundColor: isDark ? 'rgba(0, 120, 212, 0.30)' : '#deecf9',
+                color: '#0078d4',
+                fontWeight: 500,
+              }}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Fabric Items Deployed */}
       <div style={{ marginBottom: '20px' }}>
         <h4 style={{
@@ -270,38 +376,40 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
         </ul>
       </div>
 
-      {/* Tags */}
-      <div style={{ marginBottom: '20px' }}>
-        <h4 style={{
-          fontSize: '13px',
-          fontWeight: 700,
-          textTransform: 'uppercase' as const,
-          letterSpacing: '0.06em',
-          color: tokens.colorNeutralForeground2,
-          margin: '0 0 10px',
-        }}>
-          Tags
-        </h4>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {scenario.tags.map((tag) => {
-            const isWorkload = scenario.workloadTags?.includes(tag);
-            return (
-              <span key={tag} style={{
-                fontSize: '12px',
-                padding: '4px 12px',
-                borderRadius: '12px',
-                backgroundColor: isWorkload
-                  ? (isDark ? 'rgba(0, 120, 212, 0.30)' : '#deecf9')
-                  : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
-                color: isWorkload ? '#0078d4' : tokens.colorNeutralForeground2,
-                fontWeight: 500,
-              }}>
-                {tag}
-              </span>
-            );
-          })}
-        </div>
-      </div>
+      {/* Scenarios */}
+      {(() => {
+        const workloadSet = new Set(scenario.workloadTags ?? []);
+        const scenarioOnly = scenario.tags.filter((t) => !workloadSet.has(t));
+        if (scenarioOnly.length === 0) return null;
+        return (
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              textTransform: 'uppercase' as const,
+              letterSpacing: '0.06em',
+              color: tokens.colorNeutralForeground2,
+              margin: '0 0 10px',
+            }}>
+              Scenarios
+            </h4>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {scenarioOnly.map((tag) => (
+                <span key={tag} style={{
+                  fontSize: '12px',
+                  padding: '4px 12px',
+                  borderRadius: '12px',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                  color: tokens.colorNeutralForeground2,
+                  fontWeight: 500,
+                }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Quick Start */}
       <div>
@@ -369,6 +477,10 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
         </div>
       </div>
       </div>
+      {diagramExpanded && architecture && createPortal(
+        <ExpandedModal chart={architecture} title={scenario.title} onClose={() => setDiagramExpanded(false)} />,
+        document.body,
+      )}
     </div>
   );
 }

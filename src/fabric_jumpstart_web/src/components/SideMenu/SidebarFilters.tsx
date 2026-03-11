@@ -88,6 +88,22 @@ export default function SidebarFilters() {
         }}
       />
 
+      {/* Jumpstart Class */}
+      <div style={{ marginBottom: '10px' }}>
+        <div style={labelStyle}>Class</div>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {['Core', 'Community'].map((cls) => (
+            <span
+              key={cls}
+              style={chipStyle(filters.classes.includes(cls))}
+              onClick={() => setFilters({ ...filters, classes: toggleArray(filters.classes, cls) })}
+            >
+              {cls}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* Type */}
       <div style={{ marginBottom: '10px' }}>
         <div style={labelStyle}>Type</div>
@@ -325,7 +341,7 @@ export default function SidebarFilters() {
 
 /** Returns the set of scenario slugs that match the given filters */
 export function getMatchingSlugs(filters: FilterState): Set<string> | null {
-  const { search, types, difficulties, workloadTags, scenarioTags, minMinutesToComplete, maxMinutesToComplete } = filters;
+  const { search, types, difficulties, workloadTags, scenarioTags, minMinutesToComplete, maxMinutesToComplete, classes } = filters;
   const noFilters =
     search === '' &&
     types.length === 0 &&
@@ -333,7 +349,8 @@ export function getMatchingSlugs(filters: FilterState): Set<string> | null {
     workloadTags.length === 0 &&
     scenarioTags.length === 0 &&
     minMinutesToComplete === null &&
-    maxMinutesToComplete === null;
+    maxMinutesToComplete === null &&
+    classes.length === 0;
   if (noFilters) return null; // null = show all
 
   const matches = new Set<string>();
@@ -341,6 +358,10 @@ export function getMatchingSlugs(filters: FilterState): Set<string> | null {
     if (search && !s.title.toLowerCase().includes(search.toLowerCase())) continue;
     if (types.length > 0 && !types.includes(s.type)) continue;
     if (difficulties.length > 0 && !difficulties.includes(s.difficulty)) continue;
+    if (classes.length > 0) {
+      const scenarioClass = s.core ? 'Core' : 'Community';
+      if (!classes.includes(scenarioClass)) continue;
+    }
     if (
       workloadTags.length > 0 &&
       !workloadTags.some((wt) => s.workloadTags?.includes(wt))

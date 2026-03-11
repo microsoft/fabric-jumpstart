@@ -4,7 +4,7 @@ import { tokens } from '@fluentui/react-components';
 import PageWrapper from '@components/PageWrapper';
 import useTranslation from '@utils/translateWrapper';
 import HeroBanner from '@components/HeroBanner';
-import Banner from '@images/scenarioBanner.svg';
+import Banner from '@images/heroBanner.svg';
 import { INTERNAL_ROUTE } from '@config/urlconfig';
 import MenuLayout from '@components/SideMenu/MenuLayout';
 import ScenarioGrid from './ScenarioGrid';

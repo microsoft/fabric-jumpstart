@@ -18,6 +18,8 @@ import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 
 interface WorkloadColor {
+  primary: string;
+  secondary: string;
   light: string;
   accent: string;
   mid: string;
@@ -33,6 +35,8 @@ const difficultyColor: Record<string, { bg: string; fg: string }> = {
 };
 
 const defaultColors: WorkloadColor = {
+  primary: '#0078D4',
+  secondary: '#004E8C',
   light: '#E8F4FD',
   accent: '#0078D4',
   mid: '#5CB8E6',
@@ -59,9 +63,8 @@ function CardHeader({
     .map((t) => workloadColors[t])
     .filter((c): c is WorkloadColor => !!c && !!c.icon);
 
-  const lightAlpha = isDark ? 0.15 : 0.45;
-  const midAlpha = isDark ? 0.25 : 0.5;
-  const accentAlpha = isDark ? 0.35 : 0.3;
+  const primaryAlpha = isDark ? 0.45 : 0.65;
+  const secondaryAlpha = isDark ? 0.55 : 0.5;
 
   return (
     <div
@@ -71,11 +74,10 @@ function CardHeader({
         height: '180px',
         overflow: 'hidden',
         background: `
-          radial-gradient(ellipse 80% 60% at 50% 40%, ${hexToRgba(wc.light, lightAlpha + 0.2)} 0%, transparent 70%),
+          radial-gradient(ellipse 80% 60% at 50% 40%, ${hexToRgba(wc.primary, primaryAlpha + 0.15)} 0%, transparent 70%),
           linear-gradient(135deg,
-            ${hexToRgba(wc.light, lightAlpha)} 0%,
-            ${hexToRgba(wc.mid, midAlpha)} 50%,
-            ${hexToRgba(wc.accent, accentAlpha)} 100%
+            ${hexToRgba(wc.primary, primaryAlpha)} 0%,
+            ${hexToRgba(wc.secondary, secondaryAlpha)} 100%
           )
         `,
       }}

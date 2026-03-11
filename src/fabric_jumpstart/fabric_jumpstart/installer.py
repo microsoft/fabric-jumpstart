@@ -13,6 +13,7 @@ from .utils import (
     _is_fabric_runtime,
     clone_files_to_temp_directory,
     clone_repository,
+    update_docs_uri_with_ref,
 )
 from .workspace_manager import WorkspaceManager
 
@@ -57,6 +58,16 @@ class JumpstartInstaller:
         self.workspace_manager: Optional[WorkspaceManager] = None
         self.had_conflicts = False
         self.resolved_prefix: Optional[str] = None
+
+    @property
+    def effective_docs_uri(self) -> Optional[str]:
+        """Get the docs URI, adjusted for repo_ref override if applicable."""
+        docs_uri = self.config.get('jumpstart_docs_uri')
+        if self.repo_ref_override:
+            source_config = self.config.get('source', {})
+            original_ref = source_config.get('repo_ref', '')
+            return update_docs_uri_with_ref(docs_uri, original_ref, self.repo_ref_override)
+        return docs_uri
     
     def validate(self) -> str:
         """Validate configuration and resolve workspace ID.

@@ -211,7 +211,7 @@ class jumpstart:
                 entry_point=entry,
                 minutes_complete=config.get('minutes_to_complete_jumpstart'),
                 minutes_deploy=config.get('minutes_to_deploy'),
-                docs_uri=config.get('jumpstart_docs_uri'),
+                docs_uri=installer.effective_docs_uri,
                 logs=log_buffer,
                 error_message=err,
                 extra_html=extra_html,
@@ -314,7 +314,7 @@ class jumpstart:
                     entry_point=entry_url,
                     minutes_complete=config.get('minutes_to_complete_jumpstart'),
                     minutes_deploy=config.get('minutes_to_deploy'),
-                    docs_uri=config.get('jumpstart_docs_uri'),
+                    docs_uri=installer.effective_docs_uri,
                     logs=log_buffer,
                 )
                 
@@ -366,7 +366,7 @@ class jumpstart:
                     entry_point=config.get('entry_point'),
                     minutes_complete=config.get('minutes_to_complete_jumpstart'),
                     minutes_deploy=config.get('minutes_to_deploy'),
-                    docs_uri=config.get('jumpstart_docs_uri'),
+                    docs_uri=installer.effective_docs_uri,
                     logs=log_buffer,
                     error_message=error_text,
                 )

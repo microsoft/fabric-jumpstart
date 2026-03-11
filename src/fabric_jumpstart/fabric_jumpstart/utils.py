@@ -217,6 +217,41 @@ def _apply_item_prefix(workspace_path: Path, item_prefix: Optional[str], base_na
     )
     return mappings
 
+
+def update_docs_uri_with_ref(
+    docs_uri: Optional[str],
+    original_ref: str,
+    new_ref: str
+) -> Optional[str]:
+    """Update the docs URI to use a new git reference.
+
+    Only updates GitHub blob URLs that contain the original_ref in the path.
+    Other URLs (external sites, empty strings) are returned unchanged.
+
+    Args:
+        docs_uri: The original jumpstart_docs_uri from config
+        original_ref: The original repo_ref from config (e.g., 'v0.1.1')
+        new_ref: The new repo_ref to use (e.g., 'v0.1.3')
+
+    Returns:
+        Updated docs URI with new_ref, or original if not applicable
+    """
+    if not docs_uri or not original_ref or not new_ref:
+        return docs_uri
+    if original_ref == new_ref:
+        return docs_uri
+    # Only update GitHub blob URLs that contain the original ref
+    # Pattern: https://github.com/{owner}/{repo}/blob/{ref}/...
+    if 'github.com' in docs_uri and '/blob/' in docs_uri:
+        old_pattern = f'/blob/{original_ref}/'
+        new_pattern = f'/blob/{new_ref}/'
+        if old_pattern in docs_uri:
+            updated_uri = docs_uri.replace(old_pattern, new_pattern)
+            logger.info(f"Updated docs URI from '{original_ref}' to '{new_ref}'")
+            return updated_uri
+    return docs_uri
+
+
 def clone_repository(
     repository_url: str,
     ref: Optional[str] = None,

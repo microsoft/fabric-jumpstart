@@ -18,7 +18,6 @@ from fabric_jumpstart.constants import (
 class JumpstartSource(BaseModel):
     """Source configuration for a jumpstart."""
     workspace_path: str
-    preview_image_path: str
     repo_url: Optional[str] = None
     repo_ref: Optional[str] = None
 

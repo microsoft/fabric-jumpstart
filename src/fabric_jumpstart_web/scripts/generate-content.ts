@@ -303,7 +303,6 @@ function generateScenariosJson(scenarios: TaggedScenarioYml[]): ScenarioCard[] {
         difficulty: s.difficulty || 'Intermediate',
         tags: [...s.workload_tags, ...s.scenario_tags],
         workloadTags: s.workload_tags as string[],
-        previewImage: `https://placehold.co/600x400?text=${encodeURIComponent(s.name)}`,
         videoUrl: s.video_url || '',
         minutesToDeploy: s.minutes_to_deploy,
         minutesToComplete: s.minutes_to_complete_jumpstart,

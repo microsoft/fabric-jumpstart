@@ -76,7 +76,6 @@ describe('Scenario YAML contract', () => {
 
   test.each(scenarios)('$file has valid source fields', ({ data }) => {
     expect(data.source).toHaveProperty('workspace_path');
-    expect(data.source).toHaveProperty('preview_image_path');
   });
 
   test.each(scenarios)('$file has valid difficulty', ({ data }) => {

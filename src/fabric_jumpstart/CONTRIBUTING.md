@@ -84,7 +84,7 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
      - `workload_tags`: List of valid workload tags
      - `scenario_tags`: List of valid scenario tags
      - `type`: One of: Tutorial, Demo, Accelerator
-     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`, `preview_image_path`
+     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`
      - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
      - `entry_point`: Either a URL or `<name>.<item_type>` format
      - `owner_email`: Valid email address

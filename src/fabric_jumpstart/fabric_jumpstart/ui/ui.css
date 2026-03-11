@@ -354,36 +354,31 @@
     letter-spacing: 0.1px;
 }
 
-.duration-pill {
+.difficulty-pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 3px 10px 3px 8px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
-    background: #e8f2fc;
-    color: #0f4f8f;
-    border: 1px solid #d5e8ff;
+    padding: 3px 10px;
     width: fit-content;
     margin: 0;
     letter-spacing: 0.1px;
 }
 
-.deploy-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px 3px 8px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    background: #e8f2fc;
-    color: #0f4f8f;
-    border: 1px solid #d5e8ff;
-    width: fit-content;
-    margin: 0;
-    letter-spacing: 0.1px;
+.difficulty-beginner {
+    background: #e6f4ef;
+    color: #0C695A;
+}
+
+.difficulty-intermediate {
+    background: #fff4e6;
+    color: #8a6100;
+}
+
+.difficulty-advanced {
+    background: #fce8e8;
+    color: #a41836;
 }
 
 .meta-pills {
@@ -488,20 +483,6 @@
     align-items: center;
     justify-content: center;
     overflow: visible;
-}
-
-.jumpstart-image .preview-img {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 88%;
-    height: 86%;
-    object-fit: cover;
-    object-position: top center;
-    border-radius: 3px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
-    z-index: 1;
 }
 
 .jumpstart-new-badge {

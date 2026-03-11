@@ -70,7 +70,6 @@ source:
   repo_url: <public GitHub repo URL>
   repo_ref: <tag or commit SHA — not a branch>
   workspace_path: <path in repo>
-  preview_image_path: <path to preview image>
 items_in_scope: [Lakehouse, Notebook, ...]
 entry_point: <Name>.<ItemType> or URL
 owner_email: <contact email>

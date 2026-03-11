@@ -16,7 +16,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-rti-demos.git
   repo_ref: v0.1.8
   workspace_path: retail-sales/
-  preview_image_path: retail-sales/RetailSales.png
 items_in_scope:
 - Notebook
 - Eventhouse

@@ -18,7 +18,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
   repo_ref: v0.2.3
   workspace_path: gateway-monitoring/src/
-  preview_image_path: gateway-monitoring/GatewayMonitoring.png
 items_in_scope:
 - Notebook
 - Eventhouse

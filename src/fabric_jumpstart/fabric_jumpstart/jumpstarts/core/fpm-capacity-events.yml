@@ -17,7 +17,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
   repo_ref: v0.2.3
   workspace_path: capacity-events/src/
-  preview_image_path: capacity-events/CapacityEvents.png
 items_in_scope:
 - Notebook
 - Eventhouse

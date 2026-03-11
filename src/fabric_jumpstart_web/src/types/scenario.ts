@@ -17,7 +17,6 @@
 
 export class ScenarioSource {
   workspace_path: string = '';
-  preview_image_path: string = '';
   repo_url: string | undefined = undefined;
   repo_ref: string | undefined = undefined;
 
@@ -68,7 +67,6 @@ export class ScenarioCard {
   difficulty: string = '';
   tags: string[] = [];
   workloadTags: string[] = [];
-  previewImage: string = '';
   videoUrl: string = '';
   minutesToDeploy: number = 0;
   minutesToComplete: number = 0;

@@ -16,7 +16,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-rti-iq-workshops.git
   repo_ref: v0.1.1
   workspace_path: fabcon25-workshop/
-  preview_image_path: fabcon25-workshop/fabcon25-workshop.png
 items_in_scope: 
   - Notebook
   - Eventhouse

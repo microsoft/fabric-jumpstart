@@ -16,7 +16,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-rti-demos.git
   repo_ref: v0.1.8
   workspace_path: telecom-call-data-records/
-  preview_image_path: telecom-call-data-records/TelecomCallDataRecords.png
 items_in_scope:
 - Notebook
 - Eventhouse

@@ -19,7 +19,6 @@ source:
   repo_url: https://github.com/microsoft/fabric-analytics-roadshow-lab.git/
   repo_ref: v0.1.3
   workspace_path: workspace/
-  preview_image_path: assets/image-example.png
 items_in_scope:
 - Lakehouse
 - Warehouse

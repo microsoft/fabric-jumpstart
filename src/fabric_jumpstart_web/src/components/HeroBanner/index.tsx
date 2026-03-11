@@ -122,7 +122,7 @@ const HeroBanner = forwardRef<HTMLDivElement, BannerProps>(
           </div>
           <Typography type="desc" text={desc} className={styles.desc} />
           {codeSnippet && (
-            <div>
+            <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
               <div
                 style={{
                   display: 'inline-flex',

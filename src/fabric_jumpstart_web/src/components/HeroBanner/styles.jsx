@@ -6,11 +6,13 @@ export const useStyles = makeStyles({
   bannerContainer: {
     display: 'flex',
     marginBottom: spacingToken.spacing50,
-    justifyContent: 'space-between',
-    padding: '4% 8.5%',
+    justifyContent: 'flex-start',
+    gap: '40px',
+    alignItems: 'flex-start',
+    padding: '160px 8.5% 48px',
     boxSizing: 'border-box',
     [device.mobileAndTablet]: {
-      padding: `${spacingToken.spacing50} ${spacingToken.spacing0}`,
+      padding: '20px 5% 32px',
       flexDirection: 'column-reverse',
       alignItems: 'center',
     },
@@ -24,29 +26,23 @@ export const useStyles = makeStyles({
     justifyContent: 'center',
     maxWidth: '48%',
     minWidth: '48%',
-    marginRight: `calc(${spacingToken.spacing50} + ${spacingToken.spacing30})`,
+    marginRight: spacingToken.spacing0,
+    overflow: 'hidden',
     [device.mobileAndTablet]: {
       marginRight: spacingToken.spacing0,
-      width: 'auto',
       maxWidth: '100%',
-      minWidth: 'auto',
-      marginTop: `calc(${spacingToken.spacing50} + ${spacingToken.spacing40})`,
-    },
-    [device.tablet]: {
-      padding: `${spacingToken.spacing0} calc(${spacingToken.spacing50} + ${spacingToken.spacing30})`,
-    },
-    [device.mobile]: {
-      maxWidth: '100%',
-      marginRight: spacingToken.spacing10,
-      marginLeft: spacingToken.spacing10,
+      minWidth: '100%',
     },
   },
   imageContainer: {
     display: 'flex',
     justifyContent: 'center',
     transition: 'width 0.3s ease',
-    [device.mobile]: {
-      width: '95%',
+    maxWidth: '650px',
+    maxHeight: '650px',
+    [device.mobileAndTablet]: {
+      maxWidth: '400px',
+      maxHeight: '400px',
     },
   },
   headingContainer: {
@@ -118,10 +114,9 @@ export const useStyles = makeStyles({
     },
   },
   desc: {
-    minWidth: '75%',
-    maxWidth: '60%',
+    maxWidth: '100%',
     [device.mobileAndTablet]: {
-      minWidth: '100%',
+      maxWidth: '100%',
     },
   },
   dropsTextContainer: {
@@ -133,13 +128,19 @@ export const useStyles = makeStyles({
   },
   scenariosImgContainer: {
     width: '25%',
-    [device.mobile]: {
-      maxWidth: '90%',
+    maxWidth: '550px',
+    maxHeight: '550px',
+    [device.mobileAndTablet]: {
+      display: 'none',
     },
   },
   scenariosBannerContainer: {
-    padding: '4% 8.5%',
+    padding: '160px 8.5% 48px',
     marginBottom: spacingToken.spacing10,
+    [device.mobileAndTablet]: {
+      padding: '80px 5% 32px',
+      flexDirection: 'row',
+    },
   },
   dropsImgContainer: {
     width: '25%',

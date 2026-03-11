@@ -8,9 +8,9 @@ description: >-
 date_added: 02/03/2026
 include_in_listing: true
 workload_tags:
+- Real-Time Intelligence
 - Data Factory
 - Power BI
-- Real-Time Intelligence
 scenario_tags:
 - Monitoring
 type: Accelerator

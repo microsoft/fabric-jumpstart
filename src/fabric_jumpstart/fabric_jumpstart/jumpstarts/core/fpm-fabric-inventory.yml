@@ -8,8 +8,8 @@ description: >-
 date_added: 02/03/2026
 include_in_listing: true
 workload_tags:
-- Data Factory
 - Real-Time Intelligence
+- Data Factory
 scenario_tags:
 - Monitoring
 type: Accelerator

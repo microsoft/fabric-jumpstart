@@ -70,6 +70,11 @@ This pattern scales extremely well, because each Spark Job is guaranteed to own 
 
 ![How RocksDB on OneLake enables highly concurrent flushes across hundreds of Executor nodes with zero chances of update conflicts](images/stateful-stream-processing.png)
 
+| #   | Scenario                           | State Store to use | Why                                                                                                                         |
+| --- | ---------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Application with no stateful query | None               | Spark Streaming doesn't need a state store unless you have stateful operators (`GROUP BY`, `SUM` etc.)                      |
+| 2   | Application with stateful query    | RocksDB            | The HDFS-backed State Store Provider loads all data into memory, you can reach Garbage Collection (GC) pressure on the heap |
+
 ## Resources
 
 - [Spark Structured Streaming Programming guide](https://spark.apache.org/docs/latest/streaming/index.html)

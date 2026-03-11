@@ -197,7 +197,7 @@ export function enhanceDiagram(
         height:100%;width:100%;padding:0 4px;box-sizing:border-box;
         text-align:left;
       ">
-        <div style="font-weight:600;font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${isDark ? '#e0e0e0' : '#242424'}">${label}</div>
+        <div style="font-family:Consolas,'Courier New',monospace;font-weight:600;font-size:13px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${isDark ? '#e0e0e0' : '#242424'}">${label}</div>
         ${showSubtitles ? `<div style="font-weight:500;font-size:10px;line-height:1.2;color:${TYPE_COLOR};margin-top:2px">${typeName}</div>` : ''}
       </div>`;
 

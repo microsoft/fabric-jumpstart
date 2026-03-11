@@ -35,7 +35,7 @@ minutes_to_complete_jumpstart: 360
 video_url: ""
 difficulty: "Advanced"
 last_updated: "2026-02-21"
-architecture: |
+mermaid_diagram: |
   graph LR
     NB[workshop_emulator]:::Notebook --> ES[workshop_events]:::Eventstream
     ES --> EH[workshop_eventhouse]:::Eventhouse

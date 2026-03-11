@@ -25,8 +25,8 @@ export default function ScenarioPageClient({
 
   const hasContent = !!rawMarkdown;
 
-  // Use architecture from scenario data
-  const architectureDef = scenario?.architecture || undefined;
+  // Use mermaid_diagram from scenario data
+  const mermaid_diagramDef = scenario?.mermaid_diagram || undefined;
 
   return (
     <section
@@ -54,7 +54,7 @@ export default function ScenarioPageClient({
 
       {scenario ? (
         <>
-          <ScenarioOverview scenario={scenario} architecture={architectureDef} />
+          <ScenarioOverview scenario={scenario} mermaid_diagram={mermaid_diagramDef} />
           {hasContent && (
             <ScenarioContentSection
               rawMarkdown={rawMarkdown!}

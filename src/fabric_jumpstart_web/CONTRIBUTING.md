@@ -110,3 +110,31 @@ The script idempotently kills any existing server on the port, cleans the `.next
 ### Linux users
 
 The steps above, minus WSL should work as-is.
+
+## Regenerating Mermaid Diagrams
+
+Mermaid diagrams are pre-rendered as static SVGs (light and dark variants) and committed to `assets/images/diagrams/`. There are two ways to generate them:
+
+> **Important:** CI does not generate diagrams — it only copies committed SVGs from `assets/images/diagrams/` to `public/` during the build. Missing SVGs will result in broken images on the website.
+
+### Option 1: Batch Render Script (recommended)
+
+To regenerate all diagrams at once (requires Puppeteer/Chrome):
+
+```bash
+npm run render-diagrams
+```
+
+This reads the `mermaid_diagram` field from every jumpstart YAML and writes SVGs to `assets/images/diagrams/`.
+
+### Option 2: Diagram Generator Page
+
+Use the built-in web page — no extra dependencies required:
+
+1. Start the dev server: `./src/fabric_jumpstart_web/start-dev-server.sh`
+2. Go to [`https://jumpstart.fabric.microsoft.com/tools/diagram-generator`](https://jumpstart.fabric.microsoft.com/tools/diagram-generator)
+3. Paste the Mermaid syntax from the jumpstart's `mermaid_diagram` YAML field
+4. Enter the jumpstart's `logical_id` so that the files are downloaded with the right name
+5. Click **Download Light + Dark SVGs**
+6. Place both files in `assets/images/diagrams/` and commit them
+

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Pre-render Mermaid architecture diagrams to static SVG files.
+ * Pre-render Mermaid mermaid_diagram diagrams to static SVG files.
  *
  * Uses puppeteer to replicate the exact same rendering pipeline as the
  * client-side MermaidDiagram component: mermaid.render() → enhanceDiagram().
@@ -28,10 +28,47 @@ const JUMPSTARTS_DIR = path.resolve(
   'src/fabric_jumpstart/fabric_jumpstart/jumpstarts/core'
 );
 const OUTPUT_DIR = path.resolve(REPO_ROOT, 'assets/images/diagrams');
+const ICONS_JSON = path.join(WEB_ROOT, 'src/data/fabric-item-icons.json');
+
+/** Generate fabric-item-icons.json from @fabric-msft/svg-icons if stale/missing. */
+function ensureItemIconsJson(): void {
+  const iconsDir = path.resolve(WEB_ROOT, 'node_modules/@fabric-msft/svg-icons/dist/svg');
+  if (!fs.existsSync(iconsDir)) {
+    console.warn('  ⚠ @fabric-msft/svg-icons not installed — skipping icon generation');
+    return;
+  }
+
+  // Read FABRIC_ITEM_ICON_MAP from mermaidParser.ts
+  const parserSrc = fs.readFileSync(
+    path.join(WEB_ROOT, 'src/utils/mermaidParser.ts'),
+    'utf8'
+  );
+  const mapMatch = parserSrc.match(
+    /export const FABRIC_ITEM_ICON_MAP[^{]*(\{[\s\S]*?\n\})/
+  );
+  if (!mapMatch) throw new Error('Could not extract FABRIC_ITEM_ICON_MAP');
+  // eslint-disable-next-line no-eval
+  const iconMap = eval(`(${mapMatch[1]})`) as Record<string, string>;
+
+  const result: Record<string, string> = {};
+  for (const [itemType, svgFile] of Object.entries(iconMap)) {
+    const svgPath = path.join(iconsDir, svgFile);
+    if (fs.existsSync(svgPath)) {
+      const b64 = fs.readFileSync(svgPath).toString('base64');
+      result[itemType] = `data:image/svg+xml;base64,${b64}`;
+    } else {
+      console.warn(`  ⚠ Missing icon for ${itemType}: ${svgFile}`);
+    }
+  }
+
+  fs.mkdirSync(path.dirname(ICONS_JSON), { recursive: true });
+  fs.writeFileSync(ICONS_JSON, JSON.stringify(result, null, 2));
+  console.log(`  Generated fabric-item-icons.json (${Object.keys(result).length} icons)`);
+}
 
 interface JumpstartInfo {
   logicalId: string;
-  architecture: string;
+  mermaid_diagram: string;
 }
 
 function loadJumpstarts(): JumpstartInfo[] {
@@ -39,10 +76,10 @@ function loadJumpstarts(): JumpstartInfo[] {
   const results: JumpstartInfo[] = [];
   for (const file of files) {
     const raw = yaml.load(fs.readFileSync(file, 'utf8')) as Record<string, unknown>;
-    if (raw.architecture && raw.logical_id) {
+    if (raw.mermaid_diagram && raw.logical_id) {
       results.push({
         logicalId: raw.logical_id as string,
-        architecture: raw.architecture as string,
+        mermaid_diagram: raw.mermaid_diagram as string,
       });
     }
   }
@@ -141,7 +178,9 @@ async function buildEnhancePayload(): Promise<{
 }
 
 async function main(): Promise<void> {
-  console.log('🎨 Rendering Mermaid architecture diagrams...');
+  console.log('🎨 Rendering Mermaid mermaid_diagram diagrams...');
+
+  ensureItemIconsJson();
 
   const extraLibPath = ensureChromeLibs();
   if (extraLibPath) {
@@ -150,7 +189,7 @@ async function main(): Promise<void> {
   }
 
   const jumpstarts = loadJumpstarts();
-  console.log(`  Found ${jumpstarts.length} jumpstarts with architecture diagrams`);
+  console.log(`  Found ${jumpstarts.length} jumpstarts with mermaid_diagram diagrams`);
 
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
@@ -253,7 +292,7 @@ async function main(): Promise<void> {
 
             return container.innerHTML;
           },
-          js.architecture,
+          js.mermaid_diagram,
           isDark
         );
 

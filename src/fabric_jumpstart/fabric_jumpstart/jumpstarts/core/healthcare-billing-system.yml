@@ -33,7 +33,7 @@ minutes_to_complete_jumpstart: 5
 video_url: ""
 difficulty: "Beginner"
 last_updated: "2026-02-03"
-architecture: |
+mermaid_diagram: |
   graph LR
     NB[HealthcareBillingDataEmulator]:::Notebook --> ES[billing_events]:::Eventstream
     ES --> EH[billing_eventhouse]:::Eventhouse

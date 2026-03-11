@@ -36,7 +36,7 @@ minutes_to_complete_jumpstart: 30
 video_url: ""
 difficulty: "Advanced"
 last_updated: "2026-02-28"
-architecture: |
+mermaid_diagram: |
   graph LR
     ES[shipment_scan_events]:::Eventstream --> LH[sales_and_logistics]:::Lakehouse
     LH --> SJD[stream_all_zones]:::SparkJobDefinition

@@ -65,7 +65,7 @@ WORKLOAD_COLOR_MAP = {
 
 DEFAULT_WORKLOAD_COLORS = WORKLOAD_COLOR_MAP["Data Engineering"]
 
-# Maps Fabric item types to their parent workload for architecture diagram simplification
+# Maps Fabric item types to their parent workload for mermaid diagram simplification
 ITEM_WORKLOAD_MAP: Dict[str, str] = {
     "Notebook": "Data Engineering",
     "Lakehouse": "Data Engineering",

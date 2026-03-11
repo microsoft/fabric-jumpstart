@@ -213,12 +213,12 @@ function getDifficultyTooltip(difficulty: string): string {
 function CardHeader({
   scenario,
   isDark,
-  architecture,
+  mermaid_diagram,
   onExpandDiagram,
 }: {
   scenario: ScenarioCard;
   isDark: boolean;
-  architecture?: string;
+  mermaid_diagram?: string;
   onExpandDiagram?: () => void;
 }) {
   const primaryTag = scenario.workloadTags?.[0];
@@ -260,7 +260,7 @@ function CardHeader({
         }}
       />
       {/* Architecture diagram overlay */}
-      {architecture && (
+      {mermaid_diagram && (
         <div
           onClick={(e) => {
             e.preventDefault();
@@ -495,7 +495,7 @@ export default function ScenarioGrid() {
       ) : (
       <div className={styles.grid}>
         {filteredScenarios.map((scenario) => {
-          const architecture = scenario.architecture || undefined;
+          const mermaid_diagram = scenario.mermaid_diagram || undefined;
           return (
           <Link
             key={scenario.id}
@@ -503,7 +503,7 @@ export default function ScenarioGrid() {
             style={{ textDecoration: 'none' }}
           >
             <div className={styles.card}>
-              <CardHeader scenario={scenario} isDark={isDark} architecture={architecture} onExpandDiagram={() => setExpandedChart({ slug: scenario.slug, title: scenario.title })} />
+              <CardHeader scenario={scenario} isDark={isDark} mermaid_diagram={mermaid_diagram} onExpandDiagram={() => setExpandedChart({ slug: scenario.slug, title: scenario.title })} />
               <div className={styles.cardBody}>
                 {/* Pills above title: Core (if true), Type, Difficulty */}
                 <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '6px', marginBottom: '10px' }}>

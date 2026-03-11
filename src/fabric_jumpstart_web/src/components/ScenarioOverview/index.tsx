@@ -52,12 +52,12 @@ function hexToRgba(hex: string, alpha: number): string {
 function ScenarioHeader({
   scenario,
   isDark,
-  architecture,
+  mermaid_diagram,
   onExpandDiagram,
 }: {
   scenario: ScenarioCard;
   isDark: boolean;
-  architecture?: string;
+  mermaid_diagram?: string;
   onExpandDiagram?: () => void;
 }) {
   const primaryTag = scenario.workloadTags?.[0];
@@ -69,7 +69,7 @@ function ScenarioHeader({
   const primaryA = isDark ? 0.45 : 0.65;
   const secondaryA = isDark ? 0.55 : 0.5;
 
-  const headerHeight = architecture ? 240 : 120;
+  const headerHeight = mermaid_diagram ? 240 : 120;
 
   return (
     <div
@@ -112,7 +112,7 @@ function ScenarioHeader({
         }}
       />
 
-      {architecture ? (
+      {mermaid_diagram ? (
         /* Diagram in frosted-glass panel */
         <div
           onClick={onExpandDiagram}
@@ -220,7 +220,7 @@ function ScenarioHeader({
   );
 }
 
-export default function ScenarioOverview({ scenario, architecture }: { scenario: ScenarioCard; architecture?: string }) {
+export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenario: ScenarioCard; mermaid_diagram?: string }) {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
   const [copied, setCopied] = useState(false);
@@ -245,7 +245,7 @@ export default function ScenarioOverview({ scenario, architecture }: { scenario:
       overflow: 'hidden',
       marginBottom: '32px',
     }}>
-      <ScenarioHeader scenario={scenario} isDark={isDark} architecture={architecture} onExpandDiagram={() => setDiagramExpanded(true)} />
+      <ScenarioHeader scenario={scenario} isDark={isDark} mermaid_diagram={mermaid_diagram} onExpandDiagram={() => setDiagramExpanded(true)} />
       <div style={{ padding: '28px 32px' }}>
       {/* Title */}
       <h1 style={{
@@ -480,7 +480,7 @@ export default function ScenarioOverview({ scenario, architecture }: { scenario:
         </div>
       </div>
       </div>
-      {diagramExpanded && architecture && createPortal(
+      {diagramExpanded && mermaid_diagram && createPortal(
         <ExpandedModal slug={scenario.slug} title={scenario.title} onClose={() => setDiagramExpanded(false)} />,
         document.body,
       )}

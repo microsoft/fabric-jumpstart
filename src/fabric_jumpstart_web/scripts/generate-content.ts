@@ -95,7 +95,7 @@ function generateContentMd(scenario: ScenarioYml): string {
 
   // Include a sample image to prove relative image support
   md += `## Architecture\n\n`;
-  md += `![${title} architecture](./img/sample.png)\n\n`;
+  md += `![${title} mermaid_diagram](./img/sample.png)\n\n`;
 
   md += `## Description\n\n`;
   md += `${scenario.description}\n\n`;
@@ -314,7 +314,7 @@ function generateScenariosJson(scenarios: TaggedScenarioYml[]): ScenarioCard[] {
         body,
         core: s._core,
         isNew: isNewJumpstart(s.date_added),
-        architecture: s.architecture || '',
+        mermaid_diagram: s.mermaid_diagram || '',
       };
     });
 }
@@ -530,7 +530,7 @@ async function main(): Promise<void> {
   copyWorkloadIcons();
   console.log('  Copied workload icons to public/');
 
-  // Copy pre-rendered architecture diagrams to public/ for serving
+  // Copy pre-rendered mermaid_diagram diagrams to public/ for serving
   copyDiagrams();
   console.log('  Copied pre-rendered diagrams to public/');
 

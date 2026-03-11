@@ -13,30 +13,30 @@
  * SVG icon filenames in @fabric-msft/svg-icons.
  */
 export const FABRIC_ITEM_ICON_MAP: Record<string, string> = {
-  Notebook: 'notebook_20_item.svg',
-  Lakehouse: 'lakehouse_20_item.svg',
-  Environment: 'environment_20_item.svg',
-  SparkJobDefinition: 'spark_job_direction_20_item.svg',
-  VariableLibrary: 'variable_library_20_item.svg',
-  Eventhouse: 'event_house_20_item.svg',
-  Eventstream: 'eventstream_20_item.svg',
-  KQLDatabase: 'kql_database_20_item.svg',
-  KQLQueryset: 'kql_queryset_20_item.svg',
-  KQLDashboard: 'real_time_dashboard_20_item.svg',
-  Reflex: 'generic_placeholder_20_item.svg',
-  DataPipeline: 'pipeline_20_item.svg',
-  Dataflow: 'dataflow_gen2_20_item.svg',
-  CopyJob: 'copy_job_20_item.svg',
-  Warehouse: 'data_warehouse_20_item.svg',
-  SQLEndpoint: 'data_warehouse_20_item.svg',
-  MirroredDatabase: 'mirrored_generic_database_20_item.svg',
-  SQLDatabase: 'sql_database_20_item.svg',
-  Report: 'report_20_item.svg',
-  SemanticModel: 'semantic_model_20_item.svg',
-  DataAgent: 'data_agent_20_item.svg',
-  MLExperiment: 'experiments_20_item.svg',
-  UserDataFunction: 'user_data_function_20_item.svg',
-  GraphQLApi: 'generic_placeholder_20_item.svg',
+  Notebook: 'notebook_32_item.svg',
+  Lakehouse: 'lakehouse_32_item.svg',
+  Environment: 'environment_32_item.svg',
+  SparkJobDefinition: 'spark_job_direction_32_item.svg',
+  VariableLibrary: 'variable_library_32_item.svg',
+  Eventhouse: 'event_house_32_item.svg',
+  Eventstream: 'eventstream_32_item.svg',
+  KQLDatabase: 'kql_database_32_item.svg',
+  KQLQueryset: 'kql_queryset_32_item.svg',
+  KQLDashboard: 'real_time_dashboard_32_item.svg',
+  Reflex: 'generic_placeholder_32_item.svg',
+  DataPipeline: 'pipeline_32_item.svg',
+  Dataflow: 'dataflow_gen2_32_item.svg',
+  CopyJob: 'copy_job_32_item.svg',
+  Warehouse: 'data_warehouse_32_item.svg',
+  SQLEndpoint: 'data_warehouse_32_item.svg',
+  MirroredDatabase: 'mirrored_generic_database_32_item.svg',
+  SQLDatabase: 'sql_database_32_item.svg',
+  Report: 'report_32_item.svg',
+  SemanticModel: 'semantic_model_32_item.svg',
+  DataAgent: 'ai_skills_32_item.svg',
+  MLExperiment: 'experiments_32_item.svg',
+  UserDataFunction: 'user_data_function_32_item.svg',
+  GraphQLApi: 'generic_placeholder_32_item.svg',
 };
 
 export const ITEM_WORKLOAD_MAP: Record<string, string> = {
@@ -57,16 +57,16 @@ export const ITEM_WORKLOAD_MAP: Record<string, string> = {
   MountedDataFactory: 'Data Factory',
   ApacheAirflowJob: 'Data Factory',
   Warehouse: 'Data Warehouse',
-  SQLEndpoint: 'Data Warehouse',
-  MirroredDatabase: 'Data Warehouse',
+  SQLEndpoint: 'Data Engineering',
+  MirroredDatabase: 'Data Factory',
   SQLDatabase: 'SQL Database',
   Report: 'Power BI',
   SemanticModel: 'Power BI',
   OrgApp: 'Power BI',
   MLExperiment: 'Data Science',
   DataAgent: 'Data Science',
-  UserDataFunction: 'Data Science',
-  GraphQLApi: 'Data Engineering',
+  UserDataFunction: 'Data Engineering',
+  GraphQLApi: 'Real-Time Intelligence',
 };
 
 export interface WorkloadFlow {
@@ -77,7 +77,7 @@ export interface WorkloadFlow {
 export function parseMermaidToWorkloadFlow(mermaidDef: string): WorkloadFlow {
   // Extract node definitions: nodeId[label]:::ItemType
   const nodeClassMap: Record<string, string> = {};
-  const nodeDefRegex = /([A-Za-z_]\w*)\[([^\]]*)\](?:::(\w+))?/g;
+  const nodeDefRegex = /([A-Za-z_]\w*)\[([^\]]*)\](?:::([^\s;]+))?/g;
   let match: RegExpExecArray | null;
 
   while ((match = nodeDefRegex.exec(mermaidDef)) !== null) {
@@ -88,7 +88,7 @@ export function parseMermaidToWorkloadFlow(mermaidDef: string): WorkloadFlow {
   }
 
   // Also capture bare node:::ItemType references (without brackets)
-  const bareNodeRegex = /\b([A-Za-z_]\w*):::(\w+)/g;
+  const bareNodeRegex = /\b([A-Za-z_]\w*):::([^\s;]+)/g;
   while ((match = bareNodeRegex.exec(mermaidDef)) !== null) {
     const [, nodeId, itemType] = match;
     if (!nodeClassMap[nodeId]) {

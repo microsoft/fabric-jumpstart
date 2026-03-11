@@ -4,9 +4,11 @@
 /docs
 /public/docs
 /public/content
+/public/images
 /src/data/side-menu.json
 /src/data/scenarios.json
 /src/data/uhf.json
+/src/data/fabric-item-icons.json
 *.tsbuildinfo
 next-env.d.ts
 coverage/

@@ -8,6 +8,37 @@
  * groups, and derives deduplicated workload-to-workload edges.
  */
 
+/**
+ * Maps Fabric item class names (used as :::ClassName in Mermaid) to their
+ * SVG icon filenames in @fabric-msft/svg-icons.
+ */
+export const FABRIC_ITEM_ICON_MAP: Record<string, string> = {
+  Notebook: 'notebook_20_item.svg',
+  Lakehouse: 'lakehouse_20_item.svg',
+  Environment: 'environment_20_item.svg',
+  SparkJobDefinition: 'spark_job_direction_20_item.svg',
+  VariableLibrary: 'variable_library_20_item.svg',
+  Eventhouse: 'event_house_20_item.svg',
+  Eventstream: 'eventstream_20_item.svg',
+  KQLDatabase: 'kql_database_20_item.svg',
+  KQLQueryset: 'kql_queryset_20_item.svg',
+  KQLDashboard: 'real_time_dashboard_20_item.svg',
+  Reflex: 'generic_placeholder_20_item.svg',
+  DataPipeline: 'pipeline_20_item.svg',
+  Dataflow: 'dataflow_gen2_20_item.svg',
+  CopyJob: 'copy_job_20_item.svg',
+  Warehouse: 'data_warehouse_20_item.svg',
+  SQLEndpoint: 'data_warehouse_20_item.svg',
+  MirroredDatabase: 'mirrored_generic_database_20_item.svg',
+  SQLDatabase: 'sql_database_20_item.svg',
+  Report: 'report_20_item.svg',
+  SemanticModel: 'semantic_model_20_item.svg',
+  DataAgent: 'data_agent_20_item.svg',
+  MLExperiment: 'experiments_20_item.svg',
+  UserDataFunction: 'user_data_function_20_item.svg',
+  GraphQLApi: 'generic_placeholder_20_item.svg',
+};
+
 export const ITEM_WORKLOAD_MAP: Record<string, string> = {
   Notebook: 'Data Engineering',
   Lakehouse: 'Data Engineering',

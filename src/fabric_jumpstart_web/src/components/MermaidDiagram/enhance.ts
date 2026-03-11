@@ -1,9 +1,12 @@
 /**
  * Shared SVG enhancement for Mermaid architecture diagrams.
- * Injects workload icons, gradient fills, drop shadows, and styled edges.
+ * Injects Fabric item icons, gradient fills, drop shadows, and styled edges.
  */
 import { ITEM_WORKLOAD_MAP } from '@utils/mermaidParser';
 import workloadColorsData from '@data/workload-colors.json';
+import itemIconData from '@data/fabric-item-icons.json';
+
+const itemIconDataUris = itemIconData as Record<string, string>;
 
 export interface WorkloadColor {
   primary: string;
@@ -22,6 +25,7 @@ interface NodeInfo {
   itemType: string;
   workload: string;
   wc: WorkloadColor;
+  itemIcon: string | null;
 }
 
 function extractNodeInfo(chart: string): Map<string, NodeInfo> {
@@ -34,7 +38,8 @@ function extractNodeInfo(chart: string): Map<string, NodeInfo> {
     if (!workload) continue;
     const wc = workloadColors[workload];
     if (!wc) continue;
-    nodes.set(label.trim(), { nodeId, label: label.trim(), itemType, workload, wc });
+    const itemIcon = itemIconDataUris[itemType] || null;
+    nodes.set(label.trim(), { nodeId, label: label.trim(), itemType, workload, wc, itemIcon });
   }
   return nodes;
 }
@@ -172,7 +177,7 @@ export function enhanceDiagram(
       stroke: info.wc.accent, 'stroke-width': '1.5',
     }));
     g.appendChild(svgEl('image', {
-      href: info.wc.icon,
+      href: info.itemIcon || info.wc.icon,
       width: String(ICON), height: String(ICON),
       x: String(cx - ICON / 2), y: String(cy - ICON / 2),
     }));

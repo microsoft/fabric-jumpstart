@@ -13,6 +13,7 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { glob } from 'glob';
 import type { ScenarioYml, ScenarioCard } from '../src/types/scenario';
+import { FABRIC_ITEM_ICON_MAP } from '../src/utils/mermaidParser';
 
 const JUMPSTARTS_BASE_DIR = path.resolve(
   __dirname,
@@ -30,6 +31,14 @@ const WORKLOAD_ICONS_DIR = path.resolve(
 const WORKLOAD_ICONS_PUBLIC_DIR = path.resolve(
   __dirname,
   '../public/images/tags/workload'
+);
+const DIAGRAMS_DIR = path.resolve(
+  __dirname,
+  '../../../assets/images/diagrams'
+);
+const DIAGRAMS_PUBLIC_DIR = path.resolve(
+  __dirname,
+  '../public/images/diagrams'
 );
 
 interface SideMenuItem {
@@ -448,6 +457,43 @@ function copyWorkloadIcons(): void {
   }
 }
 
+function copyDiagrams(): void {
+  if (!fs.existsSync(DIAGRAMS_DIR)) return;
+  fs.mkdirSync(DIAGRAMS_PUBLIC_DIR, { recursive: true });
+  const files = fs.readdirSync(DIAGRAMS_DIR).filter((f) => f.endsWith('.svg'));
+  for (const file of files) {
+    fs.copyFileSync(
+      path.join(DIAGRAMS_DIR, file),
+      path.join(DIAGRAMS_PUBLIC_DIR, file)
+    );
+  }
+}
+
+function generateFabricItemIcons(): void {
+  const iconsDir = path.resolve(
+    __dirname,
+    '../node_modules/@fabric-msft/svg-icons/dist/svg'
+  );
+
+  const result: Record<string, string> = {};
+
+  for (const [itemType, svgFile] of Object.entries(FABRIC_ITEM_ICON_MAP)) {
+    const svgPath = path.join(iconsDir, svgFile);
+    if (fs.existsSync(svgPath)) {
+      const svgContent = fs.readFileSync(svgPath);
+      const b64 = svgContent.toString('base64');
+      result[itemType] = `data:image/svg+xml;base64,${b64}`;
+    } else {
+      console.warn(`  ⚠ Missing icon for ${itemType}: ${svgFile}`);
+    }
+  }
+
+  fs.writeFileSync(
+    path.join(DATA_DIR, 'fabric-item-icons.json'),
+    JSON.stringify(result, null, 2)
+  );
+}
+
 async function main(): Promise<void> {
   console.log('🔧 Generating website content from scenario YAMLs...');
 
@@ -484,9 +530,17 @@ async function main(): Promise<void> {
   copyWorkloadIcons();
   console.log('  Copied workload icons to public/');
 
+  // Copy pre-rendered architecture diagrams to public/ for serving
+  copyDiagrams();
+  console.log('  Copied pre-rendered diagrams to public/');
+
   // Copy scenario content images to public/ for serving
   copyScenarioContentAssets();
   console.log('  Copied scenario content assets to public/');
+
+  // Generate Fabric item icon data URIs from @fabric-msft/svg-icons
+  generateFabricItemIcons();
+  console.log('  Generated fabric-item-icons.json');
 
   // Fetch Microsoft UHF footer
   await generateUhfData();

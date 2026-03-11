@@ -111,7 +111,7 @@ export function enhanceDiagram(
   let gi = 0;
   const PAD = Math.round(ICON * 0.46);
   const EXTRA_W = ICON + PAD + 8;
-  const EXTRA_H = 18; // extra height for item-type line inside the box
+  const EXTRA_H = 8; // extra height for item-type line inside the box
   const TYPE_COLOR = isDark ? 'rgba(180,190,200,0.7)' : 'rgba(80,90,100,0.75)';
 
   for (const g of root.querySelectorAll('g.node')) {
@@ -166,16 +166,11 @@ export function enhanceDiagram(
       shape.setAttribute('y', String(box.y - EXTRA_H / 2));
     }
 
-    // Icon badge — vertically centered in the expanded box
+    // Icon — vertically centered in the expanded box
     const nodeH = showSubtitles ? box.height + EXTRA_H : box.height;
     const nodeY = showSubtitles ? box.y - EXTRA_H / 2 : box.y;
     const cx = box.x - EXTRA_W / 2 + PAD + ICON / 2;
     const cy = nodeY + nodeH / 2;
-    g.appendChild(svgEl('circle', {
-      cx: String(cx), cy: String(cy), r: String(ICON / 2 + 5),
-      fill: isDark ? `rgba(${r},${gv},${b},0.28)` : `rgba(${r},${gv},${b},0.14)`,
-      stroke: info.wc.accent, 'stroke-width': '1.5',
-    }));
     g.appendChild(svgEl('image', {
       href: info.itemIcon || info.wc.icon,
       width: String(ICON), height: String(ICON),

@@ -28,7 +28,7 @@ owner_email: mdrrahman@microsoft.com
 minutes_to_deploy: 3
 minutes_to_complete_jumpstart: 15
 video_url: "https://www.youtube.com/watch?v=qQ4EK0xTHA4"
-difficulty: "Intermediate"
+difficulty: Intermediate
 last_updated: "2026-03-07"
 mermaid_diagram: |
   graph LR

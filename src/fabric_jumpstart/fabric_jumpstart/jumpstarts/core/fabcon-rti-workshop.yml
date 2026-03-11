@@ -32,7 +32,7 @@ owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 4
 minutes_to_complete_jumpstart: 360
 video_url: ""
-difficulty: "Advanced"
+difficulty: Advanced
 last_updated: "2026-02-21"
 mermaid_diagram: |
   graph LR

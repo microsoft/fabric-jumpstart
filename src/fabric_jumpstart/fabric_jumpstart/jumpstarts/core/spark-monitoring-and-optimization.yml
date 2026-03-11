@@ -35,7 +35,7 @@ owner_email: FabricJumpstart.SparkRTIMonitoring@microsoft.com
 minutes_to_deploy: 3
 minutes_to_complete_jumpstart: 20
 video_url: ""
-difficulty: "Intermediate"
+difficulty: Intermediate
 last_updated: "2026-03-03"
 mermaid_diagram: |
   graph LR

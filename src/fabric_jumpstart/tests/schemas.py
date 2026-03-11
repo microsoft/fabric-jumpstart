@@ -17,22 +17,39 @@ from fabric_jumpstart.constants import (
 
 class JumpstartSource(BaseModel):
     """Source configuration for a jumpstart."""
+
     workspace_path: str
     preview_image_path: str
     repo_url: Optional[str] = None
     repo_ref: Optional[str] = None
+    files_source_path: Optional[str] = None
+    files_destination_lakehouse: Optional[str] = None
+    files_destination_path: Optional[str] = None
 
     @model_validator(mode="after")
     def validate_repo_fields(self):
         if self.repo_url:
             ref = (self.repo_ref or "").strip()
             if not ref:
-                raise ValueError("repo_ref, a tag of the repository, must be provided when repo_url is set")
+                raise ValueError(
+                    "repo_ref, a tag of the repository, must be provided when repo_url is set"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def validate_files_upload_fields(self):
+        has_source = bool((self.files_source_path or "").strip())
+        has_lakehouse = bool((self.files_destination_lakehouse or "").strip())
+        if has_source != has_lakehouse:
+            raise ValueError(
+                "files_source_path and files_destination_lakehouse must both be provided or both be omitted"
+            )
         return self
 
 
 class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""
+
     model_config = ConfigDict(extra="forbid")
 
     id: int
@@ -40,7 +57,9 @@ class Jumpstart(BaseModel):
     name: str
     description: str
     date_added: str
-    include_in_listing: Optional[bool] = True # excluded from listing if False or not set
+    include_in_listing: Optional[bool] = (
+        True  # excluded from listing if False or not set
+    )
     workload_tags: List[str]
     scenario_tags: List[str]
     type: Optional[str] = "Accelerator"
@@ -91,7 +110,7 @@ class Jumpstart(BaseModel):
         except Exception:
             raise ValueError("date_added must be a valid date in MM/DD/YYYY format")
         return value
-    
+
     @field_validator("owner_email")
     @classmethod
     def validate_owner_email(cls, value: str):
@@ -151,7 +170,7 @@ class Jumpstart(BaseModel):
                 f"Unknown jumpstart_type: {value}. Allowed values: {allowed_display}."
             )
         return value
-    
+
     @field_validator("items_in_scope")
     @classmethod
     def validate_items_in_scope(cls, value: List[str]):
@@ -165,7 +184,9 @@ class Jumpstart(BaseModel):
                 )
         return value
 
-    @field_validator("minutes_to_complete_jumpstart", "minutes_to_deploy", mode="before")
+    @field_validator(
+        "minutes_to_complete_jumpstart", "minutes_to_deploy", mode="before"
+    )
     @classmethod
     def coerce_minutes(cls, value):
         if value in (None, ""):

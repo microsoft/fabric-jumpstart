@@ -11,7 +11,7 @@ This is the most common contribution. You only need to add a single YAML file, r
 3. Keep Jumpstarts self-contained: deployments must run through `jumpstart.install()` without manual patching.
 4. Please read [STANDARDS.md](STANDARDS.md) for Jumpstart design and quality expectations.
 5. Follow the steps in [Setup of a New Jumpstart](#setup-of-a-new-jumpstart) to get things set up, tested, and merged in.
-5. For upgrading existing Jumpstarts, follow the [Upgrading an Existing Jumpstart](#updating-an-existing-jumpstart) guide.
+6. For upgrading existing Jumpstarts, follow the [Upgrading an Existing Jumpstart](#updating-an-existing-jumpstart) guide.
 
 ## Development Setup
 
@@ -29,15 +29,17 @@ $GIT_ROOT = git rev-parse --show-toplevel
 This installs [uv](https://docs.astral.sh/uv/) and the following VS Code extensions: Ruff, Pylance, and Jupyter. After installation it runs `uv sync --all-groups` so you are all set to start contributing!
 
 ## Development
+
 See the [/src/fabric_jumpstart/dev/test_example.ipynb](./dev/test_example.ipynb) notebook for an example of how you can interactively test your Jumpstart.
+
 - Develop in notebooks or `.py` files; restart the Python kernel after code changes so the notebook picks up fresh imports. Or, use `importlib` to reload specific modules for agile testing:
-    ```python
-    import importlib
-    import fabric_jumpstart as jumpstart
-    importlib.reload(jumpstart.core)
-    importlib.reload(jumpstart.utils)
-    importlib.reload(jumpstart)
-    ```
+  ```python
+  import importlib
+  import fabric_jumpstart as jumpstart
+  importlib.reload(jumpstart.core)
+  importlib.reload(jumpstart.utils)
+  importlib.reload(jumpstart)
+  ```
 
 ## Quality Checks
 
@@ -69,6 +71,7 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
    - Any data stores that need to be shared across Jumpstarts (i.e. for modules of an overall solution like Fabric Platform Monitoring) must be stored in a top-level folder called `shared-data-stores`. Otherwise, the Jumpstarts should self contain all Items in the single top-level folder (e.g. `spark-monitoring`).
    - Fabric items must not contain a solution prefix; Jumpstart can optionally add an automatic prefix at deployment (e.g., `js1_sm__`) so multiple Jumpstarts can coexist in the event of conflicting Item names. By default, no prefixing takes place, users need to opt-in to this upon being notified of Item name conflicts.
    - Do **not** use spaces in item names. Item names must either be `lower_case_snake_case` or `ProperCamelCase`. Both of these options accomodate all known naming restrictions.
+   - If your Jumpstart needs small data files uploaded to a Lakehouse's Files area, include them in the source repo and configure the `files_source_path`, `files_destination_lakehouse`, and (optionally) `files_destination_path` fields in the YAML `source` block. The upload runs automatically after item deployment.
 1. Commit items to the repo.
 1. Fork the fabric-jumpstart repo.
 1. Create a new YAML file in `src/fabric_jumpstart/fabric_jumpstart/jumpstarts/community/` (or `core/` for Microsoft-sponsored jumpstarts):
@@ -84,7 +87,10 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
      - `workload_tags`: List of valid workload tags
      - `scenario_tags`: List of valid scenario tags
      - `type`: One of: Tutorial, Demo, Accelerator
-     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`, `preview_image_path`
+     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`, `preview_image_path`, and optional file upload fields:
+       - `files_source_path` _(optional)_: Relative path within the repo to a file or folder to upload to a Lakehouse's Files area (e.g., `retail-sales/data/`)
+       - `files_destination_lakehouse` _(optional)_: Name of the target Lakehouse (must be deployed by the jumpstart). Required if `files_source_path` is set.
+       - `files_destination_path` _(optional)_: Destination path within the Lakehouse Files area (defaults to root if omitted)
      - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
      - `entry_point`: Either a URL or `<name>.<item_type>` format
      - `owner_email`: Valid email address

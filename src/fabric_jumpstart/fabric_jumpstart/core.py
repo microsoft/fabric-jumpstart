@@ -12,9 +12,10 @@ from .ui import ConflictUI, render_install_status_html, render_jumpstart_list
 
 logger = logging.getLogger(__name__)
 
+
 class jumpstart:
     """Main jumpstart interface for discovering and installing jumpstarts."""
-    
+
     def __init__(self):
         """Initialize jumpstart with registry."""
         self._registry_manager = JumpstartRegistry()
@@ -28,41 +29,49 @@ class jumpstart:
         """Display all available jumpstarts."""
         print("Available jumpstarts:")
         for j in self._registry:
-            if j.get('include_in_listing', True):
-                logical_id = j.get('logical_id', j.get('id', 'unknown'))
-                numeric_id = j.get('id', '?')
-                print(f"  • {logical_id} (#{numeric_id}): {j.get('name', 'Unknown')} - {j.get('description', 'No description')}")
+            if j.get("include_in_listing", True):
+                logical_id = j.get("logical_id", j.get("id", "unknown"))
+                numeric_id = j.get("id", "?")
+                print(
+                    f"  • {logical_id} (#{numeric_id}): {j.get('name', 'Unknown')} - {j.get('description', 'No description')}"
+                )
 
     def list(self, **kwargs):
         """Display an interactive HTML UI of available jumpstarts."""
         from IPython.display import HTML, display
-        
+
         # Get the instance variable name dynamically
         instance_name = self._get_instance_name()
-        
+
         # Filter jumpstarts that should be listed
         show_unlisted = kwargs.get("show_unlisted", False)
-        jumpstarts = [j for j in self._registry if j.get("include_in_listing", True) or show_unlisted]
-        
+        jumpstarts = [
+            j
+            for j in self._registry
+            if j.get("include_in_listing", True) or show_unlisted
+        ]
+
         # Determine NEW threshold (60 days ago)
         new_threshold = datetime.now() - timedelta(days=60)
-        
+
         # Mark and sort jumpstarts
         for j in jumpstarts:
             try:
-                date_added = datetime.strptime(j['date_added'], "%m/%d/%Y")
-                j['is_new'] = date_added >= new_threshold
+                date_added = datetime.strptime(j["date_added"], "%m/%d/%Y")
+                j["is_new"] = date_added >= new_threshold
             except (ValueError, KeyError):
-                j['is_new'] = False
-        
+                j["is_new"] = False
+
         # Sort: NEW first, then numeric id, then logical_id for stability
-        jumpstarts.sort(key=lambda x: (not x['is_new'], x.get('id', 0), x.get('logical_id', '')))
-        
+        jumpstarts.sort(
+            key=lambda x: (not x["is_new"], x.get("id", 0), x.get("logical_id", ""))
+        )
+
         # Group by scenario, workload, and type
         grouped_scenario = {}
         grouped_workload = {}
         grouped_type = {}
-        
+
         for j in jumpstarts:
             # Group by scenario
             scenario_tags = j.get("scenario_tags", ["Uncategorized"])
@@ -70,7 +79,7 @@ class jumpstart:
                 if tag not in grouped_scenario:
                     grouped_scenario[tag] = []
                 grouped_scenario[tag].append(j)
-            
+
             # Group by workload
             workload_tags = j.get("workload_tags", ["Uncategorized"])
             for tag in workload_tags:
@@ -80,15 +89,18 @@ class jumpstart:
 
             type_tag = j.get("type") or "Unspecified"
             grouped_type.setdefault(type_tag, []).append(j)
-        
+
         # Generate and display HTML
-        html = render_jumpstart_list(grouped_scenario, grouped_workload, grouped_type, instance_name)
+        html = render_jumpstart_list(
+            grouped_scenario, grouped_workload, grouped_type, instance_name
+        )
         display(HTML(html))
-    
+
     def _get_instance_name(self):
         """Get the variable name of this jumpstart instance."""
         import inspect
         import re
+
         current = inspect.currentframe()
         caller = current.f_back if current else None
 
@@ -109,21 +121,27 @@ class jumpstart:
                 for var_name, var_value in scope.items():
                     if var_name == "self":
                         continue
-                    if var_value is self and not var_name.startswith('_'):
+                    if var_value is self and not var_name.startswith("_"):
                         instance_names.add(var_name)
                     # Handle "import fabric_jumpstart as js" where js.jumpstart is the instance
                     try:
-                        if inspect.ismodule(var_value) and getattr(var_value, "jumpstart", None) is self:
+                        if (
+                            inspect.ismodule(var_value)
+                            and getattr(var_value, "jumpstart", None) is self
+                        ):
                             module_aliases.add(var_name)
                     except Exception:
                         # Best-effort alias detection; ignore inspection issues
                         pass
 
-        logger.debug(f"Found instance names: {instance_names}; module aliases: {module_aliases}")
+        logger.debug(
+            f"Found instance names: {instance_names}; module aliases: {module_aliases}"
+        )
 
         # Parse the calling line to see which name was used (favor outer frames first)
         try:
             import linecache
+
             for frame in frames:
                 if not frame or not frame.f_code:
                     continue
@@ -134,9 +152,9 @@ class jumpstart:
                 logger.debug(f"Parsing line: {line}")
 
                 patterns = [
-                    r'(\w+)\.list\s*\(',
-                    r'(\w+)\._get_instance_name\s*\(',
-                    r'(\w+)\.install\s*\(',
+                    r"(\w+)\.list\s*\(",
+                    r"(\w+)\._get_instance_name\s*\(",
+                    r"(\w+)\.install\s*\(",
                 ]
 
                 for pattern in patterns:
@@ -144,7 +162,10 @@ class jumpstart:
                     if match:
                         calling_var = match.group(1)
                         logger.debug(f"Found calling variable: {calling_var}")
-                        if calling_var in instance_names or calling_var in module_aliases:
+                        if (
+                            calling_var in instance_names
+                            or calling_var in module_aliases
+                        ):
                             logger.debug(f"Using matched variable name: {calling_var}")
                             return calling_var
 
@@ -190,7 +211,7 @@ class jumpstart:
 
         instance_name = self._get_instance_name()
         installer = JumpstartInstaller(config, workspace_id, instance_name, **kwargs)
-        
+
         # Setup state for rendering
         unattended = installer.unattended
         log_buffer = installer.log_buffer
@@ -199,19 +220,21 @@ class jumpstart:
         live_rendering = False
         conflict_already_rendered = False
 
-        def _update_live(status_label='installing', entry=None, err=None, extra_html=None):
+        def _update_live(
+            status_label="installing", entry=None, err=None, extra_html=None
+        ):
             """Update live display with current status."""
             if not live_handle or HTML_cls is None:
                 return
             html = render_install_status_html(
                 status=status_label,
-                jumpstart_name=config.get('name', name),
-                type=config.get('type', '').lower(),
+                jumpstart_name=config.get("name", name),
+                type=config.get("type", "").lower(),
                 workspace_id=installer.workspace_id,
                 entry_point=entry,
-                minutes_complete=config.get('minutes_to_complete_jumpstart'),
-                minutes_deploy=config.get('minutes_to_deploy'),
-                docs_uri=config.get('jumpstart_docs_uri'),
+                minutes_complete=config.get("minutes_to_complete_jumpstart"),
+                minutes_deploy=config.get("minutes_to_deploy"),
+                docs_uri=config.get("jumpstart_docs_uri"),
                 logs=log_buffer,
                 error_message=err,
                 extra_html=extra_html,
@@ -227,158 +250,177 @@ class jumpstart:
             if not unattended:
                 from IPython.display import HTML as _HTML
                 from IPython.display import display
+
                 HTML_cls = _HTML
-                live_handle = display(_HTML("<div>Starting install...</div>"), display_id=True)
+                live_handle = display(
+                    _HTML("<div>Starting install...</div>"), display_id=True
+                )
                 live_rendering = True
-                _update_live(status_label='installing')
+                _update_live(status_label="installing")
         except Exception:
             live_handle = None
             HTML_cls = None
             live_rendering = False
 
         # Setup log capture
-        current_status = {'label': 'installing', 'entry': None}  # Track current status
-        
+        current_status = {"label": "installing", "entry": None}  # Track current status
+
         def on_emit():
             # Only update if still in installing state (don't update_existing error/conflict/success)
-            if current_status['label'] == 'installing':
-                _update_live(status_label='installing', entry=None)
-        
+            if current_status["label"] == "installing":
+                _update_live(status_label="installing", entry=None)
+
         # Capture logs from fabric-cicd and fabric_jumpstart
         target_loggers = [
-            logging.getLogger('fabric_cicd'),
-            logging.getLogger('fabric_jumpstart'),
+            logging.getLogger("fabric_cicd"),
+            logging.getLogger("fabric_jumpstart"),
             logging.getLogger(__name__),
         ]
-        
-        with log_capture_context(log_buffer, target_loggers, on_emit=on_emit, debug=installer.debug_logs):
+
+        with log_capture_context(
+            log_buffer, target_loggers, on_emit=on_emit, debug=installer.debug_logs
+        ):
             try:
                 # Phase 1: Validate and prepare
                 installer.validate()
                 installer.prepare_workspace()
                 installer.initialize_workspace_manager()
-                
+
                 # Phase 2: Check for conflicts
-                planned_items_base, existing_items, conflicts, had_conflicts = installer.check_conflicts()
-                
+                planned_items_base, existing_items, conflicts, had_conflicts = (
+                    installer.check_conflicts()
+                )
+
                 # Phase 3: Resolve conflicts
                 resolved_prefix, remaining_conflicts = installer.resolve_conflicts(
-                    planned_items_base,
-                    existing_items,
-                    conflicts
+                    planned_items_base, existing_items, conflicts
                 )
-                
+
                 # If conflicts remain unresolved, render UI and fail
                 if remaining_conflicts:
                     conflict_html = ConflictUI.render_conflict_html(
-                        remaining_conflicts,
-                        instance_name,
-                        name,
-                        installer.workspace_id
+                        remaining_conflicts, instance_name, name, installer.workspace_id
                     )
-                    
+
                     if unattended:
-                        raise RuntimeError(f"Conflicting items detected: {', '.join(remaining_conflicts)}")
-                    
+                        raise RuntimeError(
+                            f"Conflicting items detected: {', '.join(remaining_conflicts)}"
+                        )
+
                     # Update live display with conflict UI
-                    current_status['label'] = 'conflict'  # Prevent on_emit from overwriting
+                    current_status["label"] = (
+                        "conflict"  # Prevent on_emit from overwriting
+                    )
                     _update_live(
-                        status_label='conflict',
-                        entry=config.get('entry_point'),
+                        status_label="conflict",
+                        entry=config.get("entry_point"),
                         err=None,
-                        extra_html=conflict_html
+                        extra_html=conflict_html,
                     )
                     conflict_already_rendered = True
-                    
+
                     # Raise error to mark cell as failed
-                    raise RuntimeError(f"Conflicting items detected: {', '.join(remaining_conflicts)}")
-                
+                    raise RuntimeError(
+                        f"Conflicting items detected: {', '.join(remaining_conflicts)}"
+                    )
+
                 # Phase 4: Apply prefix to files
                 installer.apply_prefix_to_files(resolved_prefix)
-                
+
                 # Phase 5: Deploy
-                logger.info(f"Deploying items from {installer.temp_workspace_path} to workspace '{installer.workspace_id}'")
+                logger.info(
+                    f"Deploying items from {installer.temp_workspace_path} to workspace '{installer.workspace_id}'"
+                )
                 target_ws = installer.deploy()
                 logger.info(f"Successfully installed '{name}'")
-                
+
+                # Phase 5.5: Upload files to lakehouse (if configured)
+                installer.upload_files(target_ws, resolved_prefix)
+
                 # Phase 6: Generate entry URL
                 entry_url = installer.generate_entry_url(target_ws, resolved_prefix)
-                
+
                 # Render success
-                current_status['label'] = 'success'  # Prevent on_emit from overwriting
+                current_status["label"] = "success"  # Prevent on_emit from overwriting
                 status_html = render_install_status_html(
-                    status='success',
-                    jumpstart_name=config.get('name', name),
-                    type=config.get('type', '').lower(),
+                    status="success",
+                    jumpstart_name=config.get("name", name),
+                    type=config.get("type", "").lower(),
                     workspace_id=installer.workspace_id,
                     entry_point=entry_url,
-                    minutes_complete=config.get('minutes_to_complete_jumpstart'),
-                    minutes_deploy=config.get('minutes_to_deploy'),
-                    docs_uri=config.get('jumpstart_docs_uri'),
+                    minutes_complete=config.get("minutes_to_complete_jumpstart"),
+                    minutes_deploy=config.get("minutes_to_deploy"),
+                    docs_uri=config.get("jumpstart_docs_uri"),
                     logs=log_buffer,
                 )
-                
-                _update_live(status_label='success', entry=entry_url)
-                
+
+                _update_live(status_label="success", entry=entry_url)
+
                 if unattended:
                     print(f"Installed '{name}' to workspace '{installer.workspace_id}'")
                     return None
-                
+
                 if live_rendering:
                     return None
-                
+
                 try:
                     from IPython.display import HTML
+
                     return HTML(status_html)
                 except Exception:
                     return status_html
-                    
+
             except Exception as e:
                 logger.exception(f"Failed to install jumpstart '{name}'")
                 error_text = str(e).strip() or e.__class__.__name__
-                
+
                 # Don't update_existing conflict UI if it's already been rendered
                 if conflict_already_rendered:
                     raise RuntimeError(error_text)
-                
+
                 try:
                     for line in traceback.format_exception(e):
                         clean_line = line.rstrip("\n")
                         if clean_line:
                             log_buffer.append({"level": "ERROR", "message": clean_line})
                     _update_live(
-                        status_label='error',
-                        entry=config.get('entry_point'),
-                        err=error_text
+                        status_label="error",
+                        entry=config.get("entry_point"),
+                        err=error_text,
                     )
                 except Exception:
                     pass
-                
+
                 if unattended:
                     print(f"Failed to install '{name}': {error_text}")
                     raise
-                
+
                 status_html = render_install_status_html(
-                    status='error',
-                    jumpstart_name=config.get('name', name),
-                    type=config.get('type', '').lower(),
+                    status="error",
+                    jumpstart_name=config.get("name", name),
+                    type=config.get("type", "").lower(),
                     workspace_id=installer.workspace_id,
-                    entry_point=config.get('entry_point'),
-                    minutes_complete=config.get('minutes_to_complete_jumpstart'),
-                    minutes_deploy=config.get('minutes_to_deploy'),
-                    docs_uri=config.get('jumpstart_docs_uri'),
+                    entry_point=config.get("entry_point"),
+                    minutes_complete=config.get("minutes_to_complete_jumpstart"),
+                    minutes_deploy=config.get("minutes_to_deploy"),
+                    docs_uri=config.get("jumpstart_docs_uri"),
                     logs=log_buffer,
                     error_message=error_text,
                 )
-                _update_live(status_label='error', entry=config.get('entry_point'), err=error_text)
-                
+                _update_live(
+                    status_label="error",
+                    entry=config.get("entry_point"),
+                    err=error_text,
+                )
+
                 if live_rendering:
                     raise RuntimeError(error_text)
-                
+
                 try:
                     from IPython.display import HTML, display
+
                     display(HTML(status_html))
                 except Exception:
                     pass
-                
+
                 raise RuntimeError(error_text)

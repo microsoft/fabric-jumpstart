@@ -28,22 +28,27 @@ jumpstart.install("spark-structured-streaming")
 ```
 
 Notes
+
 - `workspace_id` is optional when you run in a Fabric notebook; it auto-detects the current workspace. Specify to deploy to another target workspace.
 - `install()` accepts extras like `item_prefix` and `unattended=True` if you prefer console logs over HTML output.
+- Jumpstarts that include file upload configuration will automatically upload small data files to a Lakehouse's Files area after deployment — no extra arguments needed.
 
 ## Handling Name Conflicts
 
 If items with the same name already exist in your workspace, Fabric Jumpstart will detect conflicts and provide resolution options:
 
 1. **Overwrite existing items**:
+
    ```python
    jumpstart.install("spark-structured-streaming", overwrite=True)
    ```
 
 2. **Auto-generate a prefix** to avoid conflicts:
+
    ```python
    jumpstart.install("spark-structured-streaming", auto_prefix_on_conflict=True)
    ```
+
    This generates a prefix like `js3_sss__` (jumpstart ID + abbreviated name) and applies it to all deployed items.
 
 3. **Provide a custom prefix**:
@@ -52,6 +57,7 @@ If items with the same name already exist in your workspace, Fabric Jumpstart wi
    ```
 
 The prefixing strategy:
+
 - Renames item directories (e.g., `MyNotebook.Notebook` → `js3_sss__MyNotebook.Notebook`)
 - Updates all references to renamed items within configuration files
 - Uses word-boundary matching to avoid double-prefixing if you re-run the same install

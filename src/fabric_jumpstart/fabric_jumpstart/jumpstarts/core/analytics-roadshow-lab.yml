@@ -29,7 +29,7 @@ items_in_scope:
 - DataPipeline
 feature_flags:
 - enable_lakehouse_unpublish
-jumpstart_docs_uri: https://github.com/microsoft/fabric-analytics-roadshow-lab/blob/v0.1.1/README.md
+jumpstart_docs_uri: https://github.com/microsoft/fabric-analytics-roadshow-lab/blob/v0.1.3/README.md
 entry_point: 1_process_data.Notebook
 test_suite: ''
 owner_email: FabricJumpstart.AnalyticsRoadshowLab@microsoft.com

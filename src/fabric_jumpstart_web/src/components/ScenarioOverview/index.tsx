@@ -79,7 +79,7 @@ function ScenarioHeader({
         width: '100%',
         height: `${headerHeight}px`,
         overflow: 'hidden',
-        borderRadius: '16px 16px 0 0',
+        borderRadius: '6px 6px 0 0',
         background: `
           radial-gradient(ellipse 80% 60% at 50% 40%, ${hexToRgba(wc.primary, primaryA + 0.15)} 0%, transparent 70%),
           linear-gradient(135deg,
@@ -121,7 +121,7 @@ function ScenarioHeader({
             position: 'absolute',
             inset: '14px',
             bottom: '14px',
-            borderRadius: '12px',
+            borderRadius: '6px',
             overflow: 'hidden',
             cursor: 'zoom-in',
             backgroundColor: isDark ? 'rgba(30,30,36,0.82)' : 'rgba(255,255,255,0.88)',
@@ -235,7 +235,7 @@ export default function ScenarioOverview({ scenario, architecture }: { scenario:
 
   return (
     <div style={{
-      borderRadius: '16px',
+      borderRadius: '6px',
       border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
       backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
       backdropFilter: 'blur(20px) saturate(180%)',
@@ -440,7 +440,7 @@ export default function ScenarioOverview({ scenario, architecture }: { scenario:
         </a>
         <div style={{
           position: 'relative',
-          borderRadius: '8px',
+          borderRadius: '6px',
           overflow: 'hidden',
         }}>
           <SyntaxHighlighter
@@ -448,7 +448,7 @@ export default function ScenarioOverview({ scenario, architecture }: { scenario:
             style={isDark ? oneDark : oneLight}
             customStyle={{
               margin: 0,
-              borderRadius: '8px',
+              borderRadius: '6px',
               fontSize: '13px',
               lineHeight: 1.6,
               padding: '16px 20px',

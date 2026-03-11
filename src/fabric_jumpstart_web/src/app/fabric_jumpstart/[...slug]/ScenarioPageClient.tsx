@@ -36,6 +36,7 @@ export default function ScenarioPageClient({
         padding: '80px 24px 40px',
         lineHeight: '1.7',
         width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <Link

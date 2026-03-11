@@ -513,7 +513,7 @@ export default function ScenarioGrid() {
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      padding: '3px 8px',
+                      padding: '3px 10px 3px 8px',
                       borderRadius: '999px',
                       fontSize: '12px',
                       fontWeight: 600,
@@ -522,7 +522,7 @@ export default function ScenarioGrid() {
                           border: `1px solid ${isDark ? 'rgba(0,95,184,0.4)' : '#b8d4f0'}`,
                     }}
                   >
-                        ⚡️ Core
+                        ⚡️Core
                   </span>
                     </Tooltip>
                   )}
@@ -532,7 +532,7 @@ export default function ScenarioGrid() {
                       display: 'inline-flex',
                       alignItems: 'center',
                         gap: '4px',
-                      padding: '3px 8px',
+                      padding: '3px 10px 3px 8px',
                       borderRadius: '999px',
                       fontSize: '12px',
                       fontWeight: 600,

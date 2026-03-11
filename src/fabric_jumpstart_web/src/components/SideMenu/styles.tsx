@@ -7,6 +7,8 @@ export const useStyles = makeStyles({
     height: '100%',
     position: 'sticky',
     top: '175px',
+    flexShrink: 0,
+    width: '330px',
     [device.mobileAndTablet]: {
       top: '120px',
       zIndex: 2,
@@ -15,7 +17,9 @@ export const useStyles = makeStyles({
   sideMenu: {
     boxShadow: `4px 0px 20px 0px ${tokens.shadow64Brand}`,
     backgroundColor: tokens.colorNeutralBackground3,
+    width: '330px',
     minWidth: '330px',
+    maxWidth: '330px',
     borderRadius: '4px',
     maxHeight: 'calc(100vh - 175px)',
     minHeight: 'calc(100vh - 175px)',

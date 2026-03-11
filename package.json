@@ -2,11 +2,16 @@
   "name": "fabric-jumpstart",
   "devDependencies": {
     "@jest/globals": "^30.2.0",
+    "@mermaid-js/mermaid-cli": "^11.12.0",
     "@types/jest": "^30.0.0",
-    "@types/js-yaml": "^4.0.5",
+    "@types/js-yaml": "^4.0.9",
+    "@types/jsdom": "^28.0.0",
     "@types/node": "^20.4.4",
     "commander": "^11.0.0",
+    "glob": "^13.0.6",
     "jest": "^30.2.0",
+    "js-yaml": "^4.1.1",
+    "jsdom": "^28.1.0",
     "nx": "20.6.0",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
@@ -14,7 +19,8 @@
     "typescript": "^5.4.0"
   },
   "scripts": {
-    "fail-on-untracked-files": "tsx tools/scripts/fail-on-untracked-files.ts"
+    "fail-on-untracked-files": "tsx tools/scripts/fail-on-untracked-files.ts",
+    "render-diagrams": "tsx tools/render-diagrams.ts"
   },
   "type": "module"
 }

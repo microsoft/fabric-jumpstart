@@ -287,7 +287,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
 
             # Core vs Community class badge
             is_core = j.get('core', True)
-            class_label = 'Core' if is_core else 'Community'
+            class_label = '⚡️Core' if is_core else 'Community'
             class_badge = f'<div class="class-pill {"class-pill-core" if is_core else "class-pill-community"}" aria-label="Jumpstart class: {class_label}">{class_label}</div>'
 
             meta_block = (

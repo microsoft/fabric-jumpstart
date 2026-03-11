@@ -357,10 +357,11 @@
 .difficulty-pill {
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
-    padding: 3px 10px;
+    padding: 3px 10px 3px 8px;
     width: fit-content;
     margin: 0;
     letter-spacing: 0.1px;
@@ -369,16 +370,19 @@
 .difficulty-beginner {
     background: #e6f4ef;
     color: #0C695A;
+    border: 1px solid #b8e0d2;
 }
 
 .difficulty-intermediate {
     background: #fff4e6;
     color: #8a6100;
+    border: 1px solid #f0ddb8;
 }
 
 .difficulty-advanced {
     background: #fce8e8;
     color: #a41836;
+    border: 1px solid #f0c4c4;
 }
 
 .meta-pills {

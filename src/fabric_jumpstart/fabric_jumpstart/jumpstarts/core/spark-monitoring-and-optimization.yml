@@ -7,7 +7,7 @@ description: >-
   live dashboards, and gain operational insights to optimize your data
   engineering pipelines.
 date_added: 3/3/2026
-include_in_listing: false
+include_in_listing: true
 workload_tags:
 - Data Engineering
 - Real-Time Intelligence

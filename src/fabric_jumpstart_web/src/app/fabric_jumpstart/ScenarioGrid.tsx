@@ -509,50 +509,50 @@ export default function ScenarioGrid() {
                 <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '6px', marginBottom: '10px' }}>
                   {scenario.core && (
                     <Tooltip content="Microsoft-sponsored jumpstart" relationship="description" withArrow>
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          padding: '3px 8px',
-                          borderRadius: '999px',
-                          fontSize: '12px',
-                          fontWeight: 600,
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '3px 8px',
+                      borderRadius: '999px',
+                      fontSize: '12px',
+                      fontWeight: 600,
                           backgroundColor: isDark ? 'rgba(0,95,184,0.15)' : '#e8f2fc',
                           color: isDark ? '#6db3f8' : '#0f4f8f',
                           border: `1px solid ${isDark ? 'rgba(0,95,184,0.4)' : '#b8d4f0'}`,
-                        }}
-                      >
+                    }}
+                  >
                         ⚡️ Core
-                      </span>
+                  </span>
                     </Tooltip>
                   )}
                   <Tooltip content={getTypeTooltip(scenario.type)} relationship="description" withArrow>
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
                         gap: '4px',
-                        padding: '3px 8px',
-                        borderRadius: '999px',
-                        fontSize: '12px',
-                        fontWeight: 600,
+                      padding: '3px 8px',
+                      borderRadius: '999px',
+                      fontSize: '12px',
+                      fontWeight: 600,
                         backgroundColor: isDark ? 'rgba(14,105,90,0.15)' : '#e6f4ef',
                         color: isDark ? '#5fd4b9' : '#0C695A',
                         border: `1px solid ${isDark ? 'rgba(14,105,90,0.4)' : '#b8e0d2'}`,
-                      }}
-                    >
+                    }}
+                  >
                       {getTypeEmoji(scenario.type)} {scenario.type}
-                    </span>
+                  </span>
                   </Tooltip>
                   <Tooltip content={getDifficultyTooltip(scenario.difficulty)} relationship="description" withArrow>
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        padding: '3px 8px',
-                        borderRadius: '999px',
-                        fontSize: '12px',
-                        fontWeight: 600,
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '3px 8px',
+                      borderRadius: '999px',
+                      fontSize: '12px',
+                      fontWeight: 600,
                         backgroundColor: scenario.difficulty === 'Beginner'
                           ? (isDark ? 'rgba(16,124,16,0.15)' : '#dff6dd')
                           : scenario.difficulty === 'Advanced'
@@ -568,10 +568,10 @@ export default function ScenarioGrid() {
                           : scenario.difficulty === 'Advanced'
                           ? (isDark ? 'rgba(164,38,44,0.4)' : '#e0b8ba')
                           : (isDark ? 'rgba(121,118,0,0.4)' : '#e0dba0')}`,
-                      }}
-                    >
+                    }}
+                  >
                       {scenario.difficulty}
-                    </span>
+                  </span>
                   </Tooltip>
                 </div>
                 <div className={styles.cardTitle}>{scenario.title}</div>

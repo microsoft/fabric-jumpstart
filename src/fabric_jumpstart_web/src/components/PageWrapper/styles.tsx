@@ -11,13 +11,9 @@ export const useStyles = makeStyles({
     maxWidth: '100%',
   },
   container: {
-    maxWidth: '1440px',
-    width: '1440px',
+    width: '100%',
     height: '100%',
     backgroundColor: 'transparent',
     paddingTop: '10px',
-    [device.mobile]: {
-      width: '100%',
-    },
   },
 });

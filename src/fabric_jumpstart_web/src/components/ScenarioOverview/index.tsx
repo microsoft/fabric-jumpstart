@@ -315,6 +315,21 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
         }}>
           Quick Start
         </h4>
+        <a
+          href="/getting-started/"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginBottom: '10px',
+            fontSize: '13px',
+            fontWeight: 500,
+            color: tokens.colorCompoundBrandForeground1,
+            textDecoration: 'none',
+          }}
+        >
+          🚀 New to Jumpstart? Read the Getting Started guide →
+        </a>
         <div style={{
           position: 'relative',
           borderRadius: '8px',
@@ -352,21 +367,6 @@ export default function ScenarioOverview({ scenario }: { scenario: ScenarioCard 
             {copied ? '✓ Copied' : 'Copy'}
           </button>
         </div>
-        <a
-          href="/getting-started/"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            marginTop: '10px',
-            fontSize: '13px',
-            fontWeight: 500,
-            color: '#0078d4',
-            textDecoration: 'none',
-          }}
-        >
-          🚀 New to Jumpstart? Read the Getting Started guide →
-        </a>
       </div>
       </div>
     </div>

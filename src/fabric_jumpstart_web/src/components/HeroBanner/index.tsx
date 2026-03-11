@@ -7,6 +7,7 @@ import Typography from '@components/Typography';
 import { mergeClasses } from '@fluentui/react-components';
 import { splitHeading } from '@utils/common';
 import { subproduct, pageTypeconst } from '@constants/common';
+import { useThemeContext } from '@components/Providers/themeProvider';
 
 const CodeBlock = dynamic(() => import('@components/Markdown/Codeblock'), {
   ssr: false,
@@ -58,6 +59,8 @@ const HeroBanner = forwardRef<HTMLDivElement, BannerProps>(
     ref
   ) => {
     const styles = useStyles();
+    const { theme } = useThemeContext();
+    const isDark = theme.key === 'dark';
     const headingText = useMemo(() => splitHeading(heading), [heading]);
     const customHeading = useMemo(
       () =>
@@ -78,7 +81,8 @@ const HeroBanner = forwardRef<HTMLDivElement, BannerProps>(
         className={mergeClasses(
           styles.bannerContainer,
           bottomSpacing && styles.containerWithBottomSpace,
-          type === bannerType.about && styles.aboutBannerContainer
+          type === bannerType.about && styles.aboutBannerContainer,
+          type === bannerType.scenarios && styles.scenariosBannerContainer
         )}
         ref={ref}
       >
@@ -180,7 +184,7 @@ const HeroBanner = forwardRef<HTMLDivElement, BannerProps>(
                   </a>
                 </div>
               </div>
-              <CodeBlock>
+              <CodeBlock isDarkMode={isDark}>
                 <code className={`language-${codeSnippet.language}`}>
                   {codeSnippet.code}
                 </code>

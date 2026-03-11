@@ -58,7 +58,7 @@ export const useStyles = makeStyles({
     },
   },
   scenariosHeading: {
-    color: tokens.colorPaletteRedForeground1,
+    color: tokens.colorPaletteRoyalBlueForeground2,
   },
   agoraHeading: {
     color: tokens.colorPaletteGreenForeground1,
@@ -91,6 +91,8 @@ export const useStyles = makeStyles({
     },
   },
   scenariosTextContainer: {
+    marginTop: '0',
+    maxWidth: '100%',
     [device.mobile]: {
       maxWidth: '98%',
     },
@@ -130,9 +132,14 @@ export const useStyles = makeStyles({
     },
   },
   scenariosImgContainer: {
+    width: '25%',
     [device.mobile]: {
       maxWidth: '90%',
     },
+  },
+  scenariosBannerContainer: {
+    padding: '4% 8.5%',
+    marginBottom: spacingToken.spacing10,
   },
   dropsImgContainer: {
     width: '25%',

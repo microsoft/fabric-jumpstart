@@ -13,18 +13,18 @@ export const useStyles = makeStyles({
   },
   primaryBtn: {
     background: `linear-gradient(90deg, ${tokens.colorBrandBackground} 0%, ${tokens.colorPaletteBlueBorderActive} 100%)`,
-    borderLeftColor: tokens.colorPaletteMinkBackground2,
+    borderLeftColor: 'transparent',
     ':hover': {
-      borderLeftColor: tokens.colorBrandBackgroundHover,
-      background: `linear-gradient(90deg, ${tokens.colorBrandBackgroundHover} 0%, ${tokens.colorBrandBackground2} 72.81%, ${tokens.colorBrandBackground2Hover} 100%)`,
+      background: `linear-gradient(90deg, ${tokens.colorBrandBackgroundHover} 0%, ${tokens.colorBrandBackground} 100%)`,
+      borderLeftColor: 'transparent',
     },
   },
   primaryBtnLightMode: {
-    background: `linear-gradient(90deg, ${tokens.colorBrandBackgroundHover} 0%, ${tokens.colorBrandBackground2} 72.81%,  ${tokens.colorBrandBackground2Hover} 100%)`,
-    borderLeftColor: tokens.colorPaletteMinkBackground2,
+    background: `linear-gradient(90deg, ${tokens.colorBrandBackground} 0%, ${tokens.colorPaletteBlueBorderActive} 100%)`,
+    borderLeftColor: 'transparent',
     ':hover': {
-      borderLeftColor: tokens.colorBrandBackground,
-      background: `linear-gradient(90deg, ${tokens.colorBrandBackground} 0%, ${tokens.colorPaletteBlueBorderActive} 100%)`,
+      background: `linear-gradient(90deg, ${tokens.colorBrandBackgroundHover} 0%, ${tokens.colorBrandBackground} 100%)`,
+      borderLeftColor: 'transparent',
     },
   },
 });

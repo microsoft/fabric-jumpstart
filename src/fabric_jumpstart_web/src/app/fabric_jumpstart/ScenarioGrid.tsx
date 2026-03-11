@@ -1,22 +1,62 @@
 'use client';
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import scenariosData from '@data/scenarios.json';
 import workloadColorsData from '@data/workload-colors.json';
 import { makeStyles, tokens, shorthands } from '@fluentui/react-components';
 import { useThemeContext } from '@components/Providers/themeProvider';
+import { useFilterContext } from '@components/Providers/filterProvider';
+import { sortLabels, type SortOption } from '@components/Providers/filterProvider';
+import { getMatchingSlugs } from '@components/SideMenu/SidebarFilters';
 import type { ScenarioCard } from '@scenario/scenario';
 
 const useStyles = makeStyles({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    ...shorthands.padding('40px', '60px'),
-    maxWidth: '1400px',
-    marginLeft: 'auto',
-    marginRight: 'auto',
+    ...shorthands.padding('40px', '32px'),
     width: '100%',
+    minHeight: 'calc(100vh - 175px)',
+    boxSizing: 'border-box',
+  },
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '24px',
+    flexWrap: 'wrap',
+    ...shorthands.gap('12px'),
+  },
+  resultCount: {
+    fontSize: '14px',
+    color: tokens.colorNeutralForeground2,
+    fontWeight: 400,
+  },
+  resultCountBold: {
+    fontWeight: 600,
+    color: tokens.colorNeutralForeground1,
+  },
+  sortContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    ...shorthands.gap('8px'),
+  },
+  sortLabel: {
+    fontSize: '14px',
+    color: tokens.colorNeutralForeground2,
+    whiteSpace: 'nowrap',
+  },
+  sortSelect: {
+    fontSize: '14px',
+    ...shorthands.padding('6px', '12px'),
+    ...shorthands.borderRadius('6px'),
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke1),
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+    cursor: 'pointer',
+    outlineColor: tokens.colorBrandStroke1,
+    minWidth: '180px',
   },
   grid: {
     display: 'grid',
@@ -78,8 +118,8 @@ const useStyles = makeStyles({
     fontSize: '12px',
     ...shorthands.padding('4px', '8px'),
     ...shorthands.borderRadius('4px'),
-    backgroundColor: '#deecf9',
-    color: '#0078d4',
+    backgroundColor: tokens.colorNeutralBackground3,
+    color: tokens.colorCompoundBrandForeground1,
   },
   difficultyBadge: {
     fontSize: '12px',
@@ -88,32 +128,21 @@ const useStyles = makeStyles({
     fontWeight: 600,
   },
   beginner: {
-    backgroundColor: '#dff6dd',
-    color: '#107c10',
+    backgroundColor: tokens.colorPaletteGreenBackground1,
+    color: tokens.colorPaletteGreenForeground1,
   },
   intermediate: {
-    backgroundColor: '#fff4ce',
-    color: '#797600',
+    backgroundColor: tokens.colorPaletteYellowBackground1,
+    color: tokens.colorPaletteYellowForeground1,
   },
   advanced: {
-    backgroundColor: '#fde7e9',
-    color: '#a4262c',
+    backgroundColor: tokens.colorStatusDangerBackground1,
+    color: tokens.colorStatusDangerForeground1,
   },
   deployTime: {
     fontSize: '12px',
     color: tokens.colorNeutralForeground2,
     marginTop: '12px',
-  },
-  sectionTitle: {
-    fontSize: '28px',
-    fontWeight: 700,
-    color: tokens.colorNeutralForeground1,
-    marginBottom: '8px',
-  },
-  sectionDesc: {
-    fontSize: '16px',
-    color: tokens.colorNeutralForeground2,
-    marginBottom: '32px',
   },
 });
 
@@ -126,10 +155,12 @@ interface WorkloadColor {
 
 const workloadColors = workloadColorsData as Record<string, WorkloadColor>;
 
+// Fallback card header gradient colors (project brand teal palette).
+// Hex values required here because they are passed to hexToRgba().
 const defaultColors: WorkloadColor = {
-  light: '#E8F4FD',
-  accent: '#0078D4',
-  mid: '#5CB8E6',
+  light: '#C5EAE5',
+  accent: '#106960',
+  mid: '#219580',
   icon: '',
 };
 
@@ -263,6 +294,28 @@ export default function ScenarioGrid() {
   const scenarios = scenariosData as ScenarioCard[];
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
+  const { filters, hasActiveFilters, sort, setSort } = useFilterContext();
+
+  const matchingSlugs = useMemo(() => getMatchingSlugs(filters), [filters]);
+  const filteredScenarios = useMemo(() => {
+    const base = matchingSlugs ? scenarios.filter((s) => matchingSlugs.has(s.slug)) : scenarios;
+    const sorted = [...base];
+    switch (sort) {
+      case 'newest':
+        sorted.sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated));
+        break;
+      case 'oldest':
+        sorted.sort((a, b) => a.lastUpdated.localeCompare(b.lastUpdated));
+        break;
+      case 'name-asc':
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'name-desc':
+        sorted.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+    }
+    return sorted;
+  }, [scenarios, matchingSlugs, sort]);
 
   const getDifficultyClass = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
@@ -277,12 +330,48 @@ export default function ScenarioGrid() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.sectionTitle}>All Scenarios</h2>
-      <p className={styles.sectionDesc}>
-        Browse and deploy production-ready scenarios with a single command.
-      </p>
+      <div className={styles.toolbar}>
+        <span className={styles.resultCount}>
+          {hasActiveFilters ? (
+            <>
+              Showing{' '}
+              <span className={styles.resultCountBold}>{filteredScenarios.length}</span>{' '}
+              of {scenarios.length} jumpstarts
+            </>
+          ) : (
+            <>
+              <span className={styles.resultCountBold}>{scenarios.length}</span> jumpstarts
+            </>
+          )}
+        </span>
+        <div className={styles.sortContainer}>
+          <label htmlFor="sort-select" className={styles.sortLabel}>Sort by</label>
+          <select
+            id="sort-select"
+            className={styles.sortSelect}
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortOption)}
+          >
+            {Object.entries(sortLabels).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      {filteredScenarios.length === 0 ? (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            color: tokens.colorNeutralForeground3,
+          }}
+        >
+          <p style={{ fontSize: '18px', fontWeight: 600 }}>No matching scenarios</p>
+          <p style={{ fontSize: '14px' }}>Try adjusting or clearing your filters.</p>
+        </div>
+      ) : (
       <div className={styles.grid}>
-        {scenarios.map((scenario) => (
+        {filteredScenarios.map((scenario) => (
           <Link
             key={scenario.id}
             href={`/fabric_jumpstart/${scenario.slug}/`}
@@ -311,13 +400,15 @@ export default function ScenarioGrid() {
                 </div>
                 <div className={styles.deployTime}>
                   ⚡ {scenario.minutesToDeploy} min deploy •{' '}
-                  {scenario.itemsInScope.length} Fabric items
+                  🕐 {scenario.minutesToComplete} min complete •{' '}
+                  {scenario.itemsInScope.length} Item types
                 </div>
               </div>
             </div>
           </Link>
         ))}
       </div>
+      )}
     </div>
   );
 }

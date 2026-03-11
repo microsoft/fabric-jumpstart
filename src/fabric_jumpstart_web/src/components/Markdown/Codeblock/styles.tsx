@@ -4,29 +4,20 @@ import spacingToken from '@styles/spacing';
 export const useStyles = makeStyles({
   codeBlockContainer: {
     marginTop: spacingToken.spacing10,
-    border: `1px solid ${tokens.colorPalettePlatinumBorderActive}`,
-    borderRadius: '5px',
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: '8px',
     overflow: 'hidden',
     marginBottom: spacingToken.spacing30,
-    backgroundColor: tokens.colorNeutralBackground2Selected,
 
-    '& pre': {
-      margin: '0 !important', // Override default margin
-      backgroundColor: `${tokens.colorNeutralBackground2Selected} !important`,
-    },
     '& code': {
-      color: `${tokens.colorNeutralForeground2} !important`,
       backgroundColor: 'transparent !important',
     },
     '& code[class*="language-"]': {
       backgroundColor: 'transparent !important',
     },
-    '& pre[class*="language-"]': {
-      backgroundColor: `${tokens.colorNeutralBackground2Selected} !important`,
-    },
   },
   codeBlockHeader: {
-    backgroundColor: tokens.colorPaletteMinkBackground2,
+    backgroundColor: tokens.colorNeutralBackground4,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',

@@ -3,7 +3,7 @@ logical_id: stateful-streaming-lakehouse
 name: Stateful Streaming Lakehouse
 description: >-
   Discover how Spark Structured Streaming powers a stateful lakehouse for industrial sales and
-  shipment data. Learn how to process incremental events from OneLake and Eventstream,
+  shipment data. Applicable for both batch and streaming workloads, learn how to process incremental events from OneLake and Eventstream,
   and explore a production-ready streaming-first reference implementation.
 date_added: 3/11/2026
 include_in_listing: true

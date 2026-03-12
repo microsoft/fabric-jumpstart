@@ -6,7 +6,7 @@ description: >-
   shipment data. Learn how to process incremental events from OneLake and Eventstream,
   and explore a production-ready streaming-first reference implementation.
 date_added: 3/11/2026
-include_in_listing: false
+include_in_listing: true
 workload_tags:
 - Data Engineering
 scenario_tags:
@@ -43,16 +43,14 @@ mermaid_diagram: |
   S_OP[on premise erp]:::U1F3E2
 
   %% FABRIC WORKSPACE
-  subgraph Fabric Workspace:::Workspace
-
-  ES[shipment_scan_events]:::Eventstream
-  LH[sales_and_logistics]:::Lakehouse
-  SJD[stream_all_zones]:::SparkJobDefinition
-  ENV[stream_env]:::Environment
-  EXP[explore_streaming]:::Notebook
-  AS[acrflow_streaming]:::Notebook
-  direction TB
-
+  subgraph Fabric:::Workspace
+    ES[shipment_scan_events]:::Eventstream
+    LH[sales_and_logistics]:::Lakehouse
+    SJD[stream_all_zones]:::SparkJobDefinition
+    ENV[stream_env]:::Environment
+    EXP[explore_streaming]:::Notebook
+    ARC[acrflow_streaming]:::Notebook
+    direction LR
   end
 
   %% FLOWS

@@ -13,6 +13,7 @@
  * SVG icon filenames in @fabric-msft/svg-icons.
  */
 export const FABRIC_ITEM_ICON_MAP: Record<string, string> = {
+  Workspace: 'fabric_32_color.svg',
   Notebook: 'notebook_32_item.svg',
   Lakehouse: 'lakehouse_32_item.svg',
   Environment: 'environment_32_item.svg',
@@ -33,7 +34,7 @@ export const FABRIC_ITEM_ICON_MAP: Record<string, string> = {
   SQLDatabase: 'sql_database_32_item.svg',
   Report: 'report_32_item.svg',
   SemanticModel: 'semantic_model_32_item.svg',
-  DataAgent: 'ai_skills_32_item.svg',
+  DataAgent: 'data_agent_32_item.svg',
   MLExperiment: 'experiments_32_item.svg',
   UserDataFunction: 'user_data_function_32_item.svg',
   GraphQLApi: 'generic_placeholder_32_item.svg',

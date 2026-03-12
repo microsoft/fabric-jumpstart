@@ -5,15 +5,12 @@ import {
   Button,
   Field,
   Input,
-  ToggleButton,
   tokens,
 } from '@fluentui/react-components';
 import {
   ArrowDownload24Regular,
   Copy24Regular,
   Eye24Regular,
-  WeatherMoon24Regular,
-  WeatherSunny24Regular,
 } from '@fluentui/react-icons';
 import { useThemeContext } from '@components/Providers/themeProvider';
 import { enhanceDiagram } from '@components/MermaidDiagram/enhance';
@@ -117,9 +114,10 @@ function downloadSvg(svgContent: string, filename: string) {
 }
 
 export default function DiagramGenerator() {
+  const { theme } = useThemeContext();
+  const isDark = theme.key === 'dark';
   const [chart, setChart] = useState(SAMPLE_CHART);
   const [slug, setSlug] = useState('my-jumpstart');
-  const [previewDark, setPreviewDark] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -127,8 +125,6 @@ export default function DiagramGenerator() {
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
-  const { theme } = useThemeContext();
-  const isDark = theme.key === 'dark';
 
   const previewRef = useRef<HTMLDivElement>(null);
   const zoomContainerRef = useRef<HTMLDivElement>(null);
@@ -141,7 +137,7 @@ export default function DiagramGenerator() {
     setError(null);
     try {
       const mermaid = (await import('mermaid')).default;
-      mermaid.initialize(previewDark ? MERMAID_CONFIG_DARK : MERMAID_CONFIG_LIGHT);
+      mermaid.initialize(isDark ? MERMAID_CONFIG_DARK : MERMAID_CONFIG_LIGHT);
 
       const id = `mermaid-preview-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       // Strip :::Type annotations from subgraph lines before Mermaid render
@@ -152,14 +148,14 @@ export default function DiagramGenerator() {
       const svgEl = container.querySelector('svg') as SVGSVGElement | null;
       if (svgEl) {
         requestAnimationFrame(() => {
-          enhanceDiagram(svgEl, chart, previewDark);
+          enhanceDiagram(svgEl, chart, isDark);
         });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid Mermaid syntax');
       container.innerHTML = '';
     }
-  }, [chart, previewDark]);
+  }, [chart, isDark]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -227,7 +223,7 @@ export default function DiagramGenerator() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 24px 40px' }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 24px 40px', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)' }}>
       <h1 style={{
         fontSize: 28,
         fontWeight: 600,
@@ -261,15 +257,6 @@ export default function DiagramGenerator() {
           />
         </Field>
 
-        <ToggleButton
-          checked={previewDark}
-          onClick={() => setPreviewDark(!previewDark)}
-          icon={previewDark ? <WeatherMoon24Regular /> : <WeatherSunny24Regular />}
-          size="medium"
-        >
-          {previewDark ? 'Dark' : 'Light'}
-        </ToggleButton>
-
         <Button
           appearance="primary"
           icon={<ArrowDownload24Regular />}
@@ -284,27 +271,28 @@ export default function DiagramGenerator() {
       {/* Preview area with zoom/drag */}
       <div style={{
         borderRadius: 12,
-        backgroundColor: previewDark ? 'rgba(26,26,32,0.75)' : 'rgba(248,250,253,0.98)',
-        border: previewDark
+        backgroundColor: isDark ? 'rgba(26,26,32,0.75)' : 'rgba(248,250,253,0.98)',
+        border: isDark
           ? '1px solid rgba(255,255,255,0.08)'
           : '1px solid rgba(0,0,0,0.06)',
-        boxShadow: previewDark
+        boxShadow: isDark
           ? '0 4px 28px rgba(0,0,0,0.45)'
           : '0 4px 28px rgba(0,0,0,0.06)',
         overflow: 'hidden',
-        minHeight: 450,
+        flex: 1,
+        minHeight: 350,
         marginBottom: 24,
         position: 'relative',
       }}>
         {!chart.trim() ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: isDark ? '#666' : '#999', height: 450 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: isDark ? '#666' : '#999' }}>
             <Eye24Regular />
             <span>Enter Mermaid syntax to preview</span>
           </div>
         ) : (
           <div
             ref={zoomContainerRef}
-            style={{ width: '100%', height: 450, cursor: dragging ? 'grabbing' : 'grab', overflow: 'hidden' }}
+            style={{ position: 'absolute', inset: 0, cursor: dragging ? 'grabbing' : 'grab', overflow: 'hidden' }}
             onMouseDown={onDown}
             onMouseMove={onMove}
             onMouseUp={onUp}
@@ -326,34 +314,38 @@ export default function DiagramGenerator() {
           </div>
         )}
 
-        {/* Zoom controls */}
+        {/* Zoom controls — floating overlay */}
         {chart.trim() && (
           <div style={{
             position: 'absolute',
-            bottom: 10,
-            right: 10,
+            bottom: 8,
+            right: 8,
             display: 'flex',
             gap: 4,
             alignItems: 'center',
+            background: isDark ? 'rgba(30,30,36,0.75)' : 'rgba(255,255,255,0.75)',
+            backdropFilter: 'blur(6px)',
+            borderRadius: 6,
+            padding: '4px 6px',
           }}>
             <span style={{
               fontSize: 11,
-              color: previewDark ? '#aaa' : '#666',
+              color: isDark ? '#aaa' : '#666',
               marginRight: 4,
             }}>
               {Math.round(scale * 100)}%
             </span>
             <button
               onClick={() => setScale(s => Math.min(5, s * 1.25))}
-              style={zoomBtnStyle(previewDark)}
+              style={zoomBtnStyle(isDark)}
             >+</button>
             <button
               onClick={() => setScale(s => Math.max(0.2, s * 0.8))}
-              style={zoomBtnStyle(previewDark)}
+              style={zoomBtnStyle(isDark)}
             >{'\u2212'}</button>
             <button
               onClick={resetView}
-              style={{ ...zoomBtnStyle(previewDark), padding: '3px 8px', fontSize: 11 }}
+              style={{ ...zoomBtnStyle(isDark), padding: '3px 8px', fontSize: 11 }}
             >Reset</button>
           </div>
         )}

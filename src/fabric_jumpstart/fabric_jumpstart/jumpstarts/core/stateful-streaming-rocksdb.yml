@@ -32,6 +32,21 @@ difficulty: Intermediate
 last_updated: "2026-03-07"
 mermaid_diagram: |
   graph LR
-    NB[heartbeat_notebook]:::Notebook --> ES[heartbeat_events]:::Eventstream
-    ES --> LH[heartbeat_lakehouse]:::Lakehouse
-    LH --> NB
+
+  %% ON PREM
+  HB[Machine Heart Beat]:::U1F4E1
+
+  %% FABRIC WORKSPACE
+  subgraph Fabric:::Workspace
+    ES1[heartbeat_producer]:::Eventstream
+    ES2[heartbeat_consumer]:::Eventstream
+    LH[heartbeat_lakehouse]:::Lakehouse
+    NB[heartbeat_notebook]:::Notebook
+    direction LR
+  end
+
+  %% FLOWS
+  HB -.-> ES1
+  ES1 <-.-> NB
+  NB -.-> ES2
+  LH --- NB

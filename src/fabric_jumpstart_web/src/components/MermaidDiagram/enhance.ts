@@ -249,7 +249,7 @@ export function enhanceDiagram(
         text-align:left;
       ">
         <div style="font-family:Consolas,'Courier New',monospace;font-weight:600;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${isDark ? '#e0e0e0' : '#242424'}">${label}</div>
-        ${showType ? `<div style="font-weight:500;font-size:11px;line-height:1.2;color:${TYPE_COLOR};margin-top:2px">${typeName}</div>` : ''}
+        ${showType ? `<div style="font-weight:500;font-size:11px;line-height:1.2;color:${TYPE_COLOR}">${typeName}</div>` : ''}
       </div>`;
 
       fo.setAttribute('width', String(textWidth));
@@ -359,9 +359,6 @@ export function enhanceDiagram(
   });
 
   // ── Subgraph / cluster styling ──────────────────────────────────────
-  // Fabric brand logo used for :::Workspace subgraphs
-  const FABRIC_ICON_URI =
-    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iY3VycmVudENvbG9yIj48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtYSkiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0ibTMuMTQ4IDIxLjMyMi0uNDEgMS41MDFjLS4xNTMuNDgtLjM2NyAxLjE4Ni0uNDgyIDEuODE0YTMuOTQgMy45NCAwIDAgMCAzLjI0NyA1LjMxM2MuNTU0LjA4IDEuMTgxLjA3NSAxLjg4NC0uMDI4bDMuMjMtLjQ0NmEyLjA1IDIuMDUgMCAwIDAgMS42OTUtMS40OWwyLjIyMy04LjE2NHoiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPjxwYXRoIGZpbGw9InVybCgjaTdjYjkyZC1iKSIgZD0iTTYuMjk4IDIxLjcxYy0zLjQwNC41MjctNC4xMDMgMy4wOTYtNC4xMDMgMy4wOTZsMy4yNi0xMS45NzkgMTcuMDM1LTIuMzA0LTIuMzIzIDguNDM4Yy0uMTIuNDUyLS41Ljc5OC0uOTcxLjg3bC0uMDk1LjAxNi0xMi44OTggMS44Nzl6Ii8+PHBhdGggZmlsbD0idXJsKCNpN2NiOTJkLWMpIiBmaWxsLW9wYWNpdHk9Ii44IiBkPSJNNi4yOTggMjEuNzFjLTMuNDA0LjUyNy00LjEwMyAzLjA5Ni00LjEwMyAzLjA5NmwzLjI2LTExLjk3OSAxNy4wMzUtMi4zMDQtMi4zMjMgOC40MzhjLS4xMi40NTItLjUuNzk4LS45NzEuODdsLS4wOTUuMDE2LTEyLjg5OCAxLjg3OXoiLz48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtZCkiIGQ9Im04LjIzIDE0LjA2NiAxOC44Ni0yLjc4NmMuNDQ4LS4wNi44MTEtLjM5LjkyNi0uODJsMS45NDYtNy4wNDNhMS4xMTYgMS4xMTYgMCAwIDAtMS4yMTgtMS40MDhMMTAuNzUgNC42NjhhNS4wMyA1LjAzIDAgMCAwLTQuMDQ0IDMuNjM2TDQuMTEgMTcuNzA5Yy41Mi0xLjkwMi44NC0zLjA1IDQuMTItMy42NDMiLz48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtZSkiIGQ9Im04LjIzIDE0LjA2NiAxOC44Ni0yLjc4NmMuNDQ4LS4wNi44MTEtLjM5LjkyNi0uODJsMS45NDYtNy4wNDNhMS4xMTYgMS4xMTYgMCAwIDAtMS4yMTgtMS40MDhMMTAuNzUgNC42NjhhNS4wMyA1LjAzIDAgMCAwLTQuMDQ0IDMuNjM2TDQuMTEgMTcuNzA5Yy41Mi0xLjkwMi44NC0zLjA1IDQuMTItMy42NDMiLz48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtZikiIGZpbGwtb3BhY2l0eT0iLjQiIGQ9Im04LjIzIDE0LjA2NiAxOC44Ni0yLjc4NmMuNDQ4LS4wNi44MTEtLjM5LjkyNi0uODJsMS45NDYtNy4wNDNhMS4xMTYgMS4xMTYgMCAwIDAtMS4yMTgtMS40MDhMMTAuNzUgNC42NjhhNS4wMyA1LjAzIDAgMCAwLTQuMDQ0IDMuNjM2TDQuMTEgMTcuNzA5Yy41Mi0xLjkwMi44NC0zLjA1IDQuMTItMy42NDMiLz48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtZykiIGQ9Ik04LjIzIDE0LjA2NmMtMi43MzEuNDk1LTMuNDA5IDEuMzc0LTMuODYgMi43NTNsLTIuMTc1IDcuOTg4cy42OTUtMi41NDMgNC4wNTgtMy4wODdMMTkuMSAxOS44NDhsLjA5NS0uMDE2Yy40NzEtLjA3MS44NTEtLjQxOS45NzItLjg3bDEuOTExLTYuOTQxLTEzLjg1IDIuMDQ1WiIvPjxwYXRoIGZpbGw9InVybCgjaTdjYjkyZC1oKSIgZmlsbC1vcGFjaXR5PSIuMiIgZD0iTTguMjMgMTQuMDY2Yy0yLjczMS40OTUtMy40MDkgMS4zNzQtMy44NiAyLjc1M2wtMi4xNzUgNy45ODhzLjY5NS0yLjU0MyA0LjA1OC0zLjA4N0wxOS4xIDE5Ljg0OGwuMDk1LS4wMTZjLjQ3MS0uMDcxLjg1MS0uNDE5Ljk3Mi0uODdsMS45MTEtNi45NDEtMTMuODUgMi4wNDVaIi8+PHBhdGggZmlsbD0idXJsKCNpN2NiOTJkLWkpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02LjI1MyAyMS43MmMtMi44NDIuNDYtMy43NzUgMi4zNDItMy45OTcgMi45MTZhMy45NCAzLjk0IDAgMCAwIDMuMjQ3IDUuMzE0Yy41NTQuMDggMS4xODEuMDc1IDEuODg0LS4wMjhsMy4yMy0uNDQ2YTIuMDUgMi4wNSAwIDAgMCAxLjY5NS0xLjQ5bDIuMDI2LTcuNDQzeiIgY2xpcC1ydWxlPSJldmVub2RkIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWEiIHgxPSI4LjI2OCIgeDI9IjguMjY4IiB5MT0iMzAuMDA1IiB5Mj0iMTkuODIyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIuMDU2IiBzdG9wLWNvbG9yPSIjMkFBQzk0Ii8+PHN0b3Agb2Zmc2V0PSIuMTU1IiBzdG9wLWNvbG9yPSIjMjM5Qzg3Ii8+PHN0b3Agb2Zmc2V0PSIuMzcyIiBzdG9wLWNvbG9yPSIjMTc3RTcxIi8+PHN0b3Agb2Zmc2V0PSIuNTg4IiBzdG9wLWNvbG9yPSIjMEU2OTYxIi8+PHN0b3Agb2Zmc2V0PSIuNzk5IiBzdG9wLWNvbG9yPSIjMDk1RDU3Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDg1OTU0Ii8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9Imk3Y2I5MmQtYiIgeDE9IjIxLjEzNCIgeDI9IjExLjMwMiIgeTE9IjIyLjYxNyIgeTI9IjExLjkyMyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA0MiIgc3RvcC1jb2xvcj0iI0FCRTg4RSIvPjxzdG9wIG9mZnNldD0iLjU0OSIgc3RvcC1jb2xvcj0iIzJBQUE5MiIvPjxzdG9wIG9mZnNldD0iLjkwNiIgc3RvcC1jb2xvcj0iIzExNzg2NSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWMiIHgxPSItMy4wMjgiIHgyPSI2LjMyOSIgeTE9IjIyLjA5NyIgeTI9IjE4LjkwNiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM2QUQ2RjkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2QUQ2RjkiIHN0b3Atb3BhY2l0eT0iMCIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWQiIHgxPSI0LjExIiB4Mj0iMjkuMDE2IiB5MT0iOS44NTUiIHkyPSI5Ljg1NSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA0MyIgc3RvcC1jb2xvcj0iIzI1RkZENCIvPjxzdG9wIG9mZnNldD0iLjg3NCIgc3RvcC1jb2xvcj0iIzU1RERCOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWUiIHgxPSI0LjExIiB4Mj0iMjYuNTQ2IiB5MT0iNi4zNzMiIHkyPSIxNi43OTEiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjNkFENkY5Ii8+PHN0b3Agb2Zmc2V0PSIuMjMiIHN0b3AtY29sb3I9IiM2MEU5RDAiLz48c3RvcCBvZmZzZXQ9Ii42NTEiIHN0b3AtY29sb3I9IiM2REU5QkIiLz48c3RvcCBvZmZzZXQ9Ii45OTQiIHN0b3AtY29sb3I9IiNBQkU4OEUiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iaTdjYjkyZC1mIiB4MT0iNi4xODUiIHgyPSIxOC4zODUiIHkxPSI4LjMyMyIgeTI9IjExLjAyMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPjxzdG9wIG9mZnNldD0iLjQ1OSIgc3RvcC1jb2xvcj0iI2ZmZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9Imk3Y2I5MmQtZyIgeDE9IjEwLjIzIiB4Mj0iMTAuNTE4IiB5MT0iMTguNzc0IiB5Mj0iMTAuMjE5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIuMjA1IiBzdG9wLWNvbG9yPSIjMDYzRDNCIiBzdG9wLW9wYWNpdHk9IjAiLz48c3RvcCBvZmZzZXQ9Ii41ODYiIHN0b3AtY29sb3I9IiMwNjNEM0IiIHN0b3Atb3BhY2l0eT0iLjIzNyIvPjxzdG9wIG9mZnNldD0iLjg3MiIgc3RvcC1jb2xvcj0iIzA2M0QzQiIgc3RvcC1vcGFjaXR5PSIuNzUiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iaTdjYjkyZC1oIiB4MT0iMS4xNjYiIHgyPSIxMS41OTIiIHkxPSIxNy45MjMiIHkyPSIxOS44ODQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjZmZmIiBzdG9wLW9wYWNpdHk9IjAiLz48c3RvcCBvZmZzZXQ9Ii40NTkiIHN0b3AtY29sb3I9IiNmZmYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWkiIHgxPSI4LjY5OCIgeDI9IjYuNjY0IiB5MT0iMjcuMTgzIiB5Mj0iMTcuMjM4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIuMDY0IiBzdG9wLWNvbG9yPSIjMDYzRDNCIiBzdG9wLW9wYWNpdHk9IjAiLz48c3RvcCBvZmZzZXQ9Ii4xNyIgc3RvcC1jb2xvcj0iIzA2M0QzQiIgc3RvcC1vcGFjaXR5PSIuMTM1Ii8+PHN0b3Agb2Zmc2V0PSIuNTYyIiBzdG9wLWNvbG9yPSIjMDYzRDNCIiBzdG9wLW9wYWNpdHk9Ii41OTkiLz48c3RvcCBvZmZzZXQ9Ii44NSIgc3RvcC1jb2xvcj0iIzA2M0QzQiIgc3RvcC1vcGFjaXR5PSIuOSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA2M0QzQiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg==';
 
   // Parse subgraph definitions — supports `subgraph Title:::Type` syntax
   interface SubgraphInfo { title: string; itemType: string | null; }
@@ -380,7 +377,7 @@ export function enhanceDiagram(
 
   const SG_ICON = 26;
   // Height of the header band we add above the original box
-  const SG_HEADER_H = 42;
+  const SG_HEADER_H = 54;
 
   root.querySelectorAll('g.cluster').forEach((clusterG, idx) => {
     const rect = clusterG.querySelector('rect') as SVGRectElement | null;
@@ -389,28 +386,23 @@ export function enhanceDiagram(
     // Style cluster rect
     rect.setAttribute('rx', '10');
     rect.setAttribute('ry', '10');
-    rect.setAttribute('stroke', isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)');
-    rect.setAttribute('stroke-width', '1.5');
-    rect.setAttribute('fill', isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.025)');
     rect.removeAttribute('stroke-dasharray');
-    rect.style.cssText = '';
+    // Use inline style to override Mermaid's CSS class rules (hsl(60,...) brownish fill)
+    const sgFill = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.025)';
+    const sgStroke = isDark ? 'rgba(255,255,255,0.20)' : 'rgba(0,0,0,0.12)';
+    rect.style.cssText = `fill:${sgFill};stroke:${sgStroke};stroke-width:1.5px`;
 
     // Clusters render in reverse order from source
     const sgInfo = subgraphDefs[subgraphDefs.length - 1 - idx];
     const sgTitle = sgInfo?.title ?? '';
     const sgType = sgInfo?.itemType ?? null;
 
-    // Resolve icon: Workspace → Fabric logo, others → item icon from same map
-    let iconUri: string | null = null;
-    if (sgType === 'Workspace') {
-      iconUri = FABRIC_ICON_URI;
-    } else if (sgType && itemIconDataUris[sgType]) {
-      iconUri = itemIconDataUris[sgType];
-    }
+    // Resolve icon from the shared icon map (Workspace, Lakehouse, Notebook, etc.)
+    const iconUri = sgType && itemIconDataUris[sgType] ? itemIconDataUris[sgType] : null;
 
     // Human-readable type name (e.g. SparkJobDefinition → Spark Job Definition)
     const typeName = sgType
-      ? (sgType === 'Workspace' ? 'Fabric Workspace' : sgType.replace(/([a-z])([A-Z])/g, '$1 $2'))
+      ? sgType.replace(/([a-z])([A-Z])/g, '$1 $2')
       : '';
 
     const box = rect.getBBox();
@@ -423,69 +415,67 @@ export function enhanceDiagram(
 
     if (labelG) {
       // Position label in the new header space above the original box top
-      const labelX = box.x + 12;
-      const labelY = box.y - SG_HEADER_H + 6;
+      const labelX = box.x + 16;
+      const labelY = box.y - SG_HEADER_H;
 
       // Clear existing label content
       labelG.innerHTML = '';
       labelG.setAttribute('transform', `translate(${labelX},${labelY})`);
 
-      // Icon (left-aligned, vertically centered in header)
-      let textX = 0;
+      // Icon — vertically centered within the header content area (above divider)
+      const iconY = Math.round((SG_HEADER_H - SG_ICON) / 2);
       if (iconUri) {
         labelG.appendChild(svgEl('image', {
           href: iconUri,
           width: String(SG_ICON), height: String(SG_ICON),
-          x: '0', y: '2',
+          x: '0', y: String(iconY),
         }));
-        textX = SG_ICON + 8;
       }
 
-      // Title text — Consolas bold (matches node label style)
-      const titleEl = document.createElementNS(SVG_NS, 'text');
-      titleEl.setAttribute('x', String(textX));
-      titleEl.setAttribute('y', sgType ? '10' : String(SG_ICON / 2));
-      titleEl.setAttribute('dominant-baseline', sgType ? 'auto' : 'central');
-      titleEl.setAttribute('font-family', "Consolas, 'Courier New', monospace");
-      titleEl.setAttribute('font-size', '14');
-      titleEl.setAttribute('font-weight', '600');
-      titleEl.setAttribute('fill', isDark ? '#e0e0e0' : '#242424');
-      titleEl.textContent = sgTitle;
-      labelG.appendChild(titleEl);
+      // Title + type via foreignObject to match node HTML rendering exactly
+      const textLeftX = iconUri ? SG_ICON + 10 : 0;
+      const fo = document.createElementNS(SVG_NS, 'foreignObject');
+      fo.setAttribute('x', String(textLeftX));
+      fo.setAttribute('y', '0');
+      fo.setAttribute('width', String(box.width - 32 - textLeftX));
+      fo.setAttribute('height', String(SG_HEADER_H));
 
-      // Type subtitle — small text below title (matches node item-type line)
-      if (sgType && typeName) {
-        const typeEl = document.createElementNS(SVG_NS, 'text');
-        typeEl.setAttribute('x', String(textX));
-        typeEl.setAttribute('y', '24');
-        typeEl.setAttribute('font-family', '"Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif');
-        typeEl.setAttribute('font-size', '11');
-        typeEl.setAttribute('font-weight', '500');
-        typeEl.setAttribute('fill', TYPE_COLOR);
-        typeEl.textContent = typeName;
-        labelG.appendChild(typeEl);
-      }
+      const titleColor = isDark ? '#e0e0e0' : '#242424';
+      const typeHtml = sgType && typeName
+        ? `<div style="font-weight:500;font-size:11px;line-height:1;color:${TYPE_COLOR};margin-top:-1px">${typeName}</div>`
+        : '';
+
+      fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="
+        display:flex;flex-direction:column;justify-content:center;
+        height:100%;width:100%;box-sizing:border-box;
+        text-align:left;
+      ">
+        <div style="font-family:Consolas,'Courier New',monospace;font-weight:600;font-size:14px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${titleColor}">${sgTitle}</div>
+        ${typeHtml}
+      </div>`;
+      labelG.appendChild(fo);
 
       // Horizontal divider at the original box top edge
-      const lineY = SG_HEADER_H - 6;
+      const lineY = SG_HEADER_H;
       labelG.appendChild(svgEl('line', {
-        x1: String(-12),
+        x1: String(-16),
         y1: String(lineY),
-        x2: String(box.width - 12),
+        x2: String(box.width - 16),
         y2: String(lineY),
-        stroke: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.10)',
+        stroke: isDark ? 'rgba(255,255,255,0.20)' : 'rgba(0,0,0,0.10)',
         'stroke-width': '1',
       }));
     }
   });
 
-  // Expand viewBox
+  // Expand viewBox — account for subgraph headers that extend above original bounds
+  const sgExtra = subgraphDefs.length > 0 ? SG_HEADER_H : 0;
   if (expandViewBox) {
     const vb = root.getAttribute('viewBox');
     if (vb) {
       const p = vb.split(' ').map(Number);
       if (p.length === 4) {
-        root.setAttribute('viewBox', `${p[0] - 8} ${p[1] - 8} ${p[2] + 16} ${p[3] + 20}`);
+        root.setAttribute('viewBox', `${p[0] - 8} ${p[1] - 8 - sgExtra} ${p[2] + 16} ${p[3] + 20 + sgExtra}`);
       }
     }
   }

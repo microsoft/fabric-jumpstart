@@ -17,7 +17,7 @@ export default function GettingStartedClient({
       style={{
         maxWidth: '900px',
         margin: '0 auto',
-        padding: '40px 24px',
+        padding: '80px 24px 40px',
         lineHeight: '1.7',
         width: '100%',
       }}
@@ -29,7 +29,7 @@ export default function GettingStartedClient({
           textDecoration: 'none',
           fontSize: '14px',
           display: 'inline-block',
-          paddingTop: '12px',
+          paddingTop: '0px',
           marginBottom: '24px',
         }}
       >

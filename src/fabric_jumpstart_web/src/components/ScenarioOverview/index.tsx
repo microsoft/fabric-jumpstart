@@ -126,27 +126,18 @@ function ScenarioHeader({
             aria-hidden
             style={{ display: 'block', width: '100%', maxHeight: '500px', visibility: 'hidden', padding: '6px' }}
           />
-          {/* Diagram in frosted-glass panel — absolute to fill the area */}
+          {/* Diagram panel — absolute to fill the area */}
           <div
             onClick={onExpandDiagram}
             style={{
             position: 'absolute',
-            top: '6px',
-            left: '6px',
-            right: '6px',
+            top: 0,
+            left: 0,
+            right: 0,
             bottom: 0,
-            borderRadius: '4px 4px 0 0',
             overflow: 'hidden',
             cursor: 'zoom-in',
-            backgroundColor: isDark ? 'rgba(30,30,36,0.92)' : 'rgba(255,255,255,0.94)',
-            backdropFilter: 'blur(6px)',
-            WebkitBackdropFilter: 'blur(6px)',
-            border: isDark
-              ? '1px solid rgba(255,255,255,0.08)'
-              : '1px solid rgba(255,255,255,0.5)',
-            boxShadow: isDark
-              ? '0 2px 12px rgba(0,0,0,0.3)'
-              : '0 2px 12px rgba(0,0,0,0.06)',
+            backgroundColor: isDark ? 'rgba(30,30,36,0.96)' : 'rgba(255,255,255,0.97)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

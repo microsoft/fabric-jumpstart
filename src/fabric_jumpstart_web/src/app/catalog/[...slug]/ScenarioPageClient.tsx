@@ -49,7 +49,7 @@ export default function ScenarioPageClient({
           marginBottom: '24px',
         }}
       >
-        ← Back to all scenarios
+        ← Back to catalog
       </Link>
 
       {scenario ? (

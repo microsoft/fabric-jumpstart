@@ -383,7 +383,7 @@ const Header: React.FC = () => {
                 router.push(INTERNAL_ROUTE.SCENARIOS)
               }
             >
-              Scenarios
+              Catalog
             </Button>
             <Button
               className={mergeClasses(

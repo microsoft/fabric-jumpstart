@@ -284,23 +284,14 @@ function CardHeader({
           }}
           style={{
             position: 'absolute',
-            top: '10px',
-            left: '10px',
-            right: '10px',
+            top: 0,
+            left: 0,
+            right: 0,
             bottom: 0,
             zIndex: 1,
-            borderRadius: '4px',
             overflow: 'hidden',
             cursor: 'zoom-in',
-            backgroundColor: isDark ? 'rgba(30,30,36,0.92)' : 'rgba(255,255,255,0.94)',
-            backdropFilter: 'blur(6px)',
-            WebkitBackdropFilter: 'blur(6px)',
-            border: isDark
-              ? '1px solid rgba(255,255,255,0.08)'
-              : '1px solid rgba(255,255,255,0.5)',
-            boxShadow: isDark
-              ? '0 2px 12px rgba(0,0,0,0.3)'
-              : '0 2px 12px rgba(0,0,0,0.06)',
+            backgroundColor: isDark ? 'rgba(30,30,36,0.96)' : 'rgba(255,255,255,0.97)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

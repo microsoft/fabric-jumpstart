@@ -15,7 +15,7 @@
     "prebuild": "npm run generate-content"
   },
   "dependencies": {
-    "@fabric-msft/svg-icons": "^6.1.0",
+    "@fabric-msft/svg-icons": "6.1.0",
     "@fluentui/react-components": "^9.54.2",
     "@fluentui/react-icons": "^2.0.320",
     "gray-matter": "^4.0.3",
@@ -32,7 +32,7 @@
     "swiper": "^11.2.6"
   },
   "devDependencies": {
-    "@fabric-msft/theme": "^4.0.0",
+    "@fabric-msft/theme": "4.0.0",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
     "@types/jest": "^29.5.12",

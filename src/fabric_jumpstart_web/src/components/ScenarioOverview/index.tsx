@@ -5,16 +5,15 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { tokens } from '@fluentui/react-components';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import {
-  oneDark,
-  oneLight,
-} from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useThemeContext } from '@components/Providers/themeProvider';
 import workloadColorsData from '@data/workload-colors.json';
 import type { ScenarioCard } from '@scenario/scenario';
 
 const ExpandedModal = dynamic(() => import('@components/MermaidDiagram/ExpandedModal'), { ssr: false });
+
+const CodeBlock = dynamic(() => import('@components/Markdown/Codeblock'), {
+  ssr: false,
+});
 
 interface WorkloadColor {
   primary: string;
@@ -49,6 +48,16 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function mixHex(a: string, b: string, weight: number): string {
+  const ar = parseInt(a.slice(1, 3), 16), ag = parseInt(a.slice(3, 5), 16), ab = parseInt(a.slice(5, 7), 16);
+  const br = parseInt(b.slice(1, 3), 16), bg = parseInt(b.slice(3, 5), 16), bb = parseInt(b.slice(5, 7), 16);
+  const w = weight / 100;
+  const r = Math.round(ar * w + br * (1 - w));
+  const g = Math.round(ag * w + bg * (1 - w));
+  const bl = Math.round(ab * w + bb * (1 - w));
+  return `rgb(${r},${g},${bl})`;
+}
+
 function ScenarioHeader({
   scenario,
   isDark,
@@ -66,9 +75,6 @@ function ScenarioHeader({
     .map((t) => workloadColors[t])
     .filter((c): c is WorkloadColor => !!c && !!c.icon);
 
-  const primaryA = isDark ? 0.45 : 0.65;
-  const secondaryA = isDark ? 0.55 : 0.5;
-
   const headerHeight = mermaid_diagram ? 240 : 120;
 
   return (
@@ -80,10 +86,10 @@ function ScenarioHeader({
         overflow: 'hidden',
         borderRadius: '6px 6px 0 0',
         background: `
-          radial-gradient(ellipse 80% 60% at 50% 40%, ${hexToRgba(wc.primary, primaryA + 0.15)} 0%, transparent 70%),
+          radial-gradient(ellipse at 30% 50%, ${hexToRgba(wc.primary, 0.65)} 0%, transparent 70%),
           linear-gradient(135deg,
-            ${hexToRgba(wc.primary, primaryA)} 0%,
-            ${hexToRgba(wc.secondary, secondaryA)} 100%
+            ${wc.secondary} 0%,
+            ${mixHex(wc.primary, wc.secondary, 50)} 100%
           )
         `,
       }}
@@ -118,20 +124,22 @@ function ScenarioHeader({
           onClick={onExpandDiagram}
           style={{
             position: 'absolute',
-            inset: '14px',
-            bottom: '14px',
-            borderRadius: '6px',
+            top: '10px',
+            left: '10px',
+            right: '10px',
+            bottom: 0,
+            borderRadius: '4px',
             overflow: 'hidden',
             cursor: 'zoom-in',
-            backgroundColor: isDark ? 'rgba(30,30,36,0.82)' : 'rgba(255,255,255,0.88)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            backgroundColor: isDark ? 'rgba(30,30,36,0.92)' : 'rgba(255,255,255,0.94)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
             border: isDark
-              ? '1px solid rgba(255,255,255,0.1)'
+              ? '1px solid rgba(255,255,255,0.08)'
               : '1px solid rgba(255,255,255,0.5)',
             boxShadow: isDark
-              ? '0 2px 16px rgba(0,0,0,0.3)'
-              : '0 2px 16px rgba(0,0,0,0.06)',
+              ? '0 2px 12px rgba(0,0,0,0.3)'
+              : '0 2px 12px rgba(0,0,0,0.06)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -223,18 +231,10 @@ function ScenarioHeader({
 export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenario: ScenarioCard; mermaid_diagram?: string }) {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
-  const [copied, setCopied] = useState(false);
   const [diagramExpanded, setDiagramExpanded] = useState(false);
   const colors = difficultyColor[scenario.difficulty?.toLowerCase()] || difficultyColor.intermediate;
 
   const installCode = `import fabric_jumpstart as jumpstart\n\n# Install this scenario\njumpstart.install("${scenario.slug}")`;
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(installCode).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
 
   return (
     <div style={{
@@ -442,41 +442,14 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
           🚀 New to Jumpstart? Read the Getting Started guide →
         </a>
         <div style={{
-          position: 'relative',
           borderRadius: '6px',
           overflow: 'hidden',
         }}>
-          <SyntaxHighlighter
-            language="python"
-            style={isDark ? oneDark : oneLight}
-            customStyle={{
-              margin: 0,
-              borderRadius: '6px',
-              fontSize: '13px',
-              lineHeight: 1.6,
-              padding: '16px 20px',
-            }}
-          >
-            {installCode}
-          </SyntaxHighlighter>
-          <button
-            onClick={handleCopy}
-            style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              padding: '4px 10px',
-              borderRadius: '4px',
-              border: 'none',
-              fontSize: '11px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
-              color: tokens.colorNeutralForeground2,
-            }}
-          >
-            {copied ? '✓ Copied' : 'Copy'}
-          </button>
+          <CodeBlock isDarkMode={isDark}>
+            <code className="language-python">
+              {installCode}
+            </code>
+          </CodeBlock>
         </div>
       </div>
       </div>

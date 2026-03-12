@@ -276,7 +276,7 @@ function CardHeader({
             borderRadius: '4px',
             overflow: 'hidden',
             cursor: 'zoom-in',
-            backgroundColor: isDark ? 'rgba(30,30,36,0.88)' : 'rgba(255,255,255,0.88)',
+            backgroundColor: isDark ? 'rgba(30,30,36,0.92)' : 'rgba(255,255,255,0.94)',
             backdropFilter: 'blur(6px)',
             WebkitBackdropFilter: 'blur(6px)',
             border: isDark

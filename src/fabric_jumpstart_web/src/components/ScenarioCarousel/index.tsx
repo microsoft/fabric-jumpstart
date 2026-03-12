@@ -216,7 +216,7 @@ export default function ScenarioCarousel() {
           </h2>
         </div>
         <Link
-          href="/fabric_jumpstart"
+          href="/catalog"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -327,7 +327,7 @@ export default function ScenarioCarousel() {
               style={{ width: '340px', maxWidth: '85vw' }}
             >
               <Link
-                href={`/fabric_jumpstart/${scenario.slug}/`}
+                href={`/catalog/${scenario.slug}/`}
                 style={{ textDecoration: 'none', display: 'block' }}
               >
                 <div

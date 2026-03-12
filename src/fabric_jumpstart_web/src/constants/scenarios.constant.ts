@@ -4,14 +4,14 @@
 export const scenariosConst = [
   {
     id: 'realTimeIntelligence',
-    link: '/fabric_jumpstart',
+    link: '/catalog',
   },
   {
     id: 'dataEngineering',
-    link: '/fabric_jumpstart',
+    link: '/catalog',
   },
   {
     id: 'platformMonitoring',
-    link: '/fabric_jumpstart',
+    link: '/catalog',
   },
 ];

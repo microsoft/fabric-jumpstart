@@ -8,7 +8,7 @@ export async function generateStaticParams() {
   const docsDir = path.join(
     process.cwd(),
     'docs',
-    'fabric_jumpstart'
+    'catalog'
   );
 
   if (!fs.existsSync(docsDir)) {

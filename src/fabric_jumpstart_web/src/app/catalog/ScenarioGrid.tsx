@@ -509,7 +509,7 @@ export default function ScenarioGrid() {
           return (
           <Link
             key={scenario.id}
-            href={`/fabric_jumpstart/${scenario.slug}/`}
+            href={`/catalog/${scenario.slug}/`}
             style={{ textDecoration: 'none' }}
           >
             <div className={styles.card}>

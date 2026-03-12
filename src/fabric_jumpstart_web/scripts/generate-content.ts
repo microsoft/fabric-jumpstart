@@ -138,7 +138,7 @@ function generateDocs(scenarios: ScenarioYml[]): void {
   }
 
   // Create root _index.md
-  const rootDocsDir = path.join(DOCS_DIR, 'fabric_jumpstart');
+  const rootDocsDir = path.join(DOCS_DIR, 'catalog');
   fs.mkdirSync(rootDocsDir, { recursive: true });
   fs.writeFileSync(
     path.join(DOCS_DIR, '_index.md'),
@@ -194,7 +194,7 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
     scenarioChildren.push({
       name: scenario.logical_id,
       type: 'directory',
-      path: `fabric_jumpstart/${scenario.logical_id}`,
+      path: `catalog/${scenario.logical_id}`,
       children: [],
       frontMatter: {
         type: 'docs',
@@ -211,7 +211,7 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
     {
       name: 'getting-started',
       type: 'directory',
-      path: 'fabric_jumpstart/getting-started',
+      path: 'catalog/getting-started',
       children: [],
       frontMatter: {
         type: 'docs',
@@ -233,9 +233,9 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
     frontMatter: { type: 'docs' },
     children: [
       {
-        name: 'fabric_jumpstart',
+        name: 'catalog',
         type: 'directory',
-        path: 'fabric_jumpstart',
+        path: 'catalog',
         frontMatter: {
           type: 'docs',
           title: 'Jumpstart Scenarios',

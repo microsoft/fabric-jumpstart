@@ -26,7 +26,7 @@ items_in_scope:
 - Environment
 feature_flags:
 - enable_lakehouse_unpublish
-jumpstart_docs_uri: https://github.com/microsoft/fabric-analytics-roadshow-lab/blob/v0.1.1/README.md
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/stateful-streaming-lakehouse/
 entry_point: explore_streaming.Notebook
 test_suite: ''
 owner_email: FabricJumpstart.StatefulStreamingLakehouse@microsoft.com

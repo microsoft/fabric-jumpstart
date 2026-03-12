@@ -32,7 +32,7 @@ export default function GettingStartedClient({
       }}
     >
       <Link
-        href="/fabric_jumpstart/"
+        href="/catalog/"
         style={{
           color: tokens.colorBrandForeground1,
           textDecoration: 'none',

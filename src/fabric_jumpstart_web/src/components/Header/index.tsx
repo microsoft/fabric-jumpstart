@@ -468,7 +468,7 @@ const Header: React.FC = () => {
                 {searchResults.map((r) => (
                   <Link
                     key={r.slug}
-                    href={`/fabric_jumpstart/${r.slug}/`}
+                    href={`/catalog/${r.slug}/`}
                     className={styles.searchResultItem}
                     onClick={() => setSearchOpen(false)}
                   >

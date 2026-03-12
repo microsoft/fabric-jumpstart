@@ -40,7 +40,7 @@ export default function ScenarioPageClient({
       }}
     >
       <Link
-        href="/fabric_jumpstart/"
+        href="/catalog/"
         style={{
           color: tokens.colorBrandForeground1,
           textDecoration: 'none',

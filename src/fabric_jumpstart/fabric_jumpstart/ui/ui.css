@@ -672,7 +672,9 @@
 /* Diagram overlay */
 .diagram-overlay {
     position: absolute;
-    inset: 10px;
+    top: 10px;
+    left: 10px;
+    right: 10px;
     bottom: 0;
     border-radius: 4px;
     background: rgba(255,255,255,0.92);

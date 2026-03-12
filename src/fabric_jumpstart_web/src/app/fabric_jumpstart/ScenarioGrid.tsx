@@ -277,8 +277,10 @@ function CardHeader({
           }}
           style={{
             position: 'absolute',
-            inset: '10px',
-            bottom: '0px',
+            top: '10px',
+            left: '10px',
+            right: '10px',
+            bottom: 0,
             zIndex: 1,
             borderRadius: '4px',
             overflow: 'hidden',

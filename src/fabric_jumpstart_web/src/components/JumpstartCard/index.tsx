@@ -79,11 +79,6 @@ function CardHeader({
     >
       {/* Architecture diagram */}
       <div
-        onClick={onExpandDiagram ? (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onExpandDiagram();
-        } : undefined}
         style={{
           position: 'absolute',
           top: 0,
@@ -99,14 +94,17 @@ function CardHeader({
           justifyContent: 'center',
           padding: '4px',
         }}
+        onClick={onExpandDiagram ? (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onExpandDiagram();
+        } : undefined}
       >
-        <div style={{ width: '100%', height: '100%', pointerEvents: onExpandDiagram ? 'none' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img
-            src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
-            alt="Architecture diagram"
-            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-          />
-        </div>
+        <img
+          src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
+          alt="Architecture diagram"
+          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', pointerEvents: 'none' }}
+        />
         {/* Expand hint — only when expandable */}
         {onExpandDiagram && (
           <div style={{

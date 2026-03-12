@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { tokens } from '@fluentui/react-components';
+import { Search16Regular } from '@fluentui/react-icons';
 import { useFilterContext, emptyFilters } from '@components/Providers/filterProvider';
 import type { FilterState } from '@components/Providers/filterProvider';
 import scenariosData from '@data/scenarios.json';
@@ -69,24 +70,35 @@ export default function SidebarFilters() {
       }}
     >
       {/* Search */}
-      <input
-        type="text"
-        placeholder="Search jumpstarts…"
-        value={filters.search}
-        onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-        style={{
-          width: '100%',
-          padding: '8px 12px',
-          borderRadius: '8px',
-          border: `1px solid ${tokens.colorNeutralStroke1}`,
-          backgroundColor: tokens.colorNeutralBackground1,
-          color: tokens.colorNeutralForeground1,
-          fontSize: '13px',
-          outline: 'none',
-          boxSizing: 'border-box',
-          marginBottom: '12px',
-        }}
-      />
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        padding: '8px 16px',
+        borderRadius: '8px',
+        backgroundColor: tokens.colorNeutralBackground1,
+        border: `1px solid ${tokens.colorNeutralStroke1}`,
+        color: tokens.colorNeutralForeground1,
+        width: '100%',
+        boxSizing: 'border-box',
+        marginBottom: '12px',
+      }}>
+        <Search16Regular style={{ color: tokens.colorNeutralForeground2, flexShrink: 0 }} />
+        <input
+          type="text"
+          placeholder="Search jumpstarts…"
+          value={filters.search}
+          onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+          style={{
+            border: 'none',
+            backgroundColor: 'transparent',
+            outline: 'none',
+            fontSize: '14px',
+            color: tokens.colorNeutralForeground1,
+            width: '100%',
+          }}
+        />
+      </div>
 
       {/* Jumpstart Class */}
       <div style={{ marginBottom: '10px' }}>

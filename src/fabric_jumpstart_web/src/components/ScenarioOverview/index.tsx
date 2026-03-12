@@ -75,14 +75,13 @@ function ScenarioHeader({
     .map((t) => workloadColors[t])
     .filter((c): c is WorkloadColor => !!c && !!c.icon);
 
-  const headerHeight = mermaid_diagram ? 240 : 120;
-
   return (
     <div
       style={{
         position: 'relative',
         width: '100%',
-        height: `${headerHeight}px`,
+        minHeight: mermaid_diagram ? '240px' : '120px',
+        height: mermaid_diagram ? undefined : '120px',
         overflow: 'hidden',
         borderRadius: '6px 6px 0 0',
         background: `
@@ -119,16 +118,24 @@ function ScenarioHeader({
       />
 
       {mermaid_diagram ? (
-        /* Diagram in frosted-glass panel */
-        <div
-          onClick={onExpandDiagram}
-          style={{
+        <>
+          {/* Invisible in-flow image to size the container for tall diagrams */}
+          <img
+            src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
+            alt=""
+            aria-hidden
+            style={{ display: 'block', width: '100%', maxHeight: '500px', visibility: 'hidden', padding: '6px' }}
+          />
+          {/* Diagram in frosted-glass panel — absolute to fill the area */}
+          <div
+            onClick={onExpandDiagram}
+            style={{
             position: 'absolute',
-            top: '10px',
-            left: '10px',
-            right: '10px',
+            top: '6px',
+            left: '6px',
+            right: '6px',
             bottom: 0,
-            borderRadius: '4px',
+            borderRadius: '4px 4px 0 0',
             overflow: 'hidden',
             cursor: 'zoom-in',
             backgroundColor: isDark ? 'rgba(30,30,36,0.92)' : 'rgba(255,255,255,0.94)',
@@ -145,7 +152,7 @@ function ScenarioHeader({
             justifyContent: 'center',
           }}
         >
-          <div style={{ width: '100%', height: '100%', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
+          <div style={{ width: '100%', height: '100%', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
             <img
               src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
               alt="Architecture diagram"
@@ -177,6 +184,7 @@ function ScenarioHeader({
             Expand
           </div>
         </div>
+        </>
       ) : (
         /* Workload icons (default) */
         <div
@@ -287,6 +295,7 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
         gap: '12px',
         marginBottom: '24px',
       }}>
+        <PropertyCard label="Class" value={scenario.core ? 'Core' : 'Community'} isDark={isDark} />
         <PropertyCard label="Type" value={scenario.type} isDark={isDark} />
         <PropertyCard
           label="Difficulty"

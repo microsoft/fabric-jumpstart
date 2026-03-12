@@ -30,7 +30,7 @@ export const fabricLight: PrismTheme = {
   },
   'pre[class*="language-"]': {
     color: '#323130',
-    background: '#f3f2f1',
+    background: 'none',
     fontFamily:
       'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
     textAlign: 'left',
@@ -108,7 +108,7 @@ export const fabricDark: PrismTheme = {
   },
   'pre[class*="language-"]': {
     color: '#d4d4d4',
-    background: '#1e1e1e',
+    background: 'none',
     fontFamily:
       'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
     textAlign: 'left',

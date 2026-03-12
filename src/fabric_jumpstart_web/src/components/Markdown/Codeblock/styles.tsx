@@ -7,7 +7,6 @@ export const useStyles = makeStyles({
     border: `1px solid ${tokens.colorNeutralStroke1}`,
     borderRadius: '8px',
     overflow: 'hidden',
-    marginBottom: spacingToken.spacing30,
 
     '& code': {
       backgroundColor: 'transparent !important',
@@ -17,16 +16,19 @@ export const useStyles = makeStyles({
     },
   },
   codeBlockHeader: {
-    backgroundColor: tokens.colorNeutralBackground4,
+    backgroundColor: tokens.colorNeutralBackground3,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: `${spacingToken.spacing2} ${spacingToken.spacing10}`,
-    marginBottom: '-8px',
+    padding: '6px 12px',
   },
   codeBlockBody: {
     position: 'relative',
-    marginTop: spacingToken.spacing8,
+    backgroundColor: tokens.colorNeutralBackground1,
+
+    '& pre': {
+      backgroundColor: 'transparent !important',
+    },
   },
   copyCodeSuccessfullyToast: {
     position: 'absolute',

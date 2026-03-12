@@ -89,27 +89,23 @@ const CodeBlock = (props: any) => {
   };
 
   const codeBlockLang = useMemo(() => refactorLang(), [language]);
+  const displayLang = language || 'Python';
+
   return (
     <div className={styles.codeBlockContainer}>
       <div className={styles.codeBlockHeader}>
-        <span>{language}</span>
-      </div>
-      <div className={styles.codeBlockBody}>
-        <SyntaxHighlighter
-          language={codeBlockLang}
-          style={isDark ? fabricDark : fabricLight}
-          showLineNumbers={false}
-          tabIndex={0}
-        >
-          {text}
-        </SyntaxHighlighter>
+        <span style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color: tokens.colorNeutralForeground2,
+          fontFamily: "Menlo, Monaco, Consolas, 'Courier New', monospace",
+        }}>
+          {displayLang}
+        </span>
         <button
           onClick={handleCopy}
           style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            padding: '4px 10px',
+            padding: '2px 8px',
             borderRadius: '4px',
             border: 'none',
             fontSize: '11px',
@@ -121,6 +117,17 @@ const CodeBlock = (props: any) => {
         >
           {copied ? '✓ Copied' : 'Copy'}
         </button>
+      </div>
+      <div className={styles.codeBlockBody} style={{ backgroundColor: isDark ? '#1e1e1e' : '#ffffff' }}>
+        <SyntaxHighlighter
+          language={codeBlockLang || 'python'}
+          style={isDark ? fabricDark : fabricLight}
+          showLineNumbers={false}
+          tabIndex={0}
+          customStyle={{ margin: 0, padding: '16px 20px', background: 'none', backgroundColor: 'transparent' }}
+        >
+          {text}
+        </SyntaxHighlighter>
       </div>
     </div>
   );

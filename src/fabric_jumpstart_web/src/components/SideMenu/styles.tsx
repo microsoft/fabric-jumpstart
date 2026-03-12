@@ -16,7 +16,7 @@ export const useStyles = makeStyles({
   },
   sideMenu: {
     boxShadow: `4px 0px 20px 0px ${tokens.shadow64Brand}`,
-    backgroundColor: tokens.colorNeutralBackground3,
+    backgroundColor: tokens.colorNeutralBackground2,
     width: '330px',
     minWidth: '330px',
     maxWidth: '330px',

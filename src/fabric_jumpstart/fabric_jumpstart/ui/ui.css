@@ -448,7 +448,7 @@
 /* Jumpstart cards */
 .jumpstart-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 360px));
     gap: 24px;
     margin-bottom: 16px;
 }
@@ -506,20 +506,21 @@
 
 .workload-ribbon {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: 8px;
+    right: 8px;
     bottom: 0;
     transform: translateY(33%);
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 6px 8px;
-    background: rgba(255, 255, 255, 0.8);
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.6);
     border-radius: 10px;
     align-items: center;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(6px);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.06);
     z-index: 2;
 }
 
@@ -527,19 +528,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 5px 6px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     cursor: default;
     pointer-events: auto;
 }
 
 .workload-chip .workload-icon svg,
 .workload-chip .workload-icon img {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
     display: block;
 }
 

@@ -599,7 +599,7 @@ export default function ScenarioGrid() {
                 </div>
                 {/* Bottom stats */}
                 <div className={styles.deployTime}>
-                  📦 {scenario.minutesToDeploy} min deploy • ⏱ {scenario.minutesToComplete} min complete • {scenario.itemsInScope.length} Item types
+                  📦 {scenario.minutesToDeploy} min. deploy • ⏱️ {scenario.minutesToComplete} min. complete • {scenario.itemsInScope.length} item types
                 </div>
               </div>
             </div>

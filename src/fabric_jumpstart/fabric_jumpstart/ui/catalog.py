@@ -322,17 +322,17 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             meta_parts = []
             if deploy_min_val not in (None, ''):
                 try:
-                    meta_parts.append(f"📦 {int(deploy_min_val)} min deploy")
+                    meta_parts.append(f"📦 {int(deploy_min_val)} min. deploy")
                 except (TypeError, ValueError):
                     meta_parts.append(f"📦 {html.escape(str(deploy_min_val))} deploy")
             if complete_min_val not in (None, ''):
                 try:
-                    meta_parts.append(f"⏱ {int(complete_min_val)} min")
+                    meta_parts.append(f"⏱️ {int(complete_min_val)} min. complete")
                 except (TypeError, ValueError):
-                    meta_parts.append(f"⏱ {html.escape(str(complete_min_val))}")
+                    meta_parts.append(f"⏱️ {html.escape(str(complete_min_val))}")
             if items_in_scope:
-                meta_parts.append(f"{len(items_in_scope)} Item types")
-            meta_footer_text = '  •  '.join(meta_parts)
+                meta_parts.append(f"{len(items_in_scope)} item types")
+            meta_footer_text = '   •   '.join(meta_parts)
             meta_footer_html = f'<div class="jumpstart-meta-footer">{meta_footer_text}</div>' if meta_footer_text else ''
 
             html_parts.append(f'''

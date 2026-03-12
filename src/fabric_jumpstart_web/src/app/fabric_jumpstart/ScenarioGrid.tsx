@@ -114,8 +114,9 @@ const useStyles = makeStyles({
     fontSize: '12px',
     ...shorthands.padding('4px', '8px'),
     ...shorthands.borderRadius('4px'),
-    backgroundColor: tokens.colorNeutralBackground3,
-    color: tokens.colorNeutralForeground1,
+    backgroundColor: tokens.colorNeutralBackground4,
+    color: tokens.colorNeutralForeground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   difficultyBadge: {
     fontSize: '12px',

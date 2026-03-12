@@ -44,6 +44,7 @@ function extractHeadings(source: string): TocItem[] {
 function CodeBlock(props: any) {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
+  const [copied, setCopied] = React.useState(false);
 
   const getChildrenText = (children: React.ReactNode): string => {
     if (typeof children === 'string') return children;
@@ -71,28 +72,52 @@ function CodeBlock(props: any) {
     return <MermaidDiagram chart={text} />;
   }
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div style={{ margin: '16px 0', borderRadius: '8px', overflow: 'hidden' }}>
-      {language && (
-        <div
+    <div style={{ margin: '16px 0', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}` }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '6px 12px',
+          fontSize: '12px',
+          fontWeight: 600,
+          backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+          color: tokens.colorNeutralForeground2,
+        }}
+      >
+        <span style={{ fontFamily: "Menlo, Monaco, Consolas, 'Courier New', monospace" }}>
+          {language || 'text'}
+        </span>
+        <button
+          onClick={handleCopy}
           style={{
-            padding: '6px 16px',
-            fontSize: '12px',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            border: 'none',
+            fontSize: '11px',
             fontWeight: 600,
-            backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+            cursor: 'pointer',
+            backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
             color: tokens.colorNeutralForeground2,
-            borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
           }}
+          aria-label="Copy code"
         >
-          {language}
-        </div>
-      )}
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+      </div>
       <SyntaxHighlighter
         language={language || 'text'}
         style={isDark ? oneDark : oneLight}
         customStyle={{
           margin: 0,
-          borderRadius: language ? '0 0 8px 8px' : '8px',
+          borderRadius: '0 0 8px 8px',
           fontSize: '13px',
           lineHeight: 1.6,
           padding: '16px 20px',

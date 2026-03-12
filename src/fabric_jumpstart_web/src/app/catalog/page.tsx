@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import { tokens } from '@fluentui/react-components';
 import PageWrapper from '@components/PageWrapper';
 import useTranslation from '@utils/translateWrapper';
 import HeroBanner from '@components/HeroBanner';
@@ -28,12 +27,12 @@ export default function Scenarios() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              backgroundColor: tokens.colorSubtleBackgroundHover,
+              backgroundColor: 'rgba(0, 120, 212, 0.1)',
               borderRadius: '8px',
               padding: '6px 14px',
               fontSize: '13px',
               fontWeight: 500,
-              color: tokens.colorCompoundBrandForeground1,
+              color: '#0078d4',
               textDecoration: 'none',
             }}
           >

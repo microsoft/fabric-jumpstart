@@ -109,10 +109,11 @@ const useStyles = makeStyles({
   navButton: {
     height: '48px',
     ...shorthands.padding(spacingToken.spacing0, spacingToken.spacing10),
+    ...shorthands.borderRadius(0),
     fontWeight: '400',
     ...shorthands.border('none'),
     ':hover': {
-      backgroundColor: tokens.colorNeutralBackground4Hover,
+      backgroundColor: tokens.colorNeutralBackground1Hover,
       ...shorthands.border('none'),
     },
     [device.smallLaptop]: {
@@ -191,11 +192,12 @@ const useStyles = makeStyles({
   pypiButton: {
     height: '48px',
     ...shorthands.padding(spacingToken.spacing0, spacingToken.spacing10),
+    ...shorthands.borderRadius(0),
     fontWeight: '400',
     ...shorthands.border('none'),
     backgroundColor: 'transparent',
     ':hover': {
-      backgroundColor: tokens.colorNeutralBackground4Hover,
+      backgroundColor: tokens.colorNeutralBackground1Hover,
       ...shorthands.border('none'),
     },
   },

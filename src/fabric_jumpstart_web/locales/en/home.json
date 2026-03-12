@@ -2,7 +2,7 @@
   "banner": {
     "label": "Discover",
     "heading": "Fabric Jumpstart",
-    "desc": "High quality demos, tutorials, and accelerators with one-click install that are guaranteed to work. Experience the fullness of Microsoft Fabric with minimal dependencies.",
+    "desc": "High-quality demos, tutorials, and accelerators with one-click installation that just work. Experience the full power of Microsoft Fabric.",
     "buttonText": {
       "left": {
         "label": "Explore the catalog"

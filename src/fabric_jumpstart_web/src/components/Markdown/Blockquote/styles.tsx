@@ -6,11 +6,12 @@ import spacingToken from '@styles/spacing';
 
 export const useStyles = makeStyles({
   customBlockquote: {
-    backgroundColor: tokens.colorPaletteBlueBackground2,
-    color: tokens.colorBrandBackground3Static,
+    backgroundColor: tokens.colorNeutralBackground4,
+    color: tokens.colorNeutralForeground1,
     padding: `${spacingToken.spacing24} ${spacingToken.spacing24} ${spacingToken.spacing24} ${spacingToken.spacing50}`,
     margin: `${spacingToken.spacing30} ${spacingToken.spacing0}`,
     borderRadius: '10px',
+    borderLeft: `4px solid ${tokens.colorBrandForeground1}`,
 
     '& p': {
       position: 'relative',
@@ -43,6 +44,7 @@ export const useStyles = makeStyles({
   customBlockquoteDisclaimer: {
     backgroundColor: tokens.colorPaletteYellowBackground1,
     color: tokens.colorPaletteYellowForeground1,
+    borderLeftColor: tokens.colorPaletteYellowForeground1,
 
     '& p': {
       position: 'relative',

@@ -4,14 +4,14 @@ export const useGlobalStyles = makeStaticStyles({
   body: {
     backgroundColor: 'var(--colorNeutralBackground1)',
   },
-  'body::-webkit-scrollbar': {
+  '::-webkit-scrollbar': {
     width: '10px',
     height: '10px',
   },
-  'body::-webkit-scrollbar-track': {
+  '::-webkit-scrollbar-track': {
     backgroundColor: 'var(--colorNeutralBackground1)',
   },
-  'body::-webkit-scrollbar-thumb': {
+  '::-webkit-scrollbar-thumb': {
     background: 'var(--scrollbarThumbBg)',
     borderRadius: '20px',
     width: '9px',

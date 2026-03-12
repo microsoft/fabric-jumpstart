@@ -358,6 +358,83 @@ export function enhanceDiagram(
     }
   });
 
+  // ── Subgraph / cluster styling ──────────────────────────────────────
+  const FABRIC_ICON_URI =
+    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iY3VycmVudENvbG9yIj48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtYSkiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0ibTMuMTQ4IDIxLjMyMi0uNDEgMS41MDFjLS4xNTMuNDgtLjM2NyAxLjE4Ni0uNDgyIDEuODE0YTMuOTQgMy45NCAwIDAgMCAzLjI0NyA1LjMxM2MuNTU0LjA4IDEuMTgxLjA3NSAxLjg4NC0uMDI4bDMuMjMtLjQ0NmEyLjA1IDIuMDUgMCAwIDAgMS42OTUtMS40OWwyLjIyMy04LjE2NHoiIGNsaXAtcnVsZT0iZXZlbm9kZCIvPjxwYXRoIGZpbGw9InVybCgjaTdjYjkyZC1iKSIgZD0iTTYuMjk4IDIxLjcxYy0zLjQwNC41MjctNC4xMDMgMy4wOTYtNC4xMDMgMy4wOTZsMy4yNi0xMS45NzkgMTcuMDM1LTIuMzA0LTIuMzIzIDguNDM4Yy0uMTIuNDUyLS41Ljc5OC0uOTcxLjg3bC0uMDk1LjAxNi0xMi44OTggMS44Nzl6Ii8+PHBhdGggZmlsbD0idXJsKCNpN2NiOTJkLWMpIiBmaWxsLW9wYWNpdHk9Ii44IiBkPSJNNi4yOTggMjEuNzFjLTMuNDA0LjUyNy00LjEwMyAzLjA5Ni00LjEwMyAzLjA5NmwzLjI2LTExLjk3OSAxNy4wMzUtMi4zMDQtMi4zMjMgOC40MzhjLS4xMi40NTItLjUuNzk4LS45NzEuODdsLS4wOTUuMDE2LTEyLjg5OCAxLjg3OXoiLz48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtZCkiIGQ9Im04LjIzIDE0LjA2NiAxOC44Ni0yLjc4NmMuNDQ4LS4wNi44MTEtLjM5LjkyNi0uODJsMS45NDYtNy4wNDNhMS4xMTYgMS4xMTYgMCAwIDAtMS4yMTgtMS40MDhMMTAuNzUgNC42NjhhNS4wMyA1LjAzIDAgMCAwLTQuMDQ0IDMuNjM2TDQuMTEgMTcuNzA5Yy41Mi0xLjkwMi44NC0zLjA1IDQuMTItMy42NDMiLz48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtZSkiIGQ9Im04LjIzIDE0LjA2NiAxOC44Ni0yLjc4NmMuNDQ4LS4wNi44MTEtLjM5LjkyNi0uODJsMS45NDYtNy4wNDNhMS4xMTYgMS4xMTYgMCAwIDAtMS4yMTgtMS40MDhMMTAuNzUgNC42NjhhNS4wMyA1LjAzIDAgMCAwLTQuMDQ0IDMuNjM2TDQuMTEgMTcuNzA5Yy41Mi0xLjkwMi44NC0zLjA1IDQuMTItMy42NDMiLz48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtZikiIGZpbGwtb3BhY2l0eT0iLjQiIGQ9Im04LjIzIDE0LjA2NiAxOC44Ni0yLjc4NmMuNDQ4LS4wNi44MTEtLjM5LjkyNi0uODJsMS45NDYtNy4wNDNhMS4xMTYgMS4xMTYgMCAwIDAtMS4yMTgtMS40MDhMMTAuNzUgNC42NjhhNS4wMyA1LjAzIDAgMCAwLTQuMDQ0IDMuNjM2TDQuMTEgMTcuNzA5Yy41Mi0xLjkwMi44NC0zLjA1IDQuMTItMy42NDMiLz48cGF0aCBmaWxsPSJ1cmwoI2k3Y2I5MmQtZykiIGQ9Ik04LjIzIDE0LjA2NmMtMi43MzEuNDk1LTMuNDA5IDEuMzc0LTMuODYgMi43NTNsLTIuMTc1IDcuOTg4cy42OTUtMi41NDMgNC4wNTgtMy4wODdMMTkuMSAxOS44NDhsLjA5NS0uMDE2Yy40NzEtLjA3MS44NTEtLjQxOS45NzItLjg3bDEuOTExLTYuOTQxLTEzLjg1IDIuMDQ1WiIvPjxwYXRoIGZpbGw9InVybCgjaTdjYjkyZC1oKSIgZmlsbC1vcGFjaXR5PSIuMiIgZD0iTTguMjMgMTQuMDY2Yy0yLjczMS40OTUtMy40MDkgMS4zNzQtMy44NiAyLjc1M2wtMi4xNzUgNy45ODhzLjY5NS0yLjU0MyA0LjA1OC0zLjA4N0wxOS4xIDE5Ljg0OGwuMDk1LS4wMTZjLjQ3MS0uMDcxLjg1MS0uNDE5Ljk3Mi0uODdsMS45MTEtNi45NDEtMTMuODUgMi4wNDVaIi8+PHBhdGggZmlsbD0idXJsKCNpN2NiOTJkLWkpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02LjI1MyAyMS43MmMtMi44NDIuNDYtMy43NzUgMi4zNDItMy45OTcgMi45MTZhMy45NCAzLjk0IDAgMCAwIDMuMjQ3IDUuMzE0Yy41NTQuMDggMS4xODEuMDc1IDEuODg0LS4wMjhsMy4yMy0uNDQ2YTIuMDUgMi4wNSAwIDAgMCAxLjY5NS0xLjQ5bDIuMDI2LTcuNDQzeiIgY2xpcC1ydWxlPSJldmVub2RkIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWEiIHgxPSI4LjI2OCIgeDI9IjguMjY4IiB5MT0iMzAuMDA1IiB5Mj0iMTkuODIyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIuMDU2IiBzdG9wLWNvbG9yPSIjMkFBQzk0Ii8+PHN0b3Agb2Zmc2V0PSIuMTU1IiBzdG9wLWNvbG9yPSIjMjM5Qzg3Ii8+PHN0b3Agb2Zmc2V0PSIuMzcyIiBzdG9wLWNvbG9yPSIjMTc3RTcxIi8+PHN0b3Agb2Zmc2V0PSIuNTg4IiBzdG9wLWNvbG9yPSIjMEU2OTYxIi8+PHN0b3Agb2Zmc2V0PSIuNzk5IiBzdG9wLWNvbG9yPSIjMDk1RDU3Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDg1OTU0Ii8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9Imk3Y2I5MmQtYiIgeDE9IjIxLjEzNCIgeDI9IjExLjMwMiIgeTE9IjIyLjYxNyIgeTI9IjExLjkyMyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA0MiIgc3RvcC1jb2xvcj0iI0FCRTg4RSIvPjxzdG9wIG9mZnNldD0iLjU0OSIgc3RvcC1jb2xvcj0iIzJBQUE5MiIvPjxzdG9wIG9mZnNldD0iLjkwNiIgc3RvcC1jb2xvcj0iIzExNzg2NSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWMiIHgxPSItMy4wMjgiIHgyPSI2LjMyOSIgeTE9IjIyLjA5NyIgeTI9IjE4LjkwNiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM2QUQ2RjkiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2QUQ2RjkiIHN0b3Atb3BhY2l0eT0iMCIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWQiIHgxPSI0LjExIiB4Mj0iMjkuMDE2IiB5MT0iOS44NTUiIHkyPSI5Ljg1NSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIG9mZnNldD0iLjA0MyIgc3RvcC1jb2xvcj0iIzI1RkZENCIvPjxzdG9wIG9mZnNldD0iLjg3NCIgc3RvcC1jb2xvcj0iIzU1RERCOSIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWUiIHgxPSI0LjExIiB4Mj0iMjYuNTQ2IiB5MT0iNi4zNzMiIHkyPSIxNi43OTEiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjNkFENkY5Ii8+PHN0b3Agb2Zmc2V0PSIuMjMiIHN0b3AtY29sb3I9IiM2MEU5RDAiLz48c3RvcCBvZmZzZXQ9Ii42NTEiIHN0b3AtY29sb3I9IiM2REU5QkIiLz48c3RvcCBvZmZzZXQ9Ii45OTQiIHN0b3AtY29sb3I9IiNBQkU4OEUiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iaTdjYjkyZC1mIiB4MT0iNi4xODUiIHgyPSIxOC4zODUiIHkxPSI4LjMyMyIgeTI9IjExLjAyMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPjxzdG9wIG9mZnNldD0iLjQ1OSIgc3RvcC1jb2xvcj0iI2ZmZiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9Imk3Y2I5MmQtZyIgeDE9IjEwLjIzIiB4Mj0iMTAuNTE4IiB5MT0iMTguNzc0IiB5Mj0iMTAuMjE5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIuMjA1IiBzdG9wLWNvbG9yPSIjMDYzRDNCIiBzdG9wLW9wYWNpdHk9IjAiLz48c3RvcCBvZmZzZXQ9Ii41ODYiIHN0b3AtY29sb3I9IiMwNjNEM0IiIHN0b3Atb3BhY2l0eT0iLjIzNyIvPjxzdG9wIG9mZnNldD0iLjg3MiIgc3RvcC1jb2xvcj0iIzA2M0QzQiIgc3RvcC1vcGFjaXR5PSIuNzUiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iaTdjYjkyZC1oIiB4MT0iMS4xNjYiIHgyPSIxMS41OTIiIHkxPSIxNy45MjMiIHkyPSIxOS44ODQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjZmZmIiBzdG9wLW9wYWNpdHk9IjAiLz48c3RvcCBvZmZzZXQ9Ii40NTkiIHN0b3AtY29sb3I9IiNmZmYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJpN2NiOTJkLWkiIHgxPSI4LjY5OCIgeDI9IjYuNjY0IiB5MT0iMjcuMTgzIiB5Mj0iMTcuMjM4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agb2Zmc2V0PSIuMDY0IiBzdG9wLWNvbG9yPSIjMDYzRDNCIiBzdG9wLW9wYWNpdHk9IjAiLz48c3RvcCBvZmZzZXQ9Ii4xNyIgc3RvcC1jb2xvcj0iIzA2M0QzQiIgc3RvcC1vcGFjaXR5PSIuMTM1Ii8+PHN0b3Agb2Zmc2V0PSIuNTYyIiBzdG9wLWNvbG9yPSIjMDYzRDNCIiBzdG9wLW9wYWNpdHk9Ii41OTkiLz48c3RvcCBvZmZzZXQ9Ii44NSIgc3RvcC1jb2xvcj0iIzA2M0QzQiIgc3RvcC1vcGFjaXR5PSIuOSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzA2M0QzQiIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjwvc3ZnPg==';
+
+  // Extract subgraph names from the Mermaid source
+  const subgraphNames: string[] = [];
+  const sgRegex = /subgraph\s+(.+)/g;
+  let sgMatch: RegExpExecArray | null;
+  while ((sgMatch = sgRegex.exec(chart)) !== null) {
+    subgraphNames.push(sgMatch[1].trim());
+  }
+
+  root.querySelectorAll('g.cluster').forEach((clusterG, idx) => {
+    const rect = clusterG.querySelector('rect') as SVGRectElement | null;
+    if (!rect) return;
+
+    // Style cluster rect
+    rect.setAttribute('rx', '10');
+    rect.setAttribute('ry', '10');
+    rect.setAttribute('stroke', isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)');
+    rect.setAttribute('stroke-width', '1.5');
+    rect.setAttribute('fill', isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.025)');
+    rect.setAttribute('stroke-dasharray', '6,4');
+
+    // Get subgraph name (clusters render in reverse order from source)
+    const sgName = subgraphNames[subgraphNames.length - 1 - idx] ?? '';
+    const isFabricWorkspace = /fabric\s*workspace/i.test(sgName);
+
+    // Replace the cluster label with icon + title for Fabric Workspace
+    const labelG = clusterG.querySelector('.cluster-label') as SVGGElement | null;
+    if (labelG && isFabricWorkspace) {
+      const box = rect.getBBox();
+      const labelX = box.x + 12;
+      const labelY = box.y + 10;
+      const ICON_SZ = 24;
+
+      // Clear existing label
+      labelG.innerHTML = '';
+      labelG.setAttribute('transform', `translate(${labelX},${labelY})`);
+
+      // Fabric icon
+      labelG.appendChild(svgEl('image', {
+        href: FABRIC_ICON_URI,
+        width: String(ICON_SZ), height: String(ICON_SZ),
+        x: '0', y: '0',
+      }));
+
+      // Title text
+      const titleEl = document.createElementNS(SVG_NS, 'text');
+      titleEl.setAttribute('x', String(ICON_SZ + 6));
+      titleEl.setAttribute('y', String(ICON_SZ / 2));
+      titleEl.setAttribute('dominant-baseline', 'central');
+      titleEl.setAttribute('font-family', '"Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif');
+      titleEl.setAttribute('font-size', '13');
+      titleEl.setAttribute('font-weight', '600');
+      titleEl.setAttribute('fill', isDark ? '#e0e0e0' : '#424242');
+      titleEl.textContent = 'Fabric Workspace';
+      labelG.appendChild(titleEl);
+    } else if (labelG) {
+      // Generic subgraph — just restyle the label
+      const box = rect.getBBox();
+      labelG.setAttribute('transform', `translate(${box.x + 12},${box.y + 8})`);
+      const span = labelG.querySelector('span');
+      if (span) {
+        (span as HTMLElement).style.fontWeight = '600';
+        (span as HTMLElement).style.fontSize = '12px';
+        (span as HTMLElement).style.color = isDark ? '#b0b0b0' : '#616161';
+      }
+      const text = labelG.querySelector('text');
+      if (text) {
+        text.setAttribute('font-weight', '600');
+        text.setAttribute('font-size', '12');
+        text.setAttribute('fill', isDark ? '#b0b0b0' : '#616161');
+      }
+    }
+  });
+
   // Expand viewBox
   if (expandViewBox) {
     const vb = root.getAttribute('viewBox');

@@ -190,7 +190,7 @@ class TestRegistryValidation:
             "date_added": "01/01/2025",
             "workload_tags": ["Test"],
             "scenario_tags": ["Test"],
-            "source": {"workspace_path": "/src", "preview_image_path": "/img/img.png"},
+            "source": {"workspace_path": "/src",},
             "entry_point": "1_ExploreData.Notebook",
             "owner_email": "owner@example.com",
         }

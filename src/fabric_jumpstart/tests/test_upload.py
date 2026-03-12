@@ -22,7 +22,6 @@ def _make_config(**source_overrides):
         "repo_url": "https://github.com/example/repo.git",
         "repo_ref": "v1.0.0",
         "workspace_path": "demo/",
-        "preview_image_path": "demo/preview.png",
     }
     source.update(source_overrides)
     return {
@@ -316,7 +315,6 @@ class TestSourceFilesSchemaValidation:
     def test_both_files_fields_present_is_valid(self):
         src = JumpstartSource(
             workspace_path="demo/",
-            preview_image_path="demo/preview.png",
             files_source_path="data/",
             files_destination_lakehouse="MyLH",
         )
@@ -326,7 +324,6 @@ class TestSourceFilesSchemaValidation:
     def test_both_files_fields_omitted_is_valid(self):
         src = JumpstartSource(
             workspace_path="demo/",
-            preview_image_path="demo/preview.png",
         )
         assert src.files_source_path is None
         assert src.files_destination_lakehouse is None
@@ -337,7 +334,6 @@ class TestSourceFilesSchemaValidation:
         ):
             JumpstartSource(
                 workspace_path="demo/",
-                preview_image_path="demo/preview.png",
                 files_source_path="data/",
             )
 
@@ -347,7 +343,6 @@ class TestSourceFilesSchemaValidation:
         ):
             JumpstartSource(
                 workspace_path="demo/",
-                preview_image_path="demo/preview.png",
                 files_destination_lakehouse="MyLH",
             )
 
@@ -355,7 +350,6 @@ class TestSourceFilesSchemaValidation:
         """files_destination_path by itself is harmless (no-op without the other two)."""
         src = JumpstartSource(
             workspace_path="demo/",
-            preview_image_path="demo/preview.png",
             files_destination_path="output",
         )
         assert src.files_destination_path == "output"

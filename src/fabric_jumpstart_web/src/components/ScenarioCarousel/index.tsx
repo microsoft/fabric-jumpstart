@@ -182,10 +182,10 @@ export default function ScenarioCarousel() {
           transform: scale(1.08);
         }
         .swiper-button-next {
-          right: 24px !important;
+          right: calc(50% - 220px) !important;
         }
         .swiper-button-prev {
-          left: 24px !important;
+          left: calc(50% - 220px) !important;
         }
         .swiper-button-next::after,
         .swiper-button-prev::after {

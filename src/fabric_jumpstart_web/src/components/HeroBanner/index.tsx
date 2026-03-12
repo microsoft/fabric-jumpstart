@@ -65,7 +65,6 @@ const HeroBanner = forwardRef<HTMLDivElement, BannerProps>(
     const customHeading = useMemo(
       () =>
         mergeClasses(
-          type === bannerType?.scenarios && styles.scenariosHeading,
           type === bannerType?.hcibox && styles.hciboxHeading,
           type === bannerType?.drops && styles.dropsHeading,
           type === bannerType?.arcbox && styles.arcboxHeading,

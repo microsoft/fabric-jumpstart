@@ -161,33 +161,6 @@ interface WorkloadColor {
 
 const workloadColors = workloadColorsData as Record<string, WorkloadColor>;
 
-// Fallback card header gradient colors (project brand teal palette).
-// Hex values required here because they are passed to hexToRgba().
-const defaultColors: WorkloadColor = {
-  primary: '#219580',
-  secondary: '#106960',
-  light: '#C5EAE5',
-  accent: '#106960',
-  mid: '#219580',
-  icon: '',
-};
-
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-function mixHex(a: string, b: string, weight: number): string {
-  const ar = parseInt(a.slice(1, 3), 16), ag = parseInt(a.slice(3, 5), 16), ab = parseInt(a.slice(5, 7), 16);
-  const br = parseInt(b.slice(1, 3), 16), bg = parseInt(b.slice(3, 5), 16), bb = parseInt(b.slice(5, 7), 16);
-  const w = weight / 100;
-  const r = Math.round(ar * w + br * (1 - w));
-  const g = Math.round(ag * w + bg * (1 - w));
-  const bl = Math.round(ab * w + bb * (1 - w));
-  return `rgb(${r},${g},${bl})`;
-}
 
 function getTypeEmoji(type: string): string {
   switch (type) {
@@ -239,8 +212,6 @@ function CardHeader({
   mermaid_diagram?: string;
   onExpandDiagram?: () => void;
 }) {
-  const primaryTag = scenario.workloadTags?.[0];
-  const wc = primaryTag ? workloadColors[primaryTag] ?? defaultColors : defaultColors;
   const icons = (scenario.workloadTags ?? [])
     .map((t) => ({ tag: t, color: workloadColors[t] }))
     .filter((c): c is { tag: string; color: WorkloadColor } => !!c.color?.icon);
@@ -255,78 +226,59 @@ function CardHeader({
         width: '100%',
         height: '180px',
         overflow: 'visible',
-        background: `
-          radial-gradient(ellipse at 30% 50%, ${hexToRgba(wc.primary, 0.65)} 0%, transparent 70%),
-          linear-gradient(135deg,
-            ${wc.secondary} 0%,
-            ${mixHex(wc.primary, wc.secondary, 50)} 100%
-          )
-        `,
       }}
     >
-      {/* Noise texture overlay */}
+      {/* Architecture diagram */}
       <div
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onExpandDiagram?.();
+        }}
         style={{
           position: 'absolute',
-          inset: 0,
-          opacity: isDark ? 0.03 : 0.06,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundSize: '128px 128px',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1,
+          overflow: 'hidden',
+          cursor: 'zoom-in',
+          backgroundColor: isDark ? '#1e1e24' : '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '4px',
         }}
-      />
-      {/* Architecture diagram overlay */}
-      {mermaid_diagram && (
-        <div
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onExpandDiagram?.();
-          }}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 1,
-            overflow: 'hidden',
-            cursor: 'zoom-in',
-            backgroundColor: isDark ? 'rgba(30,30,36,0.96)' : 'rgba(255,255,255,0.97)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '4px',
-          }}
-        >
-          <div style={{ width: '100%', height: '100%', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img
-              src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
-              alt="Architecture diagram"
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-            />
-          </div>
-          {/* Expand hint */}
-          <div style={{
-            position: 'absolute',
-            top: '6px',
-            left: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '4px',
-            borderRadius: '5px',
-            backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.85)',
-            border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
-            color: isDark ? '#e0e0e0' : '#424242',
-            fontSize: '10px',
-            fontWeight: 600,
-            opacity: 0.75,
-          }}>
-            <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-              <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
+      >
+        <div style={{ width: '100%', height: '100%', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img
+            src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
+            alt="Architecture diagram"
+            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+          />
         </div>
-      )}
+        {/* Expand hint */}
+        <div style={{
+          position: 'absolute',
+          top: '6px',
+          left: '6px',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '4px',
+          borderRadius: '5px',
+          backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.85)',
+          border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+          color: isDark ? '#e0e0e0' : '#424242',
+          fontSize: '10px',
+          fontWeight: 600,
+          opacity: 0.75,
+        }}>
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+            <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </div>
       {/* NEW badge */}
       {isNew && (
         <div

@@ -256,9 +256,6 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             # Generate card HTML
             new_badge = '<div class="jumpstart-new-badge">NEW</div>' if j.get('is_new') else ''
 
-            accent_primary, accent_secondary = _resolve_workload_colors(j, category_tag=category, group_by=group_by)
-            accent_style = f' style="--accent-primary: {accent_primary}; --accent-secondary: {accent_secondary};"'
-
             card_name = html.escape(j.get('name', ''), quote=True)
 
             computed_type = (
@@ -339,7 +336,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             meta_footer_html = f'<div class="jumpstart-meta-footer">{meta_footer_text}</div>' if meta_footer_text else ''
 
             html_parts.append(f'''
-                <div class="jumpstart-card"{accent_style} data-type="{type_value}" data-workloads="{workloads_value}" data-scenarios="{scenarios_value}">
+                <div class="jumpstart-card" data-type="{type_value}" data-workloads="{workloads_value}" data-scenarios="{scenarios_value}">
                     <div class="jumpstart-image">{diagram_html}{new_badge}<div class="workload-ribbon">{workload_badges_html}</div></div>
                     <div class="jumpstart-content">
                         {meta_block}

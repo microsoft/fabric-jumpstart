@@ -277,7 +277,7 @@ function CardHeader({
           }}
           style={{
             position: 'absolute',
-            inset: '14px',
+            inset: '10px',
             bottom: '0px',
             zIndex: 1,
             borderRadius: '4px',
@@ -332,8 +332,8 @@ function CardHeader({
         <div
           style={{
             position: 'absolute',
-            top: '12px',
-            right: '12px',
+            top: '6px',
+            right: '6px',
             zIndex: 2,
             backgroundColor: '#212121',
             color: '#FFFFFF',

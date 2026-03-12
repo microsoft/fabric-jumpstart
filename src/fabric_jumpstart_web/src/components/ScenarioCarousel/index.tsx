@@ -106,7 +106,7 @@ export default function ScenarioCarousel() {
               style={{ width: '340px', maxWidth: '85vw' }}
             >
               <Link
-                href={`/catalog/${scenario.slug}/`}
+                href={`/catalog/${scenario.slug}/?from=home`}
                 style={{ textDecoration: 'none', display: 'block' }}
               >
                 <JumpstartCard
@@ -162,7 +162,6 @@ export default function ScenarioCarousel() {
         }
 
         .swiper-slide-active .carousel-card {
-          border-color: ${isDark ? 'rgba(100, 180, 255, 0.3)' : 'rgba(0, 120, 212, 0.35)'} !important;
           box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06) !important;
         }
 

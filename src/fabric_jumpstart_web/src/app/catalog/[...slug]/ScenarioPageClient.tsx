@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense, useMemo } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { tokens } from '@fluentui/react-components';
 import ScenarioOverview from '@components/ScenarioOverview';
 import ScenarioContentSection from '@components/ScenarioContent/ScenarioContentSection';
@@ -13,6 +14,31 @@ interface ScenarioPageClientProps {
   rawMarkdown?: string;
   isMdx: boolean;
   showToc: boolean;
+}
+
+function BackLink({ defaultHref, defaultLabel }: { defaultHref: string; defaultLabel: string }) {
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
+
+  const { href, label } = useMemo(() => {
+    if (from === 'home') return { href: '/', label: '← Back to home' };
+    return { href: defaultHref, label: defaultLabel };
+  }, [from, defaultHref, defaultLabel]);
+
+  return (
+    <Link
+      href={href}
+      style={{
+        color: tokens.colorBrandForeground1,
+        textDecoration: 'none',
+        fontSize: '14px',
+        display: 'inline-block',
+        marginBottom: '24px',
+      }}
+    >
+      {label}
+    </Link>
+  );
 }
 
 export default function ScenarioPageClient({
@@ -39,18 +65,22 @@ export default function ScenarioPageClient({
         boxSizing: 'border-box',
       }}
     >
-      <Link
-        href="/catalog/"
-        style={{
-          color: tokens.colorBrandForeground1,
-          textDecoration: 'none',
-          fontSize: '14px',
-          display: 'inline-block',
-          marginBottom: '24px',
-        }}
-      >
-        ← Back to catalog
-      </Link>
+      <Suspense fallback={
+        <Link
+          href="/catalog/"
+          style={{
+            color: tokens.colorBrandForeground1,
+            textDecoration: 'none',
+            fontSize: '14px',
+            display: 'inline-block',
+            marginBottom: '24px',
+          }}
+        >
+          ← Back to catalog
+        </Link>
+      }>
+        <BackLink defaultHref="/catalog/" defaultLabel="← Back to catalog" />
+      </Suspense>
 
       {scenario ? (
         <>

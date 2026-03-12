@@ -100,7 +100,7 @@ function CardHeader({
           padding: '4px',
         }}
       >
-        <div style={{ width: '100%', height: '100%', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '100%', height: '100%', pointerEvents: onExpandDiagram ? 'none' : undefined, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img
             src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
             alt="Architecture diagram"

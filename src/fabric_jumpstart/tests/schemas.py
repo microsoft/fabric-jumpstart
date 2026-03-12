@@ -78,8 +78,8 @@ class Jumpstart(BaseModel):
     @field_validator("description")
     @classmethod
     def validate_description(cls, value: str):
-        if len(value) > 250:
-            raise ValueError("description must be 250 characters or fewer")
+        if len(value) > 350:
+            raise ValueError(f"description must be 300 characters or fewer, was {len(value)}")
         return value
 
     @field_validator("date_added")

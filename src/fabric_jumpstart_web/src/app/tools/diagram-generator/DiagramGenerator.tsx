@@ -396,6 +396,17 @@ export default function DiagramGenerator() {
           <textarea
             value={chart}
             onChange={(e) => setChart(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Tab') {
+                e.preventDefault();
+                const ta = e.currentTarget;
+                const start = ta.selectionStart;
+                const end = ta.selectionEnd;
+                const newVal = chart.substring(0, start) + '  ' + chart.substring(end);
+                setChart(newVal);
+                requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = start + 2; });
+              }
+            }}
             spellCheck={false}
             style={{
               width: '100%',

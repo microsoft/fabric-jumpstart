@@ -172,6 +172,16 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function mixHex(a: string, b: string, weight: number): string {
+  const ar = parseInt(a.slice(1, 3), 16), ag = parseInt(a.slice(3, 5), 16), ab = parseInt(a.slice(5, 7), 16);
+  const br = parseInt(b.slice(1, 3), 16), bg = parseInt(b.slice(3, 5), 16), bb = parseInt(b.slice(5, 7), 16);
+  const w = weight / 100;
+  const r = Math.round(ar * w + br * (1 - w));
+  const g = Math.round(ag * w + bg * (1 - w));
+  const bl = Math.round(ab * w + bb * (1 - w));
+  return `rgb(${r},${g},${bl})`;
+}
+
 function getTypeEmoji(type: string): string {
   switch (type) {
     case 'Accelerator':
@@ -228,9 +238,6 @@ function CardHeader({
     .map((t) => ({ tag: t, color: workloadColors[t] }))
     .filter((c): c is { tag: string; color: WorkloadColor } => !!c.color?.icon);
 
-  const primaryAlpha = isDark ? 0.45 : 0.65;
-  const secondaryAlpha = isDark ? 0.55 : 0.5;
-
   const isNew = new Date(scenario.lastUpdated) > new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
   return (
@@ -242,10 +249,10 @@ function CardHeader({
         height: '180px',
         overflow: 'visible',
         background: `
-          radial-gradient(ellipse 80% 60% at 50% 40%, ${hexToRgba(wc.primary, primaryAlpha + 0.15)} 0%, transparent 70%),
+          radial-gradient(ellipse at 30% 50%, ${hexToRgba(wc.primary, 0.65)} 0%, transparent 70%),
           linear-gradient(135deg,
-            ${hexToRgba(wc.primary, primaryAlpha)} 0%,
-            ${hexToRgba(wc.secondary, secondaryAlpha)} 100%
+            ${wc.secondary} 0%,
+            ${mixHex(wc.primary, wc.secondary, 50)} 100%
           )
         `,
       }}

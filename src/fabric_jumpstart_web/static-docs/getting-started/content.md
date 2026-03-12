@@ -6,23 +6,22 @@ This tutorial walks you through the prerequisites for deploying and running a ju
 
 Before you begin, make sure you have:
 
-- A [Microsoft Fabric](https://www.microsoft.com/en-us/microsoft-fabric) account with an active subscription or trial
-- A Fabric capacity (F2 or higher) or a Fabric trial capacity
-- Permissions to create workspaces and items in your Fabric tenant
+- Admin, Member, or Contributor permissions on an existing workspace, or the ability to create a new workspace
+- A Fabric-enabled capacity (P or F) or Fabric trial capacity assigned to the workspace
 
+## Step 1: Select a Fabric Workspace
 
-## Step 1: Create a Fabric Workspace
+A workspace is the container for all Fabric items. Each jumpstart will deploys into a single workspace. If a `workspace_id` is not specified at runtime, it will deploy into the current workspace.
 
-A workspace is the container where all your Fabric items (lakehouses, notebooks, pipelines, etc.) live. Each jumpstart is deployed into its own workspace.
-
+_If you do not have an existing workspace:_
 1. Go to [Microsoft Fabric](https://app.fabric.microsoft.com/)
 2. In the left navigation pane, select **Workspaces**
 3. Select **+ New workspace**
 4. Enter a name for your workspace (e.g., `my-jumpstart-workspace`)
-5. Expand **Advanced** and make sure your workspace is assigned to a Fabric capacity (or trial capacity)
+5. Expand **Advanced** and make sure your workspace is assigned to a Fabric-enabled capacity
 6. Select **Apply**
 
-> **Tip:** Multiple jumpstarts can be deployed in a single workspace. If items with the same name exist across jumpstarts (or already exist in your workspace), the installer will detect the conflict and let you choose how to resolve it:
+> **Tip:** Multiple jumpstarts can be deployed in a single workspace. If items with the same name exist across jumpstarts (or items already existing in your workspace), the installer will detect the conflict and let you choose how to resolve it:
 >
 > - **Use a dedicated workspace** — deploy each jumpstart in its own workspace to avoid conflicts entirely
 > - **Automatic prefix** — let the installer automatically prefix items to avoid name collisions
@@ -70,21 +69,18 @@ This displays an interactive catalog of all available jumpstarts with descriptio
 Each jumpstart in the catalog includes a ready-to-use install command — just click the copy button and paste it into a notebook cell. For example:
 
 ```python
-import fabric_jumpstart as jumpstart
-
 # Install a jumpstart by its logical ID
 jumpstart.install("healthcare-billing-system")
 ```
 
 The installer will:
 
-1. Download all required Fabric items (notebooks, lakehouses, pipelines, etc.)
-2. Deploy them into your current workspace
-3. Display a progress bar and status updates
-4. Provide a summary of what was installed
+1. Deploy Fabric items (notebooks, lakehouses, pipelines, etc.) into your current workspace
+1. Display progress and log messages
+1. Provide a summary of what was installed
 
 > **Note:** Each jumpstart provides an estimated install time. Deployment duration varies based on the number of items, item types, and their sizes.
 
 ## Next Steps
 
-After installing a jumpstart, follow the instructions provided in the jumpstart's Getting Started guide. Each jumpstart includes step-by-step guidance on how to run and explore the scenario.
+After installing a jumpstart, follow the "Get Started" link provided when the jumpstart installation is complete. This link will take you either to a Notebook or Jumpstart documentation page with step-by-step guidance on how to run and explore the scenario.

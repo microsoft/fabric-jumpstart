@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { tokens } from '@fluentui/react-components';
 import { useThemeContext } from '@components/Providers/themeProvider';
+import { workloadColors } from '@components/JumpstartCard';
 import type { ScenarioCard } from '@scenario/scenario';
 
 const ExpandedModal = dynamic(() => import('@components/MermaidDiagram/ExpandedModal'), { ssr: false });
@@ -195,18 +196,25 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
             Workloads
           </h4>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {scenario.workloadTags.map((tag) => (
-              <span key={tag} style={{
-                fontSize: '12px',
-                padding: '4px 12px',
-                borderRadius: '12px',
-                backgroundColor: isDark ? 'rgba(0, 120, 212, 0.30)' : '#deecf9',
-                color: '#0078d4',
-                fontWeight: 500,
-              }}>
-                {tag}
-              </span>
-            ))}
+            {scenario.workloadTags.map((tag) => {
+              const wc = workloadColors[tag];
+              return (
+                <span key={tag} style={{
+                  fontSize: '12px',
+                  padding: '4px 12px',
+                  borderRadius: '12px',
+                  backgroundColor: isDark
+                    ? `${wc?.primary ?? '#0078d4'}25`
+                    : `${wc?.light ?? '#deecf9'}`,
+                  color: isDark
+                    ? (wc?.mid ?? wc?.primary ?? '#0078d4')
+                    : (wc?.secondary ?? '#0078d4'),
+                  fontWeight: 500,
+                }}>
+                  {tag}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

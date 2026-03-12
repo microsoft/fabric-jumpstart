@@ -69,6 +69,7 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
    - Any data stores that need to be shared across Jumpstarts (i.e. for modules of an overall solution like Fabric Platform Monitoring) must be stored in a top-level folder called `shared-data-stores`. Otherwise, the Jumpstarts should self contain all Items in the single top-level folder (e.g. `spark-monitoring`).
    - Fabric items must not contain a solution prefix; Jumpstart can optionally add an automatic prefix at deployment (e.g., `js1_sm__`) so multiple Jumpstarts can coexist in the event of conflicting Item names. By default, no prefixing takes place, users need to opt-in to this upon being notified of Item name conflicts.
    - Do **not** use spaces in item names. Item names must either be `lower_case_snake_case` or `ProperCamelCase`. Both of these options accomodate all known naming restrictions.
+   - If your Jumpstart needs small data files uploaded to a Lakehouse's Files area, include them in the source repo and configure the `files_source_path`, `files_destination_lakehouse`, and (optionally) `files_destination_path` fields in the YAML `source` block. The upload runs automatically after item deployment.
 1. Commit items to the repo.
 1. Fork the fabric-jumpstart repo.
 1. Create a new YAML file in `src/fabric_jumpstart/fabric_jumpstart/jumpstarts/community/` (or `core/` for Microsoft-sponsored jumpstarts):
@@ -84,7 +85,10 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
      - `workload_tags`: List of valid workload tags
      - `scenario_tags`: List of valid scenario tags
      - `type`: One of: Tutorial, Demo, Accelerator
-     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`
+     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`, and optional file upload fields:
+       - `files_source_path` _(optional)_: Relative path within the repo to a file or folder to upload to a Lakehouse's Files area (e.g., `retail-sales/data/`)
+       - `files_destination_lakehouse` _(optional)_: Name of the target Lakehouse (must be deployed by the jumpstart). Required if `files_source_path` is set.
+       - `files_destination_path` _(optional)_: Destination path within the Lakehouse Files area (defaults to root if omitted)
      - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
      - `entry_point`: Either a URL or `<name>.<item_type>` format
      - `owner_email`: Valid email address

@@ -217,6 +217,111 @@ def _apply_item_prefix(workspace_path: Path, item_prefix: Optional[str], base_na
     )
     return mappings
 
+def upload_files_to_lakehouse(
+    workspace_id: str,
+    lakehouse_id: str,
+    source_path: Path,
+    destination_path: str = "",
+    ) -> int:
+    """Upload a file or folder to a Lakehouse Files area via the OneLake DFS API.
+
+    Args:
+        workspace_id: Target workspace GUID
+        lakehouse_id: Target lakehouse item GUID
+        source_path: Local file or directory to upload
+        destination_path: Destination path under Files/ (empty string for root)
+
+    Returns:
+        Number of files uploaded
+
+    Raises:
+        FileNotFoundError: If source_path does not exist
+        RuntimeError: If an upload request fails
+    """
+    source = Path(source_path)
+    if not source.exists():
+        raise FileNotFoundError(f"Source path does not exist: {source}")
+
+    # Resolve bearer token
+    if _is_fabric_runtime():
+        import notebookutils  # type: ignore[import-untyped]
+
+        token = notebookutils.credentials.getToken("storage")
+    else:
+        credential = resolve_token_credential()
+        if credential is None:
+            from azure.identity import DefaultAzureCredential
+
+            credential = DefaultAzureCredential()
+        token_obj = credential.get_token("https://storage.azure.com/.default")
+        token = token_obj.token
+
+    headers = {"Authorization": f"Bearer {token}"}
+    base_url = (
+        f"https://onelake.dfs.fabric.microsoft.com/{workspace_id}/{lakehouse_id}/Files"
+    )
+    dest_prefix = destination_path.strip("/")
+
+    files_to_upload: list[tuple[Path, str]] = []
+    if source.is_file():
+        rel = source.name
+        if dest_prefix:
+            rel = f"{dest_prefix}/{rel}"
+        files_to_upload.append((source, rel))
+    else:
+        for file_path in source.rglob("*"):
+            if not file_path.is_file():
+                continue
+            rel = file_path.relative_to(source).as_posix()
+            if dest_prefix:
+                rel = f"{dest_prefix}/{rel}"
+            files_to_upload.append((file_path, rel))
+
+    uploaded = 0
+    for local_file, rel_path in files_to_upload:
+        file_url = f"{base_url}/{rel_path}"
+        file_size = local_file.stat().st_size
+
+        # Step 1: Create
+        resp = requests.put(
+            file_url,
+            headers=headers,
+            params={"resource": "file"},
+        )
+        if resp.status_code not in (201, 409):
+            raise RuntimeError(
+                f"Failed to create file '{rel_path}': {resp.status_code} {resp.text}"
+            )
+
+        # Step 2: Append
+        with open(local_file, "rb") as f:
+            data = f.read()
+        resp = requests.patch(
+            file_url,
+            headers={**headers, "Content-Type": "application/octet-stream"},
+            params={"action": "append", "position": "0"},
+            data=data,
+        )
+        if resp.status_code != 202:
+            raise RuntimeError(
+                f"Failed to append data for '{rel_path}': {resp.status_code} {resp.text}"
+            )
+
+        # Step 3: Flush
+        resp = requests.patch(
+            file_url,
+            headers=headers,
+            params={"action": "flush", "position": str(file_size)},
+        )
+        if resp.status_code != 200:
+            raise RuntimeError(
+                f"Failed to flush file '{rel_path}': {resp.status_code} {resp.text}"
+            )
+
+        logger.info("Uploaded %s", rel_path)
+        uploaded += 1
+
+    return uploaded
 
 def update_docs_uri_with_ref(
     docs_uri: Optional[str],

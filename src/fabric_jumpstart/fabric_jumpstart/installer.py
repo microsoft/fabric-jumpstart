@@ -13,6 +13,7 @@ from .utils import (
     _is_fabric_runtime,
     clone_files_to_temp_directory,
     clone_repository,
+    upload_files_to_lakehouse,    
     update_docs_uri_with_ref,
 )
 from .workspace_manager import WorkspaceManager
@@ -288,6 +289,64 @@ class JumpstartInstaller:
             
         feature_flags = self.options.get('feature_flags', [])
         return self.workspace_manager.deploy_items(feature_flags)
+    
+    def upload_files(self, target_ws: FabricWorkspace, prefix: Optional[str]) -> int:
+        """Upload files from cloned repo to a deployed Lakehouse.
+
+        Reads files_source_path, files_destination_lakehouse, and
+        files_destination_path from the source config.  Returns 0 when
+        file upload is not configured.
+
+        Args:
+            target_ws: Deployed FabricWorkspace instance
+            prefix: Applied item prefix (or None)
+
+        Returns:
+            Number of files uploaded
+        """
+        source_config = self.config.get("source", {})
+        files_source = source_config.get("files_source_path")
+        dest_lakehouse = source_config.get("files_destination_lakehouse")
+        if not files_source or not dest_lakehouse:
+            return 0
+
+        dest_path = source_config.get("files_destination_path", "")
+
+        # Build local source from cloned repo
+        if self.working_repo_path is None:
+            raise RuntimeError("working_repo_path must be set before uploading files")
+        local_source = self.working_repo_path / files_source.lstrip("/\\")
+
+        # Apply prefix to lakehouse name if applicable
+        lakehouse_name = dest_lakehouse
+        if prefix:
+            lakehouse_name = f"{prefix}{dest_lakehouse}"
+
+        # Resolve lakehouse ID from the deployed workspace
+        from fabric_cicd._parameter._utils import _extract_item_attribute
+
+        lakehouse_id = _extract_item_attribute(
+            target_ws,
+            f"$items.Lakehouse.{lakehouse_name}.$id",
+            False,
+        )
+
+        logger.info(
+            "Uploading files from '%s' to lakehouse '%s' (path: '%s')",
+            local_source,
+            lakehouse_name,
+            dest_path or "/",
+        )
+
+        count = upload_files_to_lakehouse(
+            workspace_id=target_ws.workspace_id,
+            lakehouse_id=lakehouse_id,
+            source_path=local_source,
+            destination_path=dest_path,
+        )
+
+        logger.info("Uploaded %d file(s) to lakehouse '%s'", count, lakehouse_name)
+        return count
     
     def generate_entry_url(self, target_ws: FabricWorkspace, prefix: Optional[str]) -> Optional[str]:
         """Generate entry point URL for deployed jumpstart.

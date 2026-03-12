@@ -20,6 +20,9 @@ class JumpstartSource(BaseModel):
     workspace_path: str
     repo_url: Optional[str] = None
     repo_ref: Optional[str] = None
+    files_source_path: Optional[str] = None
+    files_destination_lakehouse: Optional[str] = None
+    files_destination_path: Optional[str] = None
 
     @model_validator(mode="after")
     def validate_repo_fields(self):
@@ -29,6 +32,14 @@ class JumpstartSource(BaseModel):
                 raise ValueError("repo_ref, a tag of the repository, must be provided when repo_url is set")
         return self
 
+    @model_validator(mode="after")
+    def validate_files_upload_fields(self):
+        has_source = bool((self.files_source_path or "").strip())
+        has_lakehouse = bool((self.files_destination_lakehouse or "").strip())
+        if has_source != has_lakehouse:
+            raise ValueError(
+                "files_source_path and files_destination_lakehouse must both be provided or both be omitted"
+            )
 
 class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""

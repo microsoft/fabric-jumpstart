@@ -300,7 +300,10 @@ class jumpstart:
                 target_ws = installer.deploy()
                 logger.info(f"Successfully installed '{name}'")
                 
-                # Phase 6: Generate entry URL
+                # Phase 6: Upload files to lakehouse (if configured)
+                installer.upload_files(target_ws, resolved_prefix)
+
+                # Phase 7: Generate entry URL
                 entry_url = installer.generate_entry_url(target_ws, resolved_prefix)
                 
                 # Render success

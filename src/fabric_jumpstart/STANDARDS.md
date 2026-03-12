@@ -2,7 +2,7 @@
 - Jumpstarts are mature and tested Fabric accelerators, demos, and tutorials.
 - With limited exception, Jumpstarts must be complete solutions as deployed via `jumpstart.install(<jumpstart-id>)`. Unless currently impossible to completely automate, the entirety of the solution must be configured through the installation process.
     - Data must also be self-contained as part of what the Jumpstart deploys. Consider triggering data generators like `LakeGen` or public data sources.
-    - Jumpstart will support deploying small data files, but the feature is not yet supported #19.
+    - Jumpstarts can upload small files (or folders) from the source repository to a Lakehouse's Files area after deployment. Configure this via the optional `files_source_path`, `files_destination_lakehouse`, and `files_destination_path` fields in the YAML `source` block. Keep uploaded data small — the source repository should remain lightweight.
     - Jumpstart will support a pre/post deployment script concept, this feature is not yet supported #20.
 - Jumpstarts do not automatically trigger Fabric Items (i.e. Pipelines, Notebooks, etc.) to run after installation. A Notebook with robust markdown instructions should be included in the installation that will reference any user actions.
     - Where Notebooks reference to do something with another Fabric Item, dynamic links should be used (use param replacement to generate dynamic link)

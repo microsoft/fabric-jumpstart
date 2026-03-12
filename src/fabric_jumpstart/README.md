@@ -30,6 +30,7 @@ jumpstart.install("spark-structured-streaming")
 Notes
 - `workspace_id` is optional when you run in a Fabric notebook; it auto-detects the current workspace. Specify to deploy to another target workspace.
 - `install()` accepts extras like `item_prefix` and `unattended=True` if you prefer console logs over HTML output.
+- Jumpstarts that include file upload configuration will automatically upload small data files to a Lakehouse's Files area after deployment — no extra arguments needed.
 
 ## Handling Name Conflicts
 

@@ -1,8 +1,8 @@
 {
   "banner": {
-    "label": "explore the catalog",
-    "heading": "Jumpstart Scenarios",
-    "desc": "Get automated zero-to-hero scenarios and experience the full breadth of Jumpstart. All you need is a Fabric workspace to get started.",
-    "imageAlt": "Fabric Jumpstart Scenario"
+    "label": "jumpstart catalog",
+    "heading": "Ready-to-Deploy Solutions",
+    "desc": "Browse accelerators, demos, and tutorials for Microsoft Fabric. Find a jumpstart, deploy it to your workspace, and start building in minutes.",
+    "imageAlt": "Fabric Jumpstart Catalog"
   }
 }

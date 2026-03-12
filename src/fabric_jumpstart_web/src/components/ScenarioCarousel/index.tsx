@@ -56,7 +56,7 @@ export default function ScenarioCarousel() {
             color: tokens.colorNeutralForeground1,
             margin: 0,
           }}>
-            Fabric Jumpstart Content Library
+            Featured Jumpstarts
           </h2>
         </div>
         <Link

@@ -123,7 +123,7 @@ export const darkTheme: Theme = {
   colorNeutralShadowAmbientDarker: '#FFFFFF33',
 
   // Sub-product palette colors (universe cards, module pages)
-  colorPaletteBlueForeground2: '#8be8a4',
+  colorPaletteBlueForeground2: '#1a92e8',
   colorPaletteBlueBorderActive: '#7beadd',
   colorPaletteBlueBackground2: '#19433c',
   colorPaletteRedForeground1: '#FFA38B',
@@ -140,7 +140,7 @@ export const darkTheme: Theme = {
   colorPaletteGreenBorderActive: '#3e6868',
   colorPaletteLightGreenBackground2: '#108638',
   colorPaletteBerryForeground1: '#DA18E1',
-  colorPaletteRoyalBlueForeground2: '#8be8a4',
+  colorPaletteRoyalBlueForeground2: '#8bc6e8',
   colorPaletteLightTealBackground2: '#219580',
   colorPaletteMinkBackground2: '#19433c',
   colorPaletteMinkForeground2: '#7beadd',

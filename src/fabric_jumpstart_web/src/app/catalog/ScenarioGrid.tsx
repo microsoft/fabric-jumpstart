@@ -79,6 +79,9 @@ const useStyles = makeStyles({
     transitionDuration: '0.2s',
     transitionProperty: 'box-shadow, transform',
     cursor: 'pointer',
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
     ':hover': {
       boxShadow: tokens.shadow8,
       transform: 'translateY(-2px)',
@@ -92,6 +95,9 @@ const useStyles = makeStyles({
   },
   cardBody: {
     ...shorthands.padding('36px', '20px', '20px', '20px'),
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
   },
   cardTitle: {
     fontSize: '18px',
@@ -139,7 +145,8 @@ const useStyles = makeStyles({
   deployTime: {
     fontSize: '12px',
     color: tokens.colorNeutralForeground2,
-    marginTop: '12px',
+    marginTop: 'auto',
+    paddingTop: '12px',
   },
 });
 
@@ -510,7 +517,7 @@ export default function ScenarioGrid() {
           <Link
             key={scenario.id}
             href={`/catalog/${scenario.slug}/`}
-            style={{ textDecoration: 'none' }}
+            style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column' }}
           >
             <div className={styles.card}>
               <CardHeader scenario={scenario} isDark={isDark} mermaid_diagram={mermaid_diagram} onExpandDiagram={() => setExpandedChart({ slug: scenario.slug, title: scenario.title })} />

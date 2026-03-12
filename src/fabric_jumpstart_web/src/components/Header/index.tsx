@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   makeStyles,
   tokens,
@@ -216,6 +217,7 @@ interface SearchResult {
 const Header: React.FC = () => {
   const styles = useStyles();
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -362,7 +364,7 @@ const Header: React.FC = () => {
               <Button
                 className={styles.jumpstartButton}
                 onClick={() =>
-                  (window.location.href = INTERNAL_ROUTE.OVERVIEW)
+                  router.push(INTERNAL_ROUTE.OVERVIEW)
                 }
               >
                 <Typography
@@ -378,7 +380,7 @@ const Header: React.FC = () => {
                 styles.navButtonUnselected
               )}
               onClick={() =>
-                (window.location.href = INTERNAL_ROUTE.SCENARIOS)
+                router.push(INTERNAL_ROUTE.SCENARIOS)
               }
             >
               Scenarios
@@ -389,7 +391,7 @@ const Header: React.FC = () => {
                 styles.navButtonUnselected
               )}
               onClick={() =>
-                (window.location.href = INTERNAL_ROUTE.GETTING_STARTED)
+                router.push(INTERNAL_ROUTE.GETTING_STARTED)
               }
             >
               Getting Started

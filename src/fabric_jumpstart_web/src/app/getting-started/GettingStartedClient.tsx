@@ -33,7 +33,7 @@ export default function GettingStartedClient({
           marginBottom: '24px',
         }}
       >
-        ← Back to all scenarios
+        ← Back to catalog
       </Link>
 
       <ScenarioContentRenderer

@@ -23,13 +23,16 @@ export const useStyles = makeStyles({
   primaryBtn: {
     background: `linear-gradient(90deg, ${gradientStart} 0%, ${gradientEnd} 100%)`,
     ...shorthands.borderColor('transparent'),
+    ...shorthands.borderWidth('0'),
     ':hover': {
       background: `linear-gradient(90deg, ${lighterStart} 0%, ${lighterEnd} 100%)`,
       ...shorthands.borderColor('transparent'),
+      ...shorthands.borderWidth('0'),
     },
     ':hover:active': {
       background: `linear-gradient(90deg, ${lighterStart} 0%, ${lighterEnd} 100%)`,
       ...shorthands.borderColor('transparent'),
+      ...shorthands.borderWidth('0'),
     },
   },
   primaryBtnLightMode: {

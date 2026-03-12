@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import PageWrapper from '@components/PageWrapper';
 import useTranslation from '@utils/translateWrapper';
 import HeroBanner from '@components/HeroBanner';
@@ -9,6 +10,11 @@ import ExternalArrowWhite from '@images/externalArrowWhite.svg';
 import ExternalArrowBlack from '@images/externalArrowBlack.svg';
 import RowSection from './particals/RowSection';
 import Icon from '@components/Icon';
+
+export const metadata: Metadata = {
+  title: 'Fabric Jumpstart',
+  description: 'Extensive. Automated. Open-Source. Community Driven.',
+};
 
 export default function Home() {
   const { t } = useTranslation('home');

@@ -67,6 +67,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Set global CSS custom properties so scrollbar and body styles can reference them
   useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme.key);
+    document.documentElement.style.backgroundColor = theme.value.colorNeutralBackground1;
     document.body.style.setProperty(
       '--colorNeutralBackground1',
       theme.value.colorNeutralBackground1

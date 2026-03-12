@@ -417,17 +417,29 @@ export default function ScenarioCarousel() {
 
         .swiper-button-next,
         .swiper-button-prev {
-          color: var(--colorBrandForeground1, #0078d4) !important;
-          width: 40px !important;
-          height: 40px !important;
-          background: rgba(255,255,255,0.85);
+          color: ${isDark ? '#ffffff' : '#0078d4'} !important;
+          width: 44px !important;
+          height: 44px !important;
+          background: ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.92)'};
           border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: ${isDark ? '0 2px 12px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.12)'};
           backdrop-filter: blur(8px);
+          transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .swiper-button-next:hover,
+        .swiper-button-prev:hover {
+          background: ${isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,120,212,0.1)'};
+          transform: scale(1.08);
+        }
+        .swiper-button-next {
+          right: 48px !important;
+        }
+        .swiper-button-prev {
+          left: 48px !important;
         }
         .swiper-button-next::after,
         .swiper-button-prev::after {
-          font-size: 16px !important;
+          font-size: 18px !important;
           font-weight: bold;
         }
       `}</style>

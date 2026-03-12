@@ -48,6 +48,11 @@ export default async function RootLayout({
         <meta name="twitter:image" content={OGImage.src} />
         {disableSeo && <meta name="robots" content="noindex, nofollow" />}
         {uhfData.cssIncludes && parse(uhfData.cssIncludes)}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var bg=t==='light'?'#f2f2f2':'#0F0F0F';document.documentElement.style.backgroundColor=bg;document.documentElement.setAttribute('data-theme',t||'dark');}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className={inter.className}>
         <NextIntlClientProvider messages={messages}>

@@ -8,3 +8,11 @@ body {
   overflow-x: hidden;
   max-width: 100%;
 }
+
+/* Prevent theme flash: match body bg to the inline script's html bg */
+html[data-theme='dark'] body {
+  background-color: #0F0F0F;
+}
+html[data-theme='light'] body {
+  background-color: #f2f2f2;
+}

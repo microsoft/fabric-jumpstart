@@ -67,7 +67,7 @@ const useStyles = makeStyles({
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 360px))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 350px))',
     justifyContent: 'center',
     ...shorthands.gap('24px'),
   },

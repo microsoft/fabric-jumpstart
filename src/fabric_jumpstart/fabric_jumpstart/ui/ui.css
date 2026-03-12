@@ -448,7 +448,7 @@
 /* Jumpstart cards */
 .jumpstart-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 360px));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 350px));
     gap: 24px;
     margin-bottom: 16px;
 }

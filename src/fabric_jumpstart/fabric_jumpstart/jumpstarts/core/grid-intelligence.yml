@@ -35,7 +35,7 @@ items_in_scope:
 jumpstart_docs_uri: "https://github.com/slavatrofimov/Real-Time-Grid-Intelligence-with-Microsoft-Fabric/blob/jumpstart-v0.11/README.md"
 entry_point: PostDeploymentConfig.Notebook
 test_suite: ""
-owner_email: fabricjumpstart.rti-iq@microsoft.com
+owner_email: fabricjumpstart.collab@microsoft.com
 minutes_to_deploy: 5
 minutes_to_complete_jumpstart: 5
 video_url: "https://www.youtube.com/watch?v=6xjQD-g2nd0"

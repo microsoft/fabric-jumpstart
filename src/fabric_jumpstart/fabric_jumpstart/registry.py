@@ -232,7 +232,9 @@ class JumpstartRegistry:
         return grouped
     
     def group_by_workload(self, jumpstarts: List[Dict]) -> Dict[str, List[Dict]]:
-        """Group jumpstarts by their workload tags.
+        """Group jumpstarts by their primary (first) workload tag.
+        
+        Each jumpstart appears in exactly one group to avoid duplicates.
         
         Args:
             jumpstarts: List of jumpstarts to group
@@ -242,11 +244,10 @@ class JumpstartRegistry:
         """
         grouped = {}
         for j in jumpstarts:
-            workload_tags = j.get("workload_tags", ["Uncategorized"])
-            for tag in workload_tags:
-                if tag not in grouped:
-                    grouped[tag] = []
-                grouped[tag].append(j)
+            primary_workload = j.get("workload_tags", ["Uncategorized"])[0]
+            if primary_workload not in grouped:
+                grouped[primary_workload] = []
+            grouped[primary_workload].append(j)
         return grouped
     
     def group_by_type(self, jumpstarts: List[Dict]) -> Dict[str, List[Dict]]:

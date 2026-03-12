@@ -16,7 +16,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-rti-iq-workshops.git
   repo_ref: v0.1.1
   workspace_path: fabcon25-workshop/
-  preview_image_path: fabcon25-workshop/fabcon25-workshop.png
 items_in_scope: 
   - Notebook
   - Eventhouse
@@ -33,5 +32,14 @@ owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 4
 minutes_to_complete_jumpstart: 360
 video_url: ""
-difficulty: "Advanced"
+difficulty: Advanced
 last_updated: "2026-02-21"
+mermaid_diagram: |
+  graph LR
+    NB[workshop_emulator]:::Notebook --> ES[workshop_events]:::Eventstream
+    ES --> EH[workshop_eventhouse]:::Eventhouse
+    EH --> KDB[workshop_kqldb]:::KQLDatabase
+    KDB --> DASH[workshop_dashboard]:::KQLDashboard
+    KDB --> RFX[workshop_reflex]:::Reflex
+    ES --> LH[workshop_lakehouse]:::Lakehouse
+    ENV[workshop_env]:::Environment -.-> NB

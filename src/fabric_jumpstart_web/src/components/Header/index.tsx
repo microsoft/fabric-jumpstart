@@ -150,6 +150,7 @@ const useStyles = makeStyles({
     ...shorthands.borderRadius('8px'),
     backgroundColor: tokens.colorNeutralBackground1,
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke1),
+    color: tokens.colorNeutralForeground1,
     width: '100%',
     maxWidth: '600px',
   },
@@ -160,6 +161,9 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase300,
     color: tokens.colorNeutralForeground1,
     width: '100%',
+    '::placeholder': {
+      color: tokens.colorNeutralForeground2,
+    },
   },
   searchResults: {
     marginTop: '16px',
@@ -178,7 +182,7 @@ const useStyles = makeStyles({
   suggestedLabel: {
     fontSize: tokens.fontSizeBase200,
     fontWeight: tokens.fontWeightSemibold,
-    color: tokens.colorNeutralForeground3,
+    color: tokens.colorNeutralForeground2,
     marginTop: '12px',
     marginBottom: '4px',
   },
@@ -464,7 +468,7 @@ const Header: React.FC = () => {
                 {searchResults.map((r) => (
                   <Link
                     key={r.slug}
-                    href={`/fabric_jumpstart/${r.slug}/`}
+                    href={`/catalog/${r.slug}/`}
                     className={styles.searchResultItem}
                     onClick={() => setSearchOpen(false)}
                   >
@@ -477,7 +481,7 @@ const Header: React.FC = () => {
                       <div
                         style={{
                           fontSize: tokens.fontSizeBase200,
-                          color: tokens.colorNeutralForeground3,
+                          color: tokens.colorNeutralForeground2,
                           marginTop: '2px',
                         }}
                       >
@@ -488,7 +492,7 @@ const Header: React.FC = () => {
                       <div
                         style={{
                           fontSize: tokens.fontSizeBase200,
-                          color: tokens.colorNeutralForeground3,
+                          color: tokens.colorNeutralForeground2,
                           marginTop: '2px',
                         }}
                       >
@@ -499,7 +503,7 @@ const Header: React.FC = () => {
                       <div
                         style={{
                           fontSize: tokens.fontSizeBase200,
-                          color: tokens.colorNeutralForeground3,
+                          color: tokens.colorNeutralForeground2,
                           marginTop: '2px',
                         }}
                       >
@@ -514,7 +518,7 @@ const Header: React.FC = () => {
                   </Link>
                 ))}
                 {searchResults.length === 0 && (
-                  <p style={{ fontSize: '14px', color: tokens.colorNeutralForeground3 }}>
+                  <p style={{ fontSize: '14px', color: tokens.colorNeutralForeground2 }}>
                     No results found.
                   </p>
                 )}
@@ -522,7 +526,7 @@ const Header: React.FC = () => {
                   <p
                     style={{
                       fontSize: tokens.fontSizeBase200,
-                      color: tokens.colorNeutralForeground3,
+                      color: tokens.colorNeutralForeground2,
                       marginTop: '8px',
                       textAlign: 'center',
                     }}

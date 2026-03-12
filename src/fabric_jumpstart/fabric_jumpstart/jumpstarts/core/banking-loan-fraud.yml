@@ -17,7 +17,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-rti-demos.git
   repo_ref: v0.1.8
   workspace_path: banking-loan-fraud/
-  preview_image_path: banking-loan-fraud/BankingLoanFraud.png
 items_in_scope:
 - Notebook
 - Eventhouse
@@ -31,5 +30,11 @@ owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 2
 minutes_to_complete_jumpstart: 5
 video_url: ""
-difficulty: "Beginner"
+difficulty: Beginner
 last_updated: "2026-02-13"
+mermaid_diagram: |
+  graph LR
+    NB[BankingLoanFraudEmulator]:::Notebook --> ES[loan_fraud_events]:::Eventstream
+    ES --> EH[fraud_detection]:::Eventhouse
+    EH --> KDB[fraud_kqldb]:::KQLDatabase
+    KDB --> DASH[fraud_dashboard]:::KQLDashboard

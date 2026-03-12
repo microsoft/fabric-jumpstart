@@ -84,7 +84,7 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
      - `workload_tags`: List of valid workload tags
      - `scenario_tags`: List of valid scenario tags
      - `type`: One of: Tutorial, Demo, Accelerator
-     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`, `preview_image_path`
+     - `source`: Object with `repo_url`, `repo_ref`, `workspace_path`
      - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
      - `entry_point`: Either a URL or `<name>.<item_type>` format
      - `owner_email`: Valid email address
@@ -103,3 +103,96 @@ When a jumpstart's source repository publishes a new tag or ref, you can test th
 2. Validate that the jumpstart deploys and functions correctly with the new ref.
 3. Once verified, update the `repo_ref` value in the jumpstart's YAML file and submit a PR.
 4. Run `uv run pytest tests/test_registry.py` to confirm the new ref is reachable before pushing.
+
+## Mermaid Diagrams
+
+Jumpstarts can include a `mermaid_diagram` field in their YAML file that defines a Mermaid flow diagram showing how Fabric items connect. The website renders these as pre-built SVG images (light and dark theme variants).
+
+### Mermaid Syntax Format
+
+Use `graph LR` (left-to-right) with `:::ClassName` annotations to specify item types:
+
+```yaml
+mermaid_diagram: |
+  graph LR
+    NB[spark_monitoring_setup]:::Notebook --> DP[spark_pipeline]:::DataPipeline
+    DP --> ES[spark_events]:::Eventstream
+    ES --> EH[spark_eventhouse]:::Eventhouse
+    EH --> KDB[spark_kqldb]:::KQLDatabase
+    ENV[spark_env]:::Environment -.-> NB
+```
+
+- **Node labels** (inside `[]`) should match the item name in the workspace
+- **`:::ClassName`** maps the node to a Fabric item type — this determines the icon and color
+- Use `-->` for solid arrows, `-.->` for dashed arrows, and `==>` for thick arrows
+
+### Supported Item Types
+
+| Class Name | Workload |
+|------------|----------|
+| `Notebook` | Data Engineering |
+| `Lakehouse` | Data Engineering |
+| `Environment` | Data Engineering |
+| `SparkJobDefinition` | Data Engineering |
+| `VariableLibrary` | Data Engineering |
+| `Eventhouse` | Real-Time Intelligence |
+| `Eventstream` | Real-Time Intelligence |
+| `KQLDatabase` | Real-Time Intelligence |
+| `KQLQueryset` | Real-Time Intelligence |
+| `KQLDashboard` | Real-Time Intelligence |
+| `Reflex` | Real-Time Intelligence |
+| `DataPipeline` | Data Factory |
+| `Dataflow` | Data Factory |
+| `CopyJob` | Data Factory |
+| `Warehouse` | Data Warehouse |
+| `SQLEndpoint` | Data Warehouse |
+| `MirroredDatabase` | Data Warehouse |
+| `SQLDatabase` | SQL Database |
+| `Report` | Power BI |
+| `SemanticModel` | Power BI |
+| `DataAgent` | Data Science |
+| `MLExperiment` | Data Science |
+| `UserDataFunction` | Data Science |
+| `GraphQLApi` | Data Engineering |
+
+### Emoji & Custom Icons
+
+For nodes that aren't Fabric items (e.g., on-premise servers, external services), use a **Unicode codepoint** as the class name. The format is `U` followed by the hex codepoint (no `+`):
+
+```yaml
+mermaid_diagram: |
+  graph LR
+    SRV[On-Prem Server]:::U1F5A5 --> EH[eventhouse]:::Eventhouse
+    DB[Legacy DB]:::U1F5C4 --> DF[ingestion]:::Dataflow
+```
+
+| Example | Codepoint | Emoji |
+|---------|-----------|-------|
+| `:::U1F5A5` | U+1F5A5 | 🖥 Desktop |
+| `:::U1F3E2` | U+1F3E2 | 🏢 Building |
+| `:::U2601`  | U+2601  | ☁ Cloud |
+| `:::U1F4BB` | U+1F4BB | 💻 Laptop |
+| `:::U1F5C4` | U+1F5C4 | 🗄 File Cabinet |
+
+Emoji nodes render with the emoji in place of the Fabric icon. The item type subtitle is hidden since the codepoint isn't a meaningful label.
+
+If a class name is **not** a registered Fabric type and **not** a Unicode codepoint, the node still renders as a styled box with just the label — no icon or type subtitle.
+
+### Generating Diagram SVGs
+
+After adding or updating a `mermaid_diagram` field, you need to generate the corresponding SVG images. Use the **Diagram Generator** page on the website:
+
+1. Start the dev server (or use the deployed site):
+   ```bash
+   cd src/fabric_jumpstart_web
+   npm run dev
+   ```
+2. Navigate to [`/tools/diagram-generator`](http://localhost:8080/tools/diagram-generator)
+3. Paste your Mermaid syntax and enter the jumpstart's `logical_id` as the slug
+4. Click **Download Light + Dark SVGs** — this downloads `{slug}_light.svg` and `{slug}_dark.svg`
+5. Place both files in `assets/images/diagrams/` at the repository root
+6. Commit the SVGs along with your YAML changes
+
+> **Note:** The diagram generator page is not linked from the site navigation — it is a contributor tool only.
+
+> **Important:** CI does not generate diagram SVGs. If you add a `mermaid_diagram` field without committing the corresponding SVGs, the diagram will appear as a broken image on the website.

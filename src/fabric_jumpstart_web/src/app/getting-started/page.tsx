@@ -7,7 +7,7 @@ export default async function GettingStartedPage() {
   const contentPath = path.join(
     process.cwd(),
     'docs',
-    'fabric_jumpstart',
+    'catalog',
     'getting-started',
     'content.md'
   );

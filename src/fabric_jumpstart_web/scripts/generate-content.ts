@@ -1,7 +1,7 @@
 /**
  * Pre-build content generation script.
  *
- * Reads scenario YAML files from ../fabric_jumpstart/fabric_jumpstart/jumpstarts/core/
+ * Reads scenario YAML files from core/ and community/ jumpstart directories
  * and generates:
  * - docs/ directory with markdown per scenario
  * - src/data/side-menu.json (navigation tree)
@@ -13,11 +13,14 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { glob } from 'glob';
 import type { ScenarioYml, ScenarioCard } from '../src/types/scenario';
+import { FABRIC_ITEM_ICON_MAP } from '../src/utils/mermaidParser';
 
-const JUMPSTARTS_DIR = path.resolve(
+const JUMPSTARTS_BASE_DIR = path.resolve(
   __dirname,
-  '../../fabric_jumpstart/fabric_jumpstart/jumpstarts/core'
+  '../../fabric_jumpstart/fabric_jumpstart/jumpstarts'
 );
+const JUMPSTARTS_CORE_DIR = path.join(JUMPSTARTS_BASE_DIR, 'core');
+const JUMPSTARTS_COMMUNITY_DIR = path.join(JUMPSTARTS_BASE_DIR, 'community');
 const DOCS_DIR = path.resolve(__dirname, '../docs');
 const DATA_DIR = path.resolve(__dirname, '../src/data');
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
@@ -28,6 +31,14 @@ const WORKLOAD_ICONS_DIR = path.resolve(
 const WORKLOAD_ICONS_PUBLIC_DIR = path.resolve(
   __dirname,
   '../public/images/tags/workload'
+);
+const DIAGRAMS_DIR = path.resolve(
+  __dirname,
+  '../../../assets/images/diagrams'
+);
+const DIAGRAMS_PUBLIC_DIR = path.resolve(
+  __dirname,
+  '../public/images/diagrams'
 );
 
 interface SideMenuItem {
@@ -44,17 +55,24 @@ interface SideMenuItem {
   };
 }
 
-function loadScenarios(): ScenarioYml[] {
-  const files = glob.sync('*.yml', { cwd: JUMPSTARTS_DIR });
-  const scenarios: ScenarioYml[] = [];
+interface TaggedScenarioYml extends ScenarioYml {
+  _core: boolean;
+}
 
-  for (const file of files) {
-    const content = fs.readFileSync(path.join(JUMPSTARTS_DIR, file), 'utf-8');
+function loadScenariosFromDir(dir: string, core: boolean): TaggedScenarioYml[] {
+  if (!fs.existsSync(dir)) return [];
+  const files = glob.sync('*.yml', { cwd: dir });
+  return files.map((file) => {
+    const content = fs.readFileSync(path.join(dir, file), 'utf-8');
     const data = yaml.load(content) as ScenarioYml;
-    scenarios.push(data);
-  }
+    return { ...data, _core: core };
+  });
+}
 
-  return scenarios.sort((a, b) => a.id - b.id);
+function loadScenarios(): TaggedScenarioYml[] {
+  const core = loadScenariosFromDir(JUMPSTARTS_CORE_DIR, true);
+  const community = loadScenariosFromDir(JUMPSTARTS_COMMUNITY_DIR, false);
+  return [...core, ...community].sort((a, b) => a.id - b.id);
 }
 
 // Sample image source for proving relative image support
@@ -77,7 +95,7 @@ function generateContentMd(scenario: ScenarioYml): string {
 
   // Include a sample image to prove relative image support
   md += `## Architecture\n\n`;
-  md += `![${title} architecture](./img/sample.png)\n\n`;
+  md += `![${title} mermaid_diagram](./img/sample.png)\n\n`;
 
   md += `## Description\n\n`;
   md += `${scenario.description}\n\n`;
@@ -120,7 +138,7 @@ function generateDocs(scenarios: ScenarioYml[]): void {
   }
 
   // Create root _index.md
-  const rootDocsDir = path.join(DOCS_DIR, 'fabric_jumpstart');
+  const rootDocsDir = path.join(DOCS_DIR, 'catalog');
   fs.mkdirSync(rootDocsDir, { recursive: true });
   fs.writeFileSync(
     path.join(DOCS_DIR, '_index.md'),
@@ -176,7 +194,7 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
     scenarioChildren.push({
       name: scenario.logical_id,
       type: 'directory',
-      path: `fabric_jumpstart/${scenario.logical_id}`,
+      path: `catalog/${scenario.logical_id}`,
       children: [],
       frontMatter: {
         type: 'docs',
@@ -193,7 +211,7 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
     {
       name: 'getting-started',
       type: 'directory',
-      path: 'fabric_jumpstart/getting-started',
+      path: 'catalog/getting-started',
       children: [],
       frontMatter: {
         type: 'docs',
@@ -215,9 +233,9 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
     frontMatter: { type: 'docs' },
     children: [
       {
-        name: 'fabric_jumpstart',
+        name: 'catalog',
         type: 'directory',
-        path: 'fabric_jumpstart',
+        path: 'catalog',
         frontMatter: {
           type: 'docs',
           title: 'Jumpstart Scenarios',
@@ -244,7 +262,22 @@ function stripMarkdownToPlainText(md: string): string {
     .trim();
 }
 
-function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
+const NEW_THRESHOLD_DAYS = 60;
+
+function isNewJumpstart(dateAdded: string): boolean {
+  try {
+    // date_added is MM/DD/YYYY
+    const [month, day, year] = dateAdded.split('/').map(Number);
+    const added = new Date(year, month - 1, day);
+    const threshold = new Date();
+    threshold.setDate(threshold.getDate() - NEW_THRESHOLD_DAYS);
+    return added >= threshold;
+  } catch {
+    return false;
+  }
+}
+
+function generateScenariosJson(scenarios: TaggedScenarioYml[]): ScenarioCard[] {
   return scenarios
     .filter((s) => s.include_in_listing)
     .map((s) => {
@@ -270,7 +303,6 @@ function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
         difficulty: s.difficulty || 'Intermediate',
         tags: [...s.workload_tags, ...s.scenario_tags],
         workloadTags: s.workload_tags as string[],
-        previewImage: `https://placehold.co/600x400?text=${encodeURIComponent(s.name)}`,
         videoUrl: s.video_url || '',
         minutesToDeploy: s.minutes_to_deploy,
         minutesToComplete: s.minutes_to_complete_jumpstart,
@@ -279,6 +311,9 @@ function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
         slug: s.logical_id,
         lastUpdated: s.last_updated || s.date_added,
         body,
+        core: s._core,
+        isNew: isNewJumpstart(s.date_added),
+        mermaid_diagram: s.mermaid_diagram || '',
       };
     });
 }
@@ -286,11 +321,27 @@ function generateScenariosJson(scenarios: ScenarioYml[]): ScenarioCard[] {
 // ─── Workload color extraction ────────────────────────────────
 
 interface WorkloadColorEntry {
+  primary: string;
+  secondary: string;
   light: string;
   accent: string;
   mid: string;
   icon: string;
 }
+
+// Mirrors WORKLOAD_COLOR_MAP from fabric_jumpstart/constants.py
+const WORKLOAD_PRIMARY_COLORS: Record<string, { primary: string; secondary: string }> = {
+  'Data Engineering': { primary: '#1fb6ef', secondary: '#096bbc' },
+  'Data Warehouse': { primary: '#1fb6ef', secondary: '#096bbc' },
+  'Data Science': { primary: '#1fb6ef', secondary: '#096bbc' },
+  'Real-Time Intelligence': { primary: '#fa4e56', secondary: '#a41836' },
+  'Data Factory': { primary: '#239C6E', secondary: '#0C695A' },
+  'SQL Database': { primary: '#7e5ca7', secondary: '#633e8f' },
+  'Power BI': { primary: '#ffe642', secondary: '#e2c718' },
+  'Test': { primary: '#117865', secondary: '#0C695A' },
+};
+
+const DEFAULT_PRIMARY_COLORS = { primary: '#0078D4', secondary: '#004E8C' };
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -381,7 +432,11 @@ function generateWorkloadColors(scenarios: ScenarioYml[]): void {
       colors = pickWorkloadColors(extracted);
     }
 
-    result[tag] = { ...colors, icon: iconPath };
+    result[tag] = {
+      ...(WORKLOAD_PRIMARY_COLORS[tag] ?? DEFAULT_PRIMARY_COLORS),
+      ...colors,
+      icon: iconPath,
+    };
   }
 
   fs.writeFileSync(
@@ -399,6 +454,43 @@ function copyWorkloadIcons(): void {
       path.join(WORKLOAD_ICONS_PUBLIC_DIR, file)
     );
   }
+}
+
+function copyDiagrams(): void {
+  if (!fs.existsSync(DIAGRAMS_DIR)) return;
+  fs.mkdirSync(DIAGRAMS_PUBLIC_DIR, { recursive: true });
+  const files = fs.readdirSync(DIAGRAMS_DIR).filter((f) => f.endsWith('.svg'));
+  for (const file of files) {
+    fs.copyFileSync(
+      path.join(DIAGRAMS_DIR, file),
+      path.join(DIAGRAMS_PUBLIC_DIR, file)
+    );
+  }
+}
+
+function generateFabricItemIcons(): void {
+  const iconsDir = path.resolve(
+    __dirname,
+    '../node_modules/@fabric-msft/svg-icons/dist/svg'
+  );
+
+  const result: Record<string, string> = {};
+
+  for (const [itemType, svgFile] of Object.entries(FABRIC_ITEM_ICON_MAP)) {
+    const svgPath = path.join(iconsDir, svgFile);
+    if (fs.existsSync(svgPath)) {
+      const svgContent = fs.readFileSync(svgPath);
+      const b64 = svgContent.toString('base64');
+      result[itemType] = `data:image/svg+xml;base64,${b64}`;
+    } else {
+      console.warn(`  ⚠ Missing icon for ${itemType}: ${svgFile}`);
+    }
+  }
+
+  fs.writeFileSync(
+    path.join(DATA_DIR, 'fabric-item-icons.json'),
+    JSON.stringify(result, null, 2)
+  );
 }
 
 async function main(): Promise<void> {
@@ -437,9 +529,17 @@ async function main(): Promise<void> {
   copyWorkloadIcons();
   console.log('  Copied workload icons to public/');
 
+  // Copy pre-rendered mermaid_diagram diagrams to public/ for serving
+  copyDiagrams();
+  console.log('  Copied pre-rendered diagrams to public/');
+
   // Copy scenario content images to public/ for serving
   copyScenarioContentAssets();
   console.log('  Copied scenario content assets to public/');
+
+  // Generate Fabric item icon data URIs from @fabric-msft/svg-icons
+  generateFabricItemIcons();
+  console.log('  Generated fabric-item-icons.json');
 
   // Fetch Microsoft UHF footer
   await generateUhfData();

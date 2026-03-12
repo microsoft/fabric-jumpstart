@@ -19,7 +19,6 @@ source:
   repo_url: https://github.com/microsoft/fabric-analytics-roadshow-lab.git/
   repo_ref: v0.1.3
   workspace_path: workspace/
-  preview_image_path: assets/image-example.png
 items_in_scope:
 - Lakehouse
 - Warehouse
@@ -36,5 +35,13 @@ owner_email: FabricJumpstart.AnalyticsRoadshowLab@microsoft.com
 minutes_to_deploy: 8
 minutes_to_complete_jumpstart: 180
 video_url: ""
-difficulty: "Advanced"
+difficulty: Advanced
 last_updated: "2026-01-08"
+mermaid_diagram: |
+  graph LR
+    NB1[1_process_data]:::Notebook --> LH[sales_lakehouse]:::Lakehouse
+    LH --> NB2[2_transform_data]:::Notebook
+    NB2 --> WH[analytics_warehouse]:::Warehouse
+    SJD[scheduled_job]:::SparkJobDefinition --> NB1
+    ENV[lab_environment]:::Environment -.-> SJD
+    DP[orchestration_pipeline]:::DataPipeline --> SJD

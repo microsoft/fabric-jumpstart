@@ -4,7 +4,6 @@ import base64
 import html
 from functools import lru_cache
 from pathlib import Path
-from urllib.parse import urlparse
 
 from ..constants import DEFAULT_WORKLOAD_COLORS, WORKLOAD_COLOR_MAP
 from .formatting import syntax_highlight_python
@@ -12,9 +11,13 @@ from .formatting import syntax_highlight_python
 # Load copy icon SVG once at module level
 _current_dir = Path(__file__).parent
 _assets_path = _current_dir / 'assets'
+# Prefer packaged assets (wheel); fall back to repo-root assets for local dev.
 _packaged_workload_path = _assets_path / 'workload'
 _repo_workload_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'assets' / 'images' / 'tags' / 'workload'
 _shared_assets_path = _packaged_workload_path if _packaged_workload_path.is_dir() else _repo_workload_path
+_pkg_diagrams = Path(__file__).resolve().parent / 'assets' / 'diagrams'
+_repo_diagrams = Path(__file__).resolve().parent.parent.parent.parent.parent / 'assets' / 'images' / 'diagrams'
+_diagrams_path = _pkg_diagrams if _pkg_diagrams.is_dir() else _repo_diagrams
 _copy_icon_path = _assets_path / 'copy-icon.svg'
 _css_path = _current_dir / 'ui.css'
 _js_path = _current_dir / 'catalog.js'
@@ -89,71 +92,15 @@ def _svg_to_data_uri(svg_text: str) -> str:
     return f"data:image/svg+xml;base64,{encoded}"
 
 
-def _guess_mime(path: Path) -> str:
-    """Minimal mime guess based on file extension."""
-    suffix = path.suffix.lower()
-    if suffix in {'.jpg', '.jpeg'}:
-        return 'image/jpeg'
-    if suffix == '.gif':
-        return 'image/gif'
-    if suffix == '.svg':
-        return 'image/svg+xml'
-    return 'image/png'
-
-
 @lru_cache(maxsize=64)
-def _load_preview_image_data(path: Path) -> str:
-    """Return a data URI for a preview image file if it exists, else empty string."""
-    if not path.is_file():
+def _load_diagram_svg(logical_id: str) -> str:
+    """Load the light-mode diagram SVG as a data URI if it exists."""
+    svg_path = _diagrams_path / f"{logical_id}_light.svg"
+    if not svg_path.is_file():
         return ''
-    mime = _guess_mime(path)
-    encoded = base64.b64encode(path.read_bytes()).decode('ascii')
-    return f"data:{mime};base64,{encoded}"
+    encoded = base64.b64encode(svg_path.read_bytes()).decode('ascii')
+    return f"data:image/svg+xml;base64,{encoded}"
 
-
-def _build_github_raw_url(repo_url: str, ref: str, file_path: str) -> str:
-    """Convert a GitHub repo URL + ref + file path into a raw.githubusercontent URL."""
-    parsed = urlparse(repo_url)
-    if parsed.hostname != "github.com":
-        return ''
-
-    parts = parsed.path.strip('/').split('/')
-    if len(parts) < 2:
-        return ''
-
-    owner, repo = parts[0], parts[1]
-    if repo.endswith('.git'):
-        repo = repo[:-4]
-
-    safe_path = file_path.lstrip('/\\')
-    safe_ref = ref or 'main'
-    return f"https://raw.githubusercontent.com/{owner}/{repo}/{safe_ref}/{safe_path}"
-
-
-def _format_duration_label(minutes) -> str:
-    """Return formatted duration text like "⏱ 120 min"."""
-    if minutes is None or minutes == '':
-        return ''
-    try:
-        minutes_int = int(minutes)
-    except (TypeError, ValueError):
-        safe_text = html.escape(str(minutes), quote=True)
-        return safe_text
-
-    return f"⏱ {minutes_int} min"
-
-
-def _format_deploy_time_label(minutes) -> str:
-    """Return formatted deployment duration text like "📦 Deploy 10 min"."""
-    if minutes is None or minutes == '':
-        return ''
-    try:
-        minutes_int = int(minutes)
-    except (TypeError, ValueError):
-        safe_text = html.escape(str(minutes), quote=True)
-        return safe_text
-
-    return f"📦 {minutes_int} min"
 
 
 def _format_type_label(type_value: str) -> str:
@@ -164,39 +111,6 @@ def _format_type_label(type_value: str) -> str:
     safe_text = html.escape(str(type_value), quote=True)
     return f"{emoji} {safe_text}" if emoji else safe_text
 
-
-def _resolve_preview_image(jumpstart) -> str:
-    """Resolve preview image to a data URI or external URL."""
-    preview_path = jumpstart['source'].get("preview_image_path")
-    if not preview_path:
-        return ''
-
-    if preview_path.startswith(("http://", "https://", "data:")):
-        return preview_path
-
-    source_cfg = jumpstart.get('source', {})
-    repo_url = source_cfg.get('repo_url')
-    if repo_url:
-        raw_url = _build_github_raw_url(repo_url, source_cfg.get('repo_ref', 'main'), preview_path)
-        return raw_url or ''
-
-    candidates = []
-    slug = jumpstart.get('logical_id') or jumpstart.get('id')
-    if slug:
-        candidates.append(Path(__file__).parent / 'jumpstarts' / str(slug) / preview_path)
-
-    preview_path_obj = Path(preview_path)
-    if preview_path_obj.is_absolute():
-        candidates.append(preview_path_obj)
-    else:
-        candidates.append(Path(__file__).parent / preview_path)
-
-    for candidate in candidates:
-        data_uri = _load_preview_image_data(candidate.resolve())
-        if data_uri:
-            return data_uri
-
-    return ''
 
 
 def _resolve_workload_colors(jumpstart, category_tag=None, group_by="scenario"):
@@ -345,9 +259,7 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             accent_primary, accent_secondary = _resolve_workload_colors(j, category_tag=category, group_by=group_by)
             accent_style = f' style="--accent-primary: {accent_primary}; --accent-secondary: {accent_secondary};"'
 
-            preview_src = _resolve_preview_image(j)
             card_name = html.escape(j.get('name', ''), quote=True)
-            preview_img_html = f'<img class="preview-img" src="{preview_src}" alt="{card_name} preview"/>' if preview_src else ''
 
             computed_type = (
                 j.get('jumpstart_type')
@@ -364,34 +276,26 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
                 else ''
             )
 
-            minutes_raw = j.get('minutes_to_complete_jumpstart')
-            duration_label = _format_duration_label(minutes_raw)
-            duration_aria = html.escape(
-                f"Duration: {minutes_raw if minutes_raw not in (None, '') else 'Unspecified'} minutes",
-                quote=True,
-            )
-            duration_callout = (
-                f'<div class="duration-pill" aria-label="{duration_aria}" title="Time to complete">{duration_label}</div>'
-                if duration_label
-                else ''
-            )
+            difficulty_value = j.get('difficulty', '')
+            if difficulty_value:
+                difficulty_level = html.escape(str(difficulty_value), quote=True)
+                difficulty_callout = (
+                    f'<div class="difficulty-pill difficulty-{difficulty_value.lower()}" '
+                    f'aria-label="Difficulty: {difficulty_level}">{difficulty_level}</div>'
+                )
+            else:
+                difficulty_callout = ''
 
-            deploy_minutes_raw = j.get('minutes_to_deploy')
-            deploy_label = _format_deploy_time_label(deploy_minutes_raw)
-            deploy_aria = html.escape(
-                f"Deployment time: {deploy_minutes_raw if deploy_minutes_raw not in (None, '') else 'Unspecified'} minutes",
-                quote=True,
-            )
-            deploy_callout = (
-                f'<div class="deploy-pill" aria-label="{deploy_aria}" title="Time to deploy">{deploy_label}</div>'
-                if deploy_label
-                else ''
-            )
+            meta_pills = ''.join([pill for pill in [type_callout, difficulty_callout] if pill])
 
-            meta_pills = ''.join([pill for pill in [type_callout, deploy_callout, duration_callout] if pill])
+            # Core vs Community class badge
+            is_core = j.get('core', True)
+            class_label = '⚡️Core' if is_core else 'Community'
+            class_badge = f'<div class="class-pill {"class-pill-core" if is_core else "class-pill-community"}" aria-label="Jumpstart class: {class_label}">{class_label}</div>'
+
             meta_block = (
-                f'<div class="meta-pills" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">{meta_pills}</div>'
-                if meta_pills
+                f'<div class="meta-pills" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">{class_badge}{meta_pills}</div>'
+                if meta_pills or class_badge
                 else ''
             )
 
@@ -411,20 +315,46 @@ def _render_grouped_jumpstarts(grouped_jumpstarts, instance_name, group_by="scen
             logical_id = j.get('logical_id') or j.get('id', '')
             install_code_plain = f"{instance_name}.install('{logical_id}')"
             install_code = syntax_highlight_python(install_code_plain)
-            
+
+            diagram_src = _load_diagram_svg(str(logical_id))
+            diagram_html = f'<div class="diagram-overlay"><img src="{diagram_src}" alt="Architecture diagram"/></div>' if diagram_src else ''
+
+            items_in_scope = j.get('items_in_scope', [])
+            deploy_min_val = j.get('minutes_to_deploy')
+            complete_min_val = j.get('minutes_to_complete_jumpstart')
+            meta_parts = []
+            if deploy_min_val not in (None, ''):
+                try:
+                    meta_parts.append(f"📦 {int(deploy_min_val)} min. deploy")
+                except (TypeError, ValueError):
+                    meta_parts.append(f"📦 {html.escape(str(deploy_min_val))} deploy")
+            if complete_min_val not in (None, ''):
+                try:
+                    meta_parts.append(f"⏱️ {int(complete_min_val)} min. complete")
+                except (TypeError, ValueError):
+                    meta_parts.append(f"⏱️ {html.escape(str(complete_min_val))}")
+            if items_in_scope:
+                meta_parts.append(f"{len(items_in_scope)} item types")
+            meta_footer_text = '   •   '.join(meta_parts)
+            meta_footer_html = f'<div class="jumpstart-meta-footer">{meta_footer_text}</div>' if meta_footer_text else ''
+
             html_parts.append(f'''
                 <div class="jumpstart-card"{accent_style} data-type="{type_value}" data-workloads="{workloads_value}" data-scenarios="{scenarios_value}">
-                    <div class="jumpstart-image">{preview_img_html}{new_badge}<div class="workload-ribbon">{workload_badges_html}</div></div>
+                    <div class="jumpstart-image">{diagram_html}{new_badge}<div class="workload-ribbon">{workload_badges_html}</div></div>
                     <div class="jumpstart-content">
                         {meta_block}
                         <div class="jumpstart-name">{card_name}</div>
                         <div class="jumpstart-description" title="{description_title}">{description_text}</div>
-                        <div class="jumpstart-install">
-                            <code>{install_code}</code>
-                            <span class="copy-btn" role="button" tabindex="0" data-code="{install_code_plain}" onclick="copyToClipboard(this)">
-                                ''' + _COPY_ICON_SVG + '''
-                            </span>
+                        <div class="jumpstart-code-block">
+                            <div class="code-header">Python</div>
+                            <div class="jumpstart-install">
+                                <code>{install_code}</code>
+                                <span class="copy-btn" role="button" tabindex="0" data-code="{install_code_plain}" onclick="copyToClipboard(this)">
+                                    ''' + _COPY_ICON_SVG + f'''
+                                </span>
+                            </div>
                         </div>
+                        {meta_footer_html}
                     </div>
                 </div>
             ''')

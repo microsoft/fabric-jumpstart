@@ -18,7 +18,6 @@ from fabric_jumpstart.constants import (
 class JumpstartSource(BaseModel):
     """Source configuration for a jumpstart."""
     workspace_path: str
-    preview_image_path: str
     repo_url: Optional[str] = None
     repo_ref: Optional[str] = None
 
@@ -57,6 +56,7 @@ class Jumpstart(BaseModel):
     video_url: Optional[str] = None
     difficulty: Optional[str] = None
     last_updated: Optional[str] = None
+    mermaid_diagram: Optional[str] = None
 
     @field_validator("id")
     @classmethod
@@ -78,8 +78,8 @@ class Jumpstart(BaseModel):
     @field_validator("description")
     @classmethod
     def validate_description(cls, value: str):
-        if len(value) > 250:
-            raise ValueError("description must be 250 characters or fewer")
+        if len(value) > 350:
+            raise ValueError(f"description must be 300 characters or fewer, was {len(value)}")
         return value
 
     @field_validator("date_added")

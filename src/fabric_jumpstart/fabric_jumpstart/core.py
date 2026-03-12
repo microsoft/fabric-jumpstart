@@ -71,12 +71,11 @@ class jumpstart:
                     grouped_scenario[tag] = []
                 grouped_scenario[tag].append(j)
             
-            # Group by workload
-            workload_tags = j.get("workload_tags", ["Uncategorized"])
-            for tag in workload_tags:
-                if tag not in grouped_workload:
-                    grouped_workload[tag] = []
-                grouped_workload[tag].append(j)
+            # Group by primary workload (first tag only to avoid duplicates)
+            primary_workload = j.get("workload_tags", ["Uncategorized"])[0]
+            if primary_workload not in grouped_workload:
+                grouped_workload[primary_workload] = []
+            grouped_workload[primary_workload].append(j)
 
             type_tag = j.get("type") or "Unspecified"
             grouped_type.setdefault(type_tag, []).append(j)

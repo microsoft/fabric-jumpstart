@@ -25,18 +25,22 @@ export default function ScenarioPageClient({
 
   const hasContent = !!rawMarkdown;
 
+  // Use mermaid_diagram from scenario data
+  const mermaid_diagramDef = scenario?.mermaid_diagram || undefined;
+
   return (
     <section
       style={{
         maxWidth: hasContent && showToc ? '1200px' : '900px',
         margin: '0 auto',
-        padding: '40px 24px',
+        padding: '80px 24px 40px',
         lineHeight: '1.7',
         width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <Link
-        href="/fabric_jumpstart/"
+        href="/catalog/"
         style={{
           color: tokens.colorBrandForeground1,
           textDecoration: 'none',
@@ -50,7 +54,7 @@ export default function ScenarioPageClient({
 
       {scenario ? (
         <>
-          <ScenarioOverview scenario={scenario} />
+          <ScenarioOverview scenario={scenario} mermaid_diagram={mermaid_diagramDef} />
           {hasContent && (
             <ScenarioContentSection
               rawMarkdown={rawMarkdown!}

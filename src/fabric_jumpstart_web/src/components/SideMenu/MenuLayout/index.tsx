@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import { useThemeContext } from '@components/Providers/themeProvider';
+import { FilterProvider } from '@components/Providers/filterProvider';
 import { useGlobalStyles } from '@styles/appStyles';
 import { useStyles } from './styles';
 import SideMenu from '../index';
@@ -24,12 +25,12 @@ const MenuLayout = ({ children }: { children: React.ReactNode }) => {
     };
   }, [theme]);
   return (
-    <>
+    <FilterProvider>
       <section className={styles.layoutWrapper}>
         <SideMenu />
         {children}
       </section>
-    </>
+    </FilterProvider>
   );
 };
 

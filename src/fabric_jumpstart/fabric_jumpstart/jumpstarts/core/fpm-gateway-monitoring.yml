@@ -8,9 +8,9 @@ description: >-
 date_added: 02/03/2026
 include_in_listing: true
 workload_tags:
+- Real-Time Intelligence
 - Data Factory
 - Power BI
-- Real-Time Intelligence
 scenario_tags:
 - Monitoring
 type: Accelerator
@@ -18,7 +18,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
   repo_ref: v0.2.3
   workspace_path: gateway-monitoring/src/
-  preview_image_path: gateway-monitoring/GatewayMonitoring.png
 items_in_scope:
 - Notebook
 - Eventhouse
@@ -36,5 +35,15 @@ owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 2
 minutes_to_complete_jumpstart: 5
 video_url: ""
-difficulty: "Beginner"
+difficulty: Beginner
 last_updated: "2026-02-03"
+mermaid_diagram: |
+  graph LR
+    NB[gateway_monitoring_setup]:::Notebook --> DP[gateway_pipeline]:::DataPipeline
+    DP --> ES[gateway_events]:::Eventstream
+    ES --> EH[monitoring_eventhouse]:::Eventhouse
+    EH --> KDB[gateway_kqldb]:::KQLDatabase
+    KDB --> DASH[gateway_dashboard]:::KQLDashboard
+    KDB --> SM[gateway_model]:::SemanticModel
+    SM --> RPT[gateway_report]:::Report
+    VL[config_variables]:::VariableLibrary -.-> DP

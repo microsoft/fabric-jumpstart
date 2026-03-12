@@ -25,7 +25,10 @@ src/fabric_jumpstart_web/docs/
 src/fabric_jumpstart_web/src/data/side-menu.json
 src/fabric_jumpstart_web/src/data/scenarios.json
 src/fabric_jumpstart_web/public/images/tags/workload/
+src/fabric_jumpstart_web/public/images/diagrams/
+src/fabric_jumpstart_web/src/data/fabric-item-icons.json
 
 # Scratch
 .temp/
+.tmp-diagrams/
 TODO.md

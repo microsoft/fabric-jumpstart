@@ -17,7 +17,6 @@
 
 export class ScenarioSource {
   workspace_path: string = '';
-  preview_image_path: string = '';
   repo_url: string | undefined = undefined;
   repo_ref: string | undefined = undefined;
 
@@ -47,6 +46,7 @@ export class ScenarioYml {
   video_url: string | undefined = undefined;
   difficulty: string | undefined = undefined;
   last_updated: string | undefined = undefined;
+  mermaid_diagram: string | undefined = undefined;
   // Python-only (present in YAML, not used by TS at runtime)
   feature_flags: string[] | undefined = undefined;
   test_suite: string | undefined = undefined;
@@ -67,7 +67,6 @@ export class ScenarioCard {
   difficulty: string = '';
   tags: string[] = [];
   workloadTags: string[] = [];
-  previewImage: string = '';
   videoUrl: string = '';
   minutesToDeploy: number = 0;
   minutesToComplete: number = 0;
@@ -76,4 +75,7 @@ export class ScenarioCard {
   slug: string = '';
   lastUpdated: string = '';
   body: string = '';
+  core: boolean = true;
+  isNew: boolean = false;
+  mermaid_diagram: string = '';
 }

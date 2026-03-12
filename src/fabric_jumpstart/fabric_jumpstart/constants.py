@@ -1,6 +1,6 @@
 """Constants for jumpstart registry."""
 
-from typing import List
+from typing import Dict, List
 
 VALID_WORKLOAD_TAGS = [
     "Data Engineering",
@@ -64,6 +64,37 @@ WORKLOAD_COLOR_MAP = {
 }
 
 DEFAULT_WORKLOAD_COLORS = WORKLOAD_COLOR_MAP["Data Engineering"]
+
+# Maps Fabric item types to their parent workload for mermaid diagram simplification
+ITEM_WORKLOAD_MAP: Dict[str, str] = {
+    "Notebook": "Data Engineering",
+    "Lakehouse": "Data Engineering",
+    "Environment": "Data Engineering",
+    "SparkJobDefinition": "Data Engineering",
+    "VariableLibrary": "Data Engineering",
+    "Eventhouse": "Real-Time Intelligence",
+    "Eventstream": "Real-Time Intelligence",
+    "KQLDatabase": "Real-Time Intelligence",
+    "KQLQueryset": "Real-Time Intelligence",
+    "KQLDashboard": "Real-Time Intelligence",
+    "Reflex": "Real-Time Intelligence",
+    "DataPipeline": "Data Factory",
+    "Dataflow": "Data Factory",
+    "CopyJob": "Data Factory",
+    "MountedDataFactory": "Data Factory",
+    "ApacheAirflowJob": "Data Factory",
+    "Warehouse": "Data Warehouse",
+    "SQLEndpoint": "Data Warehouse",
+    "MirroredDatabase": "Data Warehouse",
+    "SQLDatabase": "SQL Database",
+    "Report": "Power BI",
+    "SemanticModel": "Power BI",
+    "OrgApp": "Power BI",
+    "MLExperiment": "Data Science",
+    "DataAgent": "Data Science",
+    "UserDataFunction": "Data Science",
+    "GraphQLApi": "Data Engineering",
+}
 
 # maps between Item names in CICD and their URL routing paths for entry point resolution
 ITEM_URL_ROUTING_PATH_MAP = {

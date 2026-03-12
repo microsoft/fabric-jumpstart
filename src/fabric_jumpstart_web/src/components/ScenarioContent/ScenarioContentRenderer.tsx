@@ -176,6 +176,7 @@ export default function ScenarioContentRenderer({
             flexShrink: 0,
             width: '220px',
             display: 'none',
+            alignSelf: 'stretch',
           }}
           className="scenario-toc-sidebar"
         >

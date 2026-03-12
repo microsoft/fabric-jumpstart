@@ -342,7 +342,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 3px 8px;
+    padding: 3px 10px 3px 8px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
@@ -354,36 +354,35 @@
     letter-spacing: 0.1px;
 }
 
-.duration-pill {
+.difficulty-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 3px 8px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 600;
-    background: #eef6ff;
-    color: #0f4f8f;
-    border: 1px solid #d5e8ff;
+    padding: 3px 10px 3px 8px;
     width: fit-content;
     margin: 0;
     letter-spacing: 0.1px;
 }
 
-.deploy-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    background: #f7f0e6;
-    color: #7b4b06;
-    border: 1px solid #e2c79b;
-    width: fit-content;
-    margin: 0;
-    letter-spacing: 0.1px;
+.difficulty-beginner {
+    background: #e6f4ef;
+    color: #0C695A;
+    border: 1px solid #b8e0d2;
+}
+
+.difficulty-intermediate {
+    background: #fff4e6;
+    color: #8a6100;
+    border: 1px solid #f0ddb8;
+}
+
+.difficulty-advanced {
+    background: #fce8e8;
+    color: #a41836;
+    border: 1px solid #f0c4c4;
 }
 
 .meta-pills {
@@ -393,6 +392,31 @@
     gap: 8px;
     margin-bottom: 12px;
     min-height: 24px;
+}
+
+.class-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    width: fit-content;
+    margin: 0;
+    letter-spacing: 0.1px;
+}
+
+.class-pill-core {
+    background: #e8f2fc;
+    color: #0f4f8f;
+    border: 1px solid #d5e8ff;
+}
+
+.class-pill-community {
+    background: #f3f2f1;
+    color: #605e5c;
+    border: 1px solid #edebe9;
 }
 
 /* Category sections */
@@ -424,7 +448,7 @@
 /* Jumpstart cards */
 .jumpstart-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 350px));
     gap: 24px;
     margin-bottom: 16px;
 }
@@ -452,40 +476,23 @@
     width: 100%;
     height: 160px;
     position: relative;
-    background: linear-gradient(135deg, var(--accent-primary, #117865) 0%, var(--accent-secondary, #0C695A) 100%);
+    background:
+        radial-gradient(ellipse at 30% 50%,
+            color-mix(in srgb, var(--accent-primary) 65%, transparent) 0%,
+            transparent 70%),
+        linear-gradient(135deg,
+            var(--accent-secondary) 0%,
+            color-mix(in srgb, var(--accent-primary) 50%, var(--accent-secondary)) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: visible;
 }
 
-.jumpstart-image::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%);
-    z-index: 0;
-    pointer-events: none;
-}
-
-.jumpstart-image .preview-img {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 88%;
-    height: 86%;
-    object-fit: cover;
-    object-position: top center;
-    border-radius: 3px;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
-    z-index: 1;
-}
-
 .jumpstart-new-badge {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 6px;
+    right: 6px;
     background: #212121;
     color: white;
     padding: 4px 12px;
@@ -499,20 +506,21 @@
 
 .workload-ribbon {
     position: absolute;
-    left: 12px;
-    right: 12px;
+    left: 8px;
+    right: 8px;
     bottom: 0;
     transform: translateY(33%);
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 6px 8px;
-    background: rgba(255, 255, 255, 0.8);
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.6);
     border-radius: 10px;
     align-items: center;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(6px);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.06);
     z-index: 2;
 }
 
@@ -520,19 +528,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 5px 6px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     cursor: default;
     pointer-events: auto;
 }
 
 .workload-chip .workload-icon svg,
 .workload-chip .workload-icon img {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
     display: block;
 }
 
@@ -579,19 +589,36 @@
     text-overflow: ellipsis;
 }
 
+/* Code block wrapper */
+.jumpstart-code-block {
+    margin: 8px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #edebe9;
+}
+
+.code-header {
+    background: rgba(0,0,0,0.06);
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #605e5c;
+    border-radius: 8px 8px 0 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+}
+
 /* Shared install code block styles */
 .jumpstart-install {
     font-family: 'Consolas', 'Courier New', monospace;
     font-size: 13px;
     padding: 12px 16px;
     background: #f3f2f1;
-    border-radius: 2px;
-    border-left: 3px solid var(--accent-secondary, #0C695A);
+    border-radius: 0 0 8px 8px;
     cursor: pointer;
     transition: background 0.2s;
     position: relative;
     display: block;
-    margin: 8px 0;
+    margin: 0;
 }
 
 .jumpstart-install:hover {
@@ -640,6 +667,35 @@
 
 .copy-btn.copied svg {
     fill: var(--accent-secondary, #0C695A);
+}
+
+/* Diagram overlay */
+.diagram-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.diagram-overlay img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Bottom metadata footer */
+.jumpstart-meta-footer {
+    font-size: 12px;
+    color: #605e5c;
+    margin-top: 8px;
 }
 
 .view-container {

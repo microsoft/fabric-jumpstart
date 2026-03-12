@@ -16,7 +16,6 @@ source:
   repo_url: https://github.com/ecotte/fabric-rti-demos.git
   repo_ref: v0.1.8
   workspace_path: telecom-call-data-records/
-  preview_image_path: telecom-call-data-records/TelecomCallDataRecords.png
 items_in_scope:
 - Notebook
 - Eventhouse
@@ -30,5 +29,11 @@ owner_email: fabricjumpstart.rti-iq@microsoft.com
 minutes_to_deploy: 2
 minutes_to_complete_jumpstart: 5
 video_url: ""
-difficulty: "Beginner"
+difficulty: Beginner
 last_updated: "2026-03-03"
+mermaid_diagram: |
+  graph LR
+    NB[TelecomCallDataRecordsEmulator]:::Notebook --> ES[call_data_events]:::Eventstream
+    ES --> EH[telecom_eventhouse]:::Eventhouse
+    EH --> KDB[telecom_kqldb]:::KQLDatabase
+    KDB --> DASH[telecom_dashboard]:::KQLDashboard

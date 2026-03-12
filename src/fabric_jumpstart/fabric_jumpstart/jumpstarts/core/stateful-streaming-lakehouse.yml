@@ -3,12 +3,13 @@ logical_id: stateful-streaming-lakehouse
 name: Stateful Streaming Lakehouse
 description: >-
   Discover how Spark Structured Streaming powers a stateful lakehouse for industrial sales and
-  shipment data. Learn how to process incremental events from OneLake and Eventstream,
+  shipment data. Applicable for both batch and streaming workloads, learn how to process incremental events from OneLake and Eventstream,
   and explore a production-ready streaming-first reference implementation.
-date_added: 2/28/2026
-include_in_listing: false
+date_added: 3/11/2026
+include_in_listing: true
 workload_tags:
 - Data Engineering
+- Real-Time Intelligence
 scenario_tags:
 - Streaming
 - Modeling
@@ -18,7 +19,6 @@ source:
   repo_url: https://github.com/microsoft/fabric-stateful-streaming-lakehouse.git/
   repo_ref: v0.1.0
   workspace_path: workspace/
-  preview_image_path: assets/image-example.png
 items_in_scope:
 - Lakehouse
 - Eventstream
@@ -27,12 +27,36 @@ items_in_scope:
 - Environment
 feature_flags:
 - enable_lakehouse_unpublish
-jumpstart_docs_uri: https://github.com/microsoft/fabric-analytics-roadshow-lab/blob/v0.1.1/README.md
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/stateful-streaming-lakehouse/
 entry_point: explore_streaming.Notebook
 test_suite: ''
 owner_email: FabricJumpstart.StatefulStreamingLakehouse@microsoft.com
 minutes_to_deploy: 8
 minutes_to_complete_jumpstart: 30
 video_url: ""
-difficulty: "Advanced"
+difficulty: Advanced
 last_updated: "2026-02-28"
+mermaid_diagram: |
+  graph LR
+
+  %% ON PREM
+  S_PS[package scanners]:::U1F69A
+  S_OP[on premise erp]:::U1F3E2
+
+  %% FABRIC WORKSPACE
+  subgraph Fabric:::Workspace
+    ES[shipment_scan_events]:::Eventstream
+    LH[sales_and_logistics]:::Lakehouse
+    SJD[stream_all_zones]:::SparkJobDefinition
+    ENV[stream_env]:::Environment
+    EXP[explore_streaming]:::Notebook
+    ARC[acrflow_streaming]:::Notebook
+    direction LR
+  end
+
+  %% FLOWS
+  S_PS -.-> ES
+  S_OP -.-> LH
+  ES <-.-> SJD
+  LH <-.-> SJD
+  SJD --- ENV

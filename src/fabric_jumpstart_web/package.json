@@ -15,12 +15,14 @@
     "prebuild": "npm run generate-content"
   },
   "dependencies": {
+    "@fabric-msft/svg-icons": "6.1.0",
     "@fluentui/react-components": "^9.54.2",
+    "@fluentui/react-icons": "^2.0.320",
     "gray-matter": "^4.0.3",
     "html-react-parser": "^5.2.17",
     "markdown-to-jsx": "^7.5.0",
     "marked": "^14.1.3",
-    "mermaid": "^11.12.3",
+    "mermaid": "^11.13.0",
     "next": "15.5.10",
     "next-intl": "^4.3.4",
     "react": "^18",
@@ -30,6 +32,7 @@
     "swiper": "^11.2.6"
   },
   "devDependencies": {
+    "@fabric-msft/theme": "4.0.0",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
     "@types/jest": "^29.5.12",

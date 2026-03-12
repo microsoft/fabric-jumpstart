@@ -9,6 +9,7 @@ date_added: 3/11/2026
 include_in_listing: true
 workload_tags:
 - Data Engineering
+- Real-Time Intelligence
 scenario_tags:
 - Streaming
 - Modeling

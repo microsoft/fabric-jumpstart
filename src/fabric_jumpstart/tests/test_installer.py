@@ -14,7 +14,6 @@ def _make_config(**overrides):
             "repo_url": "https://github.com/example/repo.git",
             "repo_ref": "v1.0.0",
             "workspace_path": "demo/",
-            "preview_image_path": "demo/preview.png",
         },
     }
     config.update(overrides)

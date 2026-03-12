@@ -380,7 +380,8 @@ export function enhanceDiagram(
     rect.setAttribute('stroke', isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)');
     rect.setAttribute('stroke-width', '1.5');
     rect.setAttribute('fill', isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.025)');
-    rect.setAttribute('stroke-dasharray', '6,4');
+    rect.removeAttribute('stroke-dasharray');
+    rect.style.cssText = '';
 
     // Get subgraph name (clusters render in reverse order from source)
     const sgName = subgraphNames[subgraphNames.length - 1 - idx] ?? '';

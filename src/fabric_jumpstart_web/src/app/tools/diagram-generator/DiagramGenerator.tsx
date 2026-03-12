@@ -16,10 +16,27 @@ import { useThemeContext } from '@components/Providers/themeProvider';
 import { enhanceDiagram } from '@components/MermaidDiagram/enhance';
 
 const SAMPLE_CHART = `graph LR
-  NB[my_notebook]:::Notebook --> LH[my_lakehouse]:::Lakehouse
-  LH --> WH[my_warehouse]:::Warehouse
-  WH --> SM[my_model]:::SemanticModel
-  SM --> RPT[my_report]:::Report`;
+
+  %% ON PREM
+  S_PS[Deliveries]:::U1F69A
+  S_OP[Order System]:::U1F3E2
+
+  %% FABRIC WORKSPACE
+  subgraph Fabric:::Workspace
+    ES[shipment_scan_events]:::Eventstream
+    LH[orders_and_deliveries]:::Lakehouse
+    SJD[stream_tables]:::SparkJobDefinition
+    ENV[stream_env]:::Environment
+    EXP[demo]:::Notebook
+    direction LR
+  end
+
+  %% FLOWS
+  S_PS -.-> ES
+  S_OP -.-> LH
+  ES <-.-> SJD
+  LH <-.-> SJD
+  SJD --- ENV`;
 
 const MERMAID_CONFIG_LIGHT = {
   startOnLoad: false,

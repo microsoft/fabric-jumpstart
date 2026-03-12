@@ -214,7 +214,7 @@ function CardHeader({
 
 function CardBody({ scenario, isDark }: { scenario: ScenarioCard; isDark: boolean }) {
   return (
-    <div style={{ padding: '36px 20px 20px', display: 'flex', flexDirection: 'column' as const, flexGrow: 1 }}>
+    <div style={{ padding: '36px 20px 20px', display: 'flex', flexDirection: 'column' as const, flexGrow: 1, backgroundColor: isDark ? '#1a1a1a' : '#f8f8f8' }}>
       {/* Pills: Core, Type, Difficulty */}
       <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '6px', marginBottom: '10px' }}>
         {scenario.core && (

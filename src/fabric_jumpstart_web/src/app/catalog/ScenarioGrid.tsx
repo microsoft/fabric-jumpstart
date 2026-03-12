@@ -73,7 +73,6 @@ const useStyles = makeStyles({
   card: {
     ...shorthands.borderRadius('6px'),
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke1),
-    backgroundColor: tokens.colorNeutralBackground1,
     ...shorthands.overflow('hidden'),
     transitionDuration: '0.2s',
     transitionProperty: 'box-shadow, transform',

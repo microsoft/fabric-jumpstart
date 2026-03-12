@@ -116,7 +116,7 @@ export default function ScenarioCarousel() {
                   style={{
                     borderRadius: '6px',
                     overflow: 'hidden',
-                    backgroundColor: tokens.colorNeutralBackground1,
+                    backgroundColor: isDark ? '#1a1a1a' : '#f8f8f8',
                     border: `1px solid ${tokens.colorNeutralStroke1}`,
                     boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',

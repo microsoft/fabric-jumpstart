@@ -127,9 +127,10 @@ export const useStyles = makeStyles({
     },
   },
   scenariosImgContainer: {
-    width: '25%',
-    maxWidth: '550px',
-    maxHeight: '550px',
+    width: '20%',
+    maxWidth: '380px',
+    maxHeight: '380px',
+    marginTop: '-3%',
     [device.mobileAndTablet]: {
       display: 'none',
     },

@@ -50,13 +50,15 @@ export default function MermaidDiagram({ chart, className, bare, seamless }: Mer
       const id = `mermaid-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
       try {
-        const { svg } = await mermaid.render(id, chart);
+        // Strip :::Type from subgraph lines (Mermaid doesn't support it)
+        const mermaidChart = chart.replace(/^(\s*subgraph\s+.+?):::(\w+)\s*$/gm, '$1');
+        const { svg } = await mermaid.render(id, mermaidChart);
         if (cancelled) return;
 
         // Mount raw SVG into real DOM
         container.innerHTML = svg;
 
-        // Enhance in the real DOM where getBBox() works
+        // Enhance in the real DOM where getBBox() works — pass original chart
         const svgEl = container.querySelector('svg') as SVGSVGElement | null;
         if (svgEl) {
           requestAnimationFrame(() => {

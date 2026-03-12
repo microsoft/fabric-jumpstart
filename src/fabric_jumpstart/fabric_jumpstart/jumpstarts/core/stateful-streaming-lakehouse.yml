@@ -5,7 +5,7 @@ description: >-
   Discover how Spark Structured Streaming powers a stateful lakehouse for industrial sales and
   shipment data. Learn how to process incremental events from OneLake and Eventstream,
   and explore a production-ready streaming-first reference implementation.
-date_added: 2/28/2026
+date_added: 3/11/2026
 include_in_listing: false
 workload_tags:
 - Data Engineering
@@ -37,8 +37,27 @@ difficulty: Advanced
 last_updated: "2026-02-28"
 mermaid_diagram: |
   graph LR
-    ES[shipment_scan_events]:::Eventstream --> LH[sales_and_logistics]:::Lakehouse
-    LH --> SJD[stream_all_zones]:::SparkJobDefinition
-    SJD --> NB1[explore_streaming]:::Notebook
-    SJD --> NB2[arcflow_streaming]:::Notebook
-    ENV[stream_env]:::Environment -.-> SJD
+
+  %% ON PREM
+  S_PS[package scanners]:::U1F69A
+  S_OP[on premise erp]:::U1F3E2
+
+  %% FABRIC WORKSPACE
+  subgraph Fabric Workspace:::Workspace
+
+  ES[shipment_scan_events]:::Eventstream
+  LH[sales_and_logistics]:::Lakehouse
+  SJD[stream_all_zones]:::SparkJobDefinition
+  ENV[stream_env]:::Environment
+  EXP[explore_streaming]:::Notebook
+  AS[acrflow_streaming]:::Notebook
+  direction TB
+
+  end
+
+  %% FLOWS
+  S_PS -.-> ES
+  S_OP -.-> LH
+  ES <-.-> SJD
+  LH <-.-> SJD
+  SJD --- ENV

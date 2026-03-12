@@ -83,7 +83,9 @@ async function renderMermaidSvg(
 
   const id = `mermaid-gen-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   try {
-    const { svg } = await mermaid.render(id, chart);
+    // Strip :::Type annotations from subgraph lines before Mermaid render
+    const strippedChart = chart.replace(/^(\s*subgraph\s+.+?):::(\w+)\s*$/gm, '$1');
+    const { svg } = await mermaid.render(id, strippedChart);
     container.innerHTML = svg;
 
     const svgEl = container.querySelector('svg') as SVGSVGElement | null;
@@ -142,7 +144,9 @@ export default function DiagramGenerator() {
       mermaid.initialize(previewDark ? MERMAID_CONFIG_DARK : MERMAID_CONFIG_LIGHT);
 
       const id = `mermaid-preview-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-      const { svg } = await mermaid.render(id, chart);
+      // Strip :::Type annotations from subgraph lines before Mermaid render
+      const strippedChart = chart.replace(/^(\s*subgraph\s+.+?):::(\w+)\s*$/gm, '$1');
+      const { svg } = await mermaid.render(id, strippedChart);
       container.innerHTML = svg;
 
       const svgEl = container.querySelector('svg') as SVGSVGElement | null;

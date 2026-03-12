@@ -282,11 +282,14 @@ async function main(): Promise<void> {
 
             const id = `diagram-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
             const container = document.getElementById('container')!;
-            const { svg } = await mermaid.render(id, chart);
+            // Strip :::Type from subgraph lines (Mermaid doesn't support it)
+            const mermaidChart = chart.replace(/^(\s*subgraph\s+.+?):::(\w+)\s*$/gm, '$1');
+            const { svg } = await mermaid.render(id, mermaidChart);
             container.innerHTML = svg;
 
             const svgEl = container.querySelector('svg') as SVGSVGElement;
             if (svgEl && enhance) {
+              // Pass original chart so enhance can parse :::Type
               enhance(svgEl, chart, dark);
             }
 

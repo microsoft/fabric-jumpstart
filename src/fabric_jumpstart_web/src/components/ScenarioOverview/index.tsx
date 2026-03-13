@@ -201,17 +201,19 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {scenario.workloadTags.map((tag) => {
               const wc = workloadColors[tag];
+              const primary = wc?.primary ?? '#0078d4';
+              const secondary = wc?.secondary ?? '#0078d4';
               return (
                 <span key={tag} style={{
                   fontSize: '12px',
                   padding: '4px 12px',
                   borderRadius: '12px',
                   backgroundColor: isDark
-                    ? `${wc?.primary ?? '#0078d4'}25`
-                    : `${wc?.primary ?? '#0078d4'}20`,
+                    ? `${primary}25`
+                    : `${secondary}18`,
                   color: isDark
-                    ? (wc?.primary ?? '#0078d4')
-                    : (wc?.secondary ?? '#0078d4'),
+                    ? primary
+                    : secondary,
                   fontWeight: 500,
                 }}>
                   {tag}

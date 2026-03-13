@@ -7,6 +7,9 @@ include_in_listing: true
 workload_tags:
 - Power BI
 - Data Engineering
+- Data Factory
+- Data Science
+- Real-Time Intelligence
 scenario_tags:
 - Monitoring
 type: Accelerator
@@ -21,6 +24,7 @@ items_in_scope:
 - SemanticModel
 - Reflex
 - DataAgent
+- DataPipeline
 jumpstart_docs_uri: 'https://github.com/microsoft/fabric-toolbox/blob/main/monitoring/fabric-cost-analysis/README.md'
 entry_point: 00_Deploy_FCA.Notebook
 test_suite: ''

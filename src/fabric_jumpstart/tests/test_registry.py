@@ -116,16 +116,25 @@ class TestRegistryValidation:
     def test_ids_are_unique_and_positive(self):
         """Ensure numeric ids are unique and positive across the registry."""
         registry_data = load_registry_data()
-        ids = [j.get('id') for j in registry_data]
-        assert all(isinstance(i, int) and i > 0 for i in ids), "All ids must be positive integers"
-        assert len(ids) == len(set(ids)), "Numeric ids must be unique"
+        id_to_logical = {}
+        for j in registry_data:
+            jid = j.get('id')
+            lid = j.get('logical_id', '<unknown>')
+            assert isinstance(jid, int) and jid > 0, f"id must be a positive integer for '{lid}' (got {jid!r})"
+            if jid in id_to_logical:
+                pytest.fail(f"Duplicate id {jid} found in '{lid}' and '{id_to_logical[jid]}'")
+            id_to_logical[jid] = lid
 
     def test_logical_ids_are_unique(self):
         """Ensure logical_ids are unique across the registry."""
         registry_data = load_registry_data()
-        logical_ids = [j.get('logical_id') for j in registry_data]
-        assert all(logical_ids), "logical_id must be present for all entries"
-        assert len(logical_ids) == len(set(logical_ids)), "logical_ids must be unique"
+        seen = {}
+        for j in registry_data:
+            lid = j.get('logical_id')
+            assert lid, f"logical_id must be present (id={j.get('id')})"
+            if lid in seen:
+                pytest.fail(f"Duplicate logical_id '{lid}' (ids: {seen[lid]} and {j.get('id')})")
+            seen[lid] = j.get('id')
 
     def test_logical_ids_are_kebab_case(self):
         """Ensure logical_ids are lowercase kebab-case (pipe case)."""

@@ -1,9 +1,7 @@
 id: 21
 logical_id: fabric-cost-analysis
 name: Fabric Cost Analysis
-description: >-
-  Analyze cost of Fabric capacities in Azure Subscriptions based on Focus exports.
-  dashboards.
+description: Fabric Cost Analysis (short: FCA) is a solution to enable holistic monitoring of Microsoft Fabric Cost with the help of Microsoft Fabric. FCA has the goal to provide a holistic view specified on Microsoft Fabric aspects and particularities (joining Financial and Operational forces) on top of the various information, which can be extracted from Azure Cost Management, personal enriched source of information, … allowing its users to analyze at a very high level, but also to deep dive into specific usage, Azure quotas, reservations and particularity of the platform for a more finer data analysis.
 date_added: 03/13/2026
 include_in_listing: true
 workload_tags:

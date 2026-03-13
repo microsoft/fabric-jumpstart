@@ -2,41 +2,38 @@
  * Shared SVG enhancement for Mermaid diagrams.
  * Injects Fabric item icons, gradient fills, drop shadows, and styled edges.
  */
-import { ITEM_WORKLOAD_MAP } from '@utils/mermaidParser';
-import workloadColorsData from '@data/workload-colors.json';
 import itemIconData from '@data/fabric-item-icons.json';
+import itemDisplayNamesData from '@data/item-display-names.json';
 
-const itemIconDataUris = itemIconData as Record<string, string>;
+const itemIcons = itemIconData as Record<string, string>;
+const itemDisplayNames = itemDisplayNamesData as Record<string, string>;
 
-export interface WorkloadColor {
-  primary: string;
-  secondary: string;
-  light: string;
-  accent: string;
-  mid: string;
-  icon: string;
+/** Case-insensitive lookup map: lowercase key → original key. */
+function buildCiIndex(map: Record<string, unknown>): Map<string, string> {
+  const index = new Map<string, string>();
+  for (const key of Object.keys(map)) index.set(key.toLowerCase(), key);
+  return index;
 }
 
-const workloadColors = workloadColorsData as Record<string, WorkloadColor>;
+const ciIcons = buildCiIndex(itemIcons);
+const ciDisplayNames = buildCiIndex(itemDisplayNames);
+
+/** Case-insensitive lookup. Tries exact match first, then lowercase. */
+function ciGet<T>(map: Record<string, T>, ci: Map<string, string>, key: string): T | undefined {
+  return map[key] ?? map[ci.get(key.toLowerCase()) ?? ''];
+}
 
 interface NodeInfo {
   nodeId: string;
   label: string;
   itemType: string;
-  workload: string;
-  wc: WorkloadColor;
   itemIcon: string | null;
   emoji: string | null;
 }
 
-const DEFAULT_WC: WorkloadColor = {
-  primary: '#616161',
-  secondary: '#9E9E9E',
-  light: '#E0E0E0',
-  accent: '#757575',
-  mid: '#BDBDBD',
-  icon: '',
-};
+// Consistent Fabric-themed node styling
+const NODE_STROKE = { dark: 'rgba(255,255,255,0.25)', light: 'rgba(0,0,0,0.18)' };
+const NODE_FILL_RGB = { dark: '255,255,255', light: '0,0,0' };
 
 const UNICODE_CP_RE = /^U([0-9A-Fa-f]{4,6})$/;
 const EMOJI_RE = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
@@ -47,14 +44,12 @@ function extractNodeInfo(chart: string): Map<string, NodeInfo> {
   let m: RegExpExecArray | null;
   while ((m = regex.exec(chart)) !== null) {
     const [, nodeId, label, itemType] = m;
-    const workload = ITEM_WORKLOAD_MAP[itemType];
-    if (workload) {
-      const wc = workloadColors[workload];
-      if (!wc) continue;
-      const itemIcon = itemIconDataUris[itemType] || null;
-      nodes.set(label.trim(), { nodeId, label: label.trim(), itemType, workload, wc, itemIcon, emoji: null });
+    const itemIcon = ciGet(itemIcons, ciIcons, itemType) || null;
+    if (itemIcon) {
+      // Registered Fabric item type
+      nodes.set(label.trim(), { nodeId, label: label.trim(), itemType, itemIcon, emoji: null });
     } else {
-      // Unregistered type — check for Unicode codepoint (:::U1F5A5) or direct emoji
+      // Unregistered — check for Unicode codepoint (:::U1F5A5) or direct emoji
       let emoji: string | null = null;
       const cpMatch = itemType.match(UNICODE_CP_RE);
       if (cpMatch) {
@@ -63,22 +58,10 @@ function extractNodeInfo(chart: string): Map<string, NodeInfo> {
         const emojiMatch = itemType.match(EMOJI_RE);
         emoji = emojiMatch ? emojiMatch[0] : null;
       }
-      // Always render — emoji if available, plain box otherwise
-      nodes.set(label.trim(), {
-        nodeId, label: label.trim(), itemType, workload: 'Custom',
-        wc: DEFAULT_WC, itemIcon: null, emoji,
-      });
+      nodes.set(label.trim(), { nodeId, label: label.trim(), itemType, itemIcon: null, emoji });
     }
   }
   return nodes;
-}
-
-function hexToRgb(hex: string): [number, number, number] {
-  return [
-    parseInt(hex.slice(1, 3), 16),
-    parseInt(hex.slice(3, 5), 16),
-    parseInt(hex.slice(5, 7), 16),
-  ];
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -161,30 +144,24 @@ export function enhanceDiagram(
     const info = nodeMap.get(label);
     if (!info) continue;
 
-    const [r, gv, b] = hexToRgb(info.wc.accent);
-    const [lr, lg, lb] = hexToRgb(info.wc.light);
+    const rgb = NODE_FILL_RGB[isDark ? 'dark' : 'light'];
 
     const shape = g.querySelector('rect, polygon') as SVGGraphicsElement | null;
     if (!shape) continue;
 
-    // Gradient fill
+    // Gradient fill — consistent neutral styling
     const gid = `wl-g-${gi++}`;
     const gr = svgEl('linearGradient', { id: gid, x1: '0', y1: '0', x2: '0', y2: '1' });
     const s1 = svgEl('stop', { offset: '0%' });
     const s2 = svgEl('stop', { offset: '100%' });
-    if (isDark) {
-      s1.setAttribute('stop-color', `rgba(${r},${gv},${b},0.22)`);
-      s2.setAttribute('stop-color', `rgba(${r},${gv},${b},0.06)`);
-    } else {
-      s1.setAttribute('stop-color', `rgba(${lr},${lg},${lb},0.7)`);
-      s2.setAttribute('stop-color', `rgba(${lr},${lg},${lb},0.25)`);
-    }
+    s1.setAttribute('stop-color', `rgba(${rgb},${isDark ? 0.12 : 0.06})`);
+    s2.setAttribute('stop-color', `rgba(${rgb},${isDark ? 0.04 : 0.02})`);
     gr.appendChild(s1);
     gr.appendChild(s2);
     defs.appendChild(gr);
 
     shape.setAttribute('fill', `url(#${gid})`);
-    shape.setAttribute('stroke', info.wc.accent);
+    shape.setAttribute('stroke', NODE_STROKE[isDark ? 'dark' : 'light']);
     shape.setAttribute('stroke-width', '2');
     shape.setAttribute('rx', '6');
     shape.setAttribute('ry', '6');
@@ -192,7 +169,7 @@ export function enhanceDiagram(
 
     const box = shape.getBBox();
 
-    const hasVisual = !!(info.emoji || info.itemIcon || info.wc.icon);
+    const hasVisual = !!(info.emoji || info.itemIcon);
     const extraW = hasVisual ? EXTRA_W : 0;
 
     // Widen for icon (only when there's an icon/emoji to show)
@@ -219,9 +196,9 @@ export function enhanceDiagram(
       emojiEl.setAttribute('font-size', String(ICON - 4));
       emojiEl.textContent = info.emoji;
       g.appendChild(emojiEl);
-    } else if (info.itemIcon || info.wc.icon) {
+    } else if (info.itemIcon) {
       g.appendChild(svgEl('image', {
-        href: info.itemIcon || info.wc.icon,
+        href: info.itemIcon,
         width: String(ICON), height: String(ICON),
         x: String(cx - ICON / 2), y: String(cy - ICON / 2),
       }));
@@ -237,10 +214,10 @@ export function enhanceDiagram(
       const textLeftX = hasVisual ? cx + ICON / 2 + 12 : nodeLeft + 10;
       const textWidth = nodeRight - textLeftX - 2;
 
-      // Show item type subtitle only for registered Fabric types
-      const showType = showSubtitles && !info.emoji && !!ITEM_WORKLOAD_MAP[info.itemType];
+      // Show item type subtitle for registered Fabric types (has icon)
+      const showType = showSubtitles && !info.emoji && !!info.itemIcon;
       const typeName = showType
-        ? info.itemType.replace(/([a-z])([A-Z])/g, '$1 $2')
+        ? (ciGet(itemDisplayNames, ciDisplayNames, info.itemType) ?? info.itemType)
         : '';
 
       fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="
@@ -398,11 +375,11 @@ export function enhanceDiagram(
     const sgType = sgInfo?.itemType ?? null;
 
     // Resolve icon from the shared icon map (Workspace, Lakehouse, Notebook, etc.)
-    const iconUri = sgType && itemIconDataUris[sgType] ? itemIconDataUris[sgType] : null;
+    const iconUri = sgType ? (ciGet(itemIcons, ciIcons, sgType) ?? null) : null;
 
-    // Human-readable type name (e.g. SparkJobDefinition → Spark Job Definition)
+    // Human-readable type name from centralized display name map
     const typeName = sgType
-      ? sgType.replace(/([a-z])([A-Z])/g, '$1 $2')
+      ? (ciGet(itemDisplayNames, ciDisplayNames, sgType) ?? sgType)
       : '';
 
     const box = rect.getBBox();
@@ -479,12 +456,4 @@ export function enhanceDiagram(
       }
     }
   }
-}
-
-/** Get the workload color for the first annotated node in a chart. */
-export function getPrimaryWorkloadColor(chart: string): WorkloadColor | null {
-  const map = extractNodeInfo(chart);
-  if (map.size === 0) return null;
-  const first = map.values().next().value;
-  return first?.wc ?? null;
 }

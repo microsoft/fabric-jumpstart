@@ -323,9 +323,6 @@ function generateScenariosJson(scenarios: TaggedScenarioYml[]): ScenarioCard[] {
 interface WorkloadColorEntry {
   primary: string;
   secondary: string;
-  light: string;
-  accent: string;
-  mid: string;
   icon: string;
 }
 
@@ -343,60 +340,6 @@ const WORKLOAD_PRIMARY_COLORS: Record<string, { primary: string; secondary: stri
 
 const DEFAULT_PRIMARY_COLORS = { primary: '#0078D4', secondary: '#004E8C' };
 
-function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-  if (max === min) return { h: 0, s: 0, l };
-  const d = max - min;
-  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-  let h = 0;
-  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-  else if (max === g) h = ((b - r) / d + 2) / 6;
-  else h = ((r - g) / d + 4) / 6;
-  return { h: h * 360, s, l };
-}
-
-function extractColorsFromSvg(svgContent: string): string[] {
-  const colorRegex = /(fill|stop-color)="(#[0-9a-fA-F]{6})"/g;
-  const colors = new Set<string>();
-  let match;
-  while ((match = colorRegex.exec(svgContent)) !== null) {
-    const hex = match[2].toUpperCase();
-    // Skip near-black/grey fills used for base shapes
-    const { s, l } = hexToHsl(hex);
-    if (s > 0.05 || l > 0.6) colors.add(hex);
-  }
-  return [...colors];
-}
-
-function pickWorkloadColors(
-  colors: string[]
-): { light: string; accent: string; mid: string } {
-  if (colors.length === 0) {
-    return { light: '#E8F4FD', accent: '#0078D4', mid: '#5CB8E6' };
-  }
-  const withHsl = colors.map((hex) => ({ hex, ...hexToHsl(hex) }));
-  withHsl.sort((a, b) => b.l - a.l);
-
-  const light = withHsl[0];
-  // Accent: most saturated color with moderate-to-low lightness
-  const accentCandidates = withHsl.filter((c) => c.l < 0.6 && c.s > 0.3);
-  const accent = accentCandidates.length > 0
-    ? accentCandidates.sort((a, b) => b.s - a.s)[0]
-    : withHsl[withHsl.length - 1];
-  // Mid: prefer a color whose hue is close to the lightest, at moderate lightness
-  const hueDist = (a: number, b: number) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
-  const midCandidates = withHsl
-    .filter((c) => c.l > 0.3 && c.l < 0.75 && c.hex !== light.hex && c.hex !== accent.hex)
-    .sort((a, b) => hueDist(a.h, light.h) - hueDist(b.h, light.h));
-  const mid = midCandidates.length > 0 ? midCandidates[0] : withHsl[Math.floor(withHsl.length / 2)];
-
-  return { light: light.hex, accent: accent.hex, mid: mid.hex };
-}
-
 function toSlug(tag: string): string {
   return tag
     .toLowerCase()
@@ -408,6 +351,10 @@ function generateWorkloadColors(scenarios: ScenarioYml[]): void {
   const allTags = new Set<string>();
   for (const s of scenarios) {
     for (const t of s.workload_tags) allTags.add(t);
+  }
+  // Include all workloads from the brand map (covers item types in diagrams)
+  for (const tag of Object.keys(WORKLOAD_PRIMARY_COLORS)) {
+    allTags.add(tag);
   }
 
   const result: Record<string, WorkloadColorEntry> = {};
@@ -424,17 +371,8 @@ function generateWorkloadColors(scenarios: ScenarioYml[]): void {
       }
     }
 
-    let colors = { light: '#E8F4FD', accent: '#0078D4', mid: '#5CB8E6' };
-    const svgPath = path.join(WORKLOAD_ICONS_DIR, `${slug}.svg`);
-    if (fs.existsSync(svgPath)) {
-      const svgContent = fs.readFileSync(svgPath, 'utf-8');
-      const extracted = extractColorsFromSvg(svgContent);
-      colors = pickWorkloadColors(extracted);
-    }
-
     result[tag] = {
       ...(WORKLOAD_PRIMARY_COLORS[tag] ?? DEFAULT_PRIMARY_COLORS),
-      ...colors,
       icon: iconPath,
     };
   }

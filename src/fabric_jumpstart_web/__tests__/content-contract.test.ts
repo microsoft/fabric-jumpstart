@@ -13,9 +13,13 @@ import { glob } from 'glob';
 import type { ScenarioYml } from '@scenario/scenario';
 
 const CONTENT_DIR = path.resolve(__dirname, '../content/scenarios');
-const JUMPSTARTS_DIR = path.resolve(
+const JUMPSTARTS_CORE_DIR = path.resolve(
   __dirname,
   '../../fabric_jumpstart/fabric_jumpstart/jumpstarts/core'
+);
+const JUMPSTARTS_COMMUNITY_DIR = path.resolve(
+  __dirname,
+  '../../fabric_jumpstart/fabric_jumpstart/jumpstarts/community'
 );
 const RENDERER_PATH = path.resolve(
   __dirname,
@@ -33,14 +37,17 @@ function listContentDirs(): string[] {
     .map((e) => e.name);
 }
 
-/** Return the set of logical_ids from jumpstart YAML files. */
+/** Return the set of logical_ids from jumpstart YAML files (core + community). */
 function loadLogicalIds(): Set<string> {
-  const files = glob.sync('*.yml', { cwd: JUMPSTARTS_DIR });
   const ids = new Set<string>();
-  for (const file of files) {
-    const content = fs.readFileSync(path.join(JUMPSTARTS_DIR, file), 'utf-8');
-    const data = yaml.load(content) as ScenarioYml;
-    ids.add(data.logical_id);
+  for (const dir of [JUMPSTARTS_CORE_DIR, JUMPSTARTS_COMMUNITY_DIR]) {
+    if (!fs.existsSync(dir)) continue;
+    const files = glob.sync('*.yml', { cwd: dir });
+    for (const file of files) {
+      const content = fs.readFileSync(path.join(dir, file), 'utf-8');
+      const data = yaml.load(content) as ScenarioYml;
+      ids.add(data.logical_id);
+    }
   }
   return ids;
 }
@@ -110,7 +117,7 @@ describe('Scenario content contract', () => {
       const ids = loadLogicalIds();
       if (!ids.has(dir)) {
         throw new Error(
-          `Content folder "${dir}" does not match any logical_id in jumpstarts/core/.`
+          `Content folder "${dir}" does not match any logical_id in jumpstarts/core/ or jumpstarts/community/.`
         );
       }
     }

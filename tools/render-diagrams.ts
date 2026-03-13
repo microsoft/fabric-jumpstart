@@ -23,10 +23,10 @@ const __dirname = path.dirname(__filename);
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const WEB_ROOT = path.resolve(REPO_ROOT, 'src/fabric_jumpstart_web');
-const JUMPSTARTS_DIR = path.resolve(
-  REPO_ROOT,
-  'src/fabric_jumpstart/fabric_jumpstart/jumpstarts/core'
-);
+const JUMPSTARTS_DIRS = [
+  path.resolve(REPO_ROOT, 'src/fabric_jumpstart/fabric_jumpstart/jumpstarts/core'),
+  path.resolve(REPO_ROOT, 'src/fabric_jumpstart/fabric_jumpstart/jumpstarts/community'),
+];
 const OUTPUT_DIR = path.resolve(REPO_ROOT, 'assets/images/diagrams');
 const ICONS_JSON = path.join(WEB_ROOT, 'src/data/fabric-item-icons.json');
 
@@ -72,15 +72,18 @@ interface JumpstartInfo {
 }
 
 function loadJumpstarts(): JumpstartInfo[] {
-  const files = glob.sync(path.join(JUMPSTARTS_DIR, '*.yml'));
   const results: JumpstartInfo[] = [];
-  for (const file of files) {
-    const raw = yaml.load(fs.readFileSync(file, 'utf8')) as Record<string, unknown>;
-    if (raw.mermaid_diagram && raw.logical_id) {
-      results.push({
-        logicalId: raw.logical_id as string,
-        mermaid_diagram: raw.mermaid_diagram as string,
-      });
+  for (const dir of JUMPSTARTS_DIRS) {
+    if (!fs.existsSync(dir)) continue;
+    const files = glob.sync(path.join(dir, '*.yml'));
+    for (const file of files) {
+      const raw = yaml.load(fs.readFileSync(file, 'utf8')) as Record<string, unknown>;
+      if (raw.mermaid_diagram && raw.logical_id) {
+        results.push({
+          logicalId: raw.logical_id as string,
+          mermaid_diagram: raw.mermaid_diagram as string,
+        });
+      }
     }
   }
   return results;
@@ -118,31 +121,18 @@ function ensureChromeLibs(): string {
 /** Build the inline data needed to drive enhance.ts inside the browser. */
 async function buildEnhancePayload(): Promise<{
   enhanceScript: string;
-  workloadColors: Record<string, unknown>;
-  itemWorkloadMap: Record<string, string>;
-  itemIconDataUris: Record<string, string>;
+  itemIcons: Record<string, string>;
+  itemDisplayNames: Record<string, string>;
 }> {
-  // Load workload colors JSON
-  const workloadColors = JSON.parse(
-    fs.readFileSync(path.join(WEB_ROOT, 'src/data/workload-colors.json'), 'utf8')
-  );
-
   // Load item icon data URIs
-  const itemIconDataUris = JSON.parse(
+  const itemIcons = JSON.parse(
     fs.readFileSync(path.join(WEB_ROOT, 'src/data/fabric-item-icons.json'), 'utf8')
   );
 
-  // Load ITEM_WORKLOAD_MAP from mermaidParser.ts
-  const parserSrc = fs.readFileSync(
-    path.join(WEB_ROOT, 'src/utils/mermaidParser.ts'),
-    'utf8'
+  // Load item display names
+  const itemDisplayNames = JSON.parse(
+    fs.readFileSync(path.join(WEB_ROOT, 'src/data/item-display-names.json'), 'utf8')
   );
-  const mapMatch = parserSrc.match(
-    /export const ITEM_WORKLOAD_MAP[^{]*(\{[\s\S]*?\n\})/
-  );
-  if (!mapMatch) throw new Error('Could not extract ITEM_WORKLOAD_MAP');
-  // eslint-disable-next-line no-eval
-  const itemWorkloadMap = eval(`(${mapMatch[1]})`) as Record<string, string>;
 
   // Load the enhance.ts source and transpile to browser-compatible JS
   const enhanceSrc = fs.readFileSync(
@@ -155,12 +145,12 @@ async function buildEnhancePayload(): Promise<{
     .replace(/^import\s+.*;\s*$/gm, '')
     .replace(/^export\s+/gm, '')
     .replace(
-      /const workloadColors = workloadColorsData as Record<string, WorkloadColor>;/,
-      '// workloadColors injected globally'
+      /const itemIcons = itemIconData as Record<string, string>;/,
+      '// itemIcons injected globally'
     )
     .replace(
-      /const itemIconDataUris = itemIconData as Record<string, string>;/,
-      '// itemIconDataUris injected globally'
+      /const itemDisplayNames = itemDisplayNamesData as Record<string, string>;/,
+      '// itemDisplayNames injected globally'
     );
 
   // Transpile TS → JS
@@ -174,7 +164,7 @@ async function buildEnhancePayload(): Promise<{
     },
   });
 
-  return { enhanceScript, workloadColors, itemWorkloadMap, itemIconDataUris };
+  return { enhanceScript, itemIcons, itemDisplayNames };
 }
 
 async function main(): Promise<void> {
@@ -218,26 +208,23 @@ async function main(): Promise<void> {
 
   // Inject enhance dependencies and script
   await page.evaluate(
-    (wc, iwm, iidu, enhScript) => {
+    (icons, displayNames, enhScript) => {
       // Make data available globally
-      (window as Record<string, unknown>).workloadColors = wc;
-      (window as Record<string, unknown>).ITEM_WORKLOAD_MAP = iwm;
-      (window as Record<string, unknown>).itemIconDataUris = iidu;
+      (window as Record<string, unknown>).itemIcons = icons;
+      (window as Record<string, unknown>).itemDisplayNames = displayNames;
 
       // Inject the enhance script
       const script = document.createElement('script');
       script.textContent = `
-        const workloadColors = window.workloadColors;
-        const ITEM_WORKLOAD_MAP = window.ITEM_WORKLOAD_MAP;
-        const itemIconDataUris = window.itemIconDataUris;
+        const itemIcons = window.itemIcons;
+        const itemDisplayNames = window.itemDisplayNames;
         ${enhScript}
         window.enhanceDiagram = enhanceDiagram;
       `;
       document.head.appendChild(script);
     },
-    payload.workloadColors,
-    payload.itemWorkloadMap,
-    payload.itemIconDataUris,
+    payload.itemIcons,
+    payload.itemDisplayNames,
     payload.enhanceScript
   );
 

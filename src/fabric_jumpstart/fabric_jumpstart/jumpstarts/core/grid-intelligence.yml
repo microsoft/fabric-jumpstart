@@ -1,0 +1,93 @@
+id: 23
+logical_id: grid-intelligence
+name: Real-Time Grid Intelligence
+description: >-
+  Monitor electrical grids, coordinate response to weather-related outages and optimize quality of service using Advanced Metering Infrastructure (AMI) data fused with weather data and vehicle telematics from repair crews.
+date_added: 03/11/2026
+include_in_listing: true
+workload_tags:
+  - Real-Time Intelligence
+  - Power BI
+scenario_tags:
+  - Streaming
+type: Demo
+source:
+  repo_url: https://github.com/slavatrofimov/Real-Time-Grid-Intelligence-with-Microsoft-Fabric.git
+  repo_ref: jumpstart-v0.11
+  workspace_path: workspace/
+  files_source_path: data/
+  files_destination_lakehouse: ReferenceDataLH
+  files_destination_path: data/
+items_in_scope:
+  - Notebook
+  - Eventhouse
+  - Eventstream
+  - KQLDatabase
+  - KQLDashboard
+  - KQLQueryset
+  - Eventstream
+  - SemanticModel
+  - Report
+  - Reflex
+  - DataAgent
+  - Lakehouse
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/grid-intelligence
+entry_point: PostDeploymentConfig.Notebook
+test_suite: ""
+owner_email: fabricjumpstart.collab@microsoft.com
+minutes_to_deploy: 5
+minutes_to_complete_jumpstart: 5
+video_url: "https://www.youtube.com/watch?v=6xjQD-g2nd0"
+difficulty: "Intermediate"
+last_updated: "2026-03-13"
+mermaid_diagram: |
+  graph LR
+
+    %% ON PREM
+    S_VEHICLE[Vehicle Telemetry Simulation]:::U1F69A
+    S_REF[Reference Data]:::U1F3E2
+    S_WEATHER[Storm Simulation]:::U26C8
+    S_AMI[AMI Telemetry and Outage Simulation]:::U26A1
+
+      %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+        direction LR
+        AMI_ES[AMI Eventstream]:::Eventstream
+        VEHICLE_ES[Vehicle Eventstream]:::Eventstream
+        WEATHER_ES[Weather Eventstream]:::Eventstream
+        REFERENCE_LH[Reference Data Lakehouse]:::Lakehouse
+        PU_EH[Power Utilities Eventhouse]:::Eventhouse
+        METER_ACT[Meter Activator]:::Reflex
+        METER_DA[Meter Data Agent]:::DataAgent
+        VEHCTS_SM[Vehicle-Telemetry Time Series Analysis]:::SemanticModel
+        MTTS_SM[Meter-Telemetry Time Series Analysis]:::SemanticModel
+        VEHCTS_R[Vehicle Telemetry Time Series Analysis]:::Report
+        MTTS_R[Meter Telemetry Time Series Analysis]:::Report
+        ME_SM[Meter-Exploration]:::SemanticModel
+        ME_R[Meter Exploration]:::Report
+        SA_MAP[Service Area Map]:::U1F30D  
+        VT_RTD[Vehicle Tracking]:::KQLDashboard
+        MS_RTD[Meter Status]:::KQLDashboard
+    end
+
+    %% FLOWS
+    S_WEATHER ==> WEATHER_ES
+    S_VEHICLE ==> VEHICLE_ES
+    AMI_ES ==> PU_EH
+    WEATHER_ES ==> PU_EH
+    VEHICLE_ES ==> PU_EH
+    AMI_ES -.-> METER_ACT
+    PU_EH -.-> MTTS_SM
+    PU_EH -.-> VEHCTS_SM
+    VEHCTS_SM -.-> VEHCTS_R
+    MTTS_SM -.-> MTTS_R
+    PU_EH -.-> SA_MAP
+    REFERENCE_LH -.-> SA_MAP
+    PU_EH -.-> ME_SM
+    ME_SM -.-> ME_R
+    PU_EH -.-> VT_RTD
+    PU_EH -.-> MS_RTD
+    PU_EH -.-> METER_DA
+    S_AMI -.-> AMI_ES
+    S_REF -.-> REFERENCE_LH
+    REFERENCE_LH --> PU_EH

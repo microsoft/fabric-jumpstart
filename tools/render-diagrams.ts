@@ -299,8 +299,19 @@ async function main(): Promise<void> {
 
   await browser.close();
 
+  // Copy rendered SVGs to public directory for dev server
+  const PUBLIC_DIR = path.resolve(WEB_ROOT, 'public/images/diagrams');
+  fs.mkdirSync(PUBLIC_DIR, { recursive: true });
+  const svgFiles = fs.readdirSync(OUTPUT_DIR).filter(f => f.endsWith('.svg'));
+  for (const f of svgFiles) {
+    fs.copyFileSync(path.join(OUTPUT_DIR, f), path.join(PUBLIC_DIR, f));
+  }
+
   console.log(
     `✅ Rendered ${success} SVGs (${failed} failed) to ${path.relative(REPO_ROOT, OUTPUT_DIR)}/`
+  );
+  console.log(
+    `   Copied ${svgFiles.length} SVGs to ${path.relative(REPO_ROOT, PUBLIC_DIR)}/`
   );
 }
 

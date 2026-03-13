@@ -46,10 +46,8 @@ function extractNodeInfo(chart: string): Map<string, NodeInfo> {
     const [, nodeId, label, itemType] = m;
     const itemIcon = ciGet(itemIcons, ciIcons, itemType) || null;
     if (itemIcon) {
-      // Registered Fabric item type
-      nodes.set(label.trim(), { nodeId, label: label.trim(), itemType, itemIcon, emoji: null });
+      nodes.set(nodeId, { nodeId, label: label.trim(), itemType, itemIcon, emoji: null });
     } else {
-      // Unregistered — check for Unicode codepoint (:::U1F5A5) or direct emoji
       let emoji: string | null = null;
       const cpMatch = itemType.match(UNICODE_CP_RE);
       if (cpMatch) {
@@ -58,7 +56,7 @@ function extractNodeInfo(chart: string): Map<string, NodeInfo> {
         const emojiMatch = itemType.match(EMOJI_RE);
         emoji = emojiMatch ? emojiMatch[0] : null;
       }
-      nodes.set(label.trim(), { nodeId, label: label.trim(), itemType, itemIcon: null, emoji });
+      nodes.set(nodeId, { nodeId, label: label.trim(), itemType, itemIcon: null, emoji });
     }
   }
   return nodes;
@@ -132,17 +130,14 @@ export function enhanceDiagram(
   const TYPE_COLOR = isDark ? 'rgba(180,190,200,0.7)' : 'rgba(80,90,100,0.75)';
 
   for (const g of root.querySelectorAll('g.node')) {
-    // Resolve label
-    let label = '';
-    const sp = g.querySelector('span.nodeLabel, span');
-    if (sp) label = (sp.textContent || '').trim();
-    else {
-      const t = g.querySelector('text');
-      if (t) label = (t.textContent || '').trim();
-    }
-
-    const info = nodeMap.get(label);
+    // Match by Mermaid node ID (e.g. id="flowchart-NB-0" → nodeId "NB")
+    const gId = g.getAttribute('id') ?? '';
+    const idMatch = gId.match(/^flowchart-(.+)-\d+$/);
+    const info = idMatch ? nodeMap.get(idMatch[1]) : undefined;
     if (!info) continue;
+
+    const label = info.label;
+    const sp = g.querySelector('span.nodeLabel, span');
 
     const rgb = NODE_FILL_RGB[isDark ? 'dark' : 'light'];
 

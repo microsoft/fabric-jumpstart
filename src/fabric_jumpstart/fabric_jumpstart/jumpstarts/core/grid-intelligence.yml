@@ -65,7 +65,7 @@ mermaid_diagram: |
         MTTS_R[Meter Telemetry Time Series Analysis]:::Report
         ME_SM[Meter-Exploration]:::SemanticModel
         ME_R[Meter Exploration]:::Report
-        SA_MAP[Service Area Map]:::U1F30D  
+        SA_MAP[Service Area Map]:::U1F30D
         VT_RTD[Vehicle Tracking]:::KQLDashboard
         MS_RTD[Meter Status]:::KQLDashboard
     end

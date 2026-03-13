@@ -197,11 +197,15 @@ class jumpstart:
         HTML_cls = None
         live_rendering = False
         conflict_already_rendered = False
+        _install_start_time = 0.0
+        _last_update_time = 0.0
 
         def _update_live(status_label='installing', entry=None, err=None, extra_html=None):
             """Update live display with current status."""
             if not live_handle or HTML_cls is None:
                 return
+            import time
+            elapsed = time.monotonic() - _install_start_time if _install_start_time else 0.0
             html = render_install_status_html(
                 status=status_label,
                 jumpstart_name=config.get('name', name),
@@ -214,14 +218,15 @@ class jumpstart:
                 logs=log_buffer,
                 error_message=err,
                 extra_html=extra_html,
+                elapsed_seconds=elapsed,
             )
             try:
                 live_handle.update(HTML_cls(html))
             except Exception:
-                # Don't log here as it can cause infinite loop with on_emit callback
                 pass
 
         # Initialize live rendering if not in unattended mode
+        import time as _time
         try:
             if not unattended:
                 from IPython.display import HTML as _HTML
@@ -229,6 +234,7 @@ class jumpstart:
                 HTML_cls = _HTML
                 live_handle = display(_HTML("<div>Starting install...</div>"), display_id=True)
                 live_rendering = True
+                _install_start_time = _time.monotonic()
                 _update_live(status_label='installing')
         except Exception:
             live_handle = None
@@ -237,10 +243,16 @@ class jumpstart:
 
         # Setup log capture
         current_status = {'label': 'installing', 'entry': None}  # Track current status
-        
+
         def on_emit():
-            # Only update if still in installing state (don't update_existing error/conflict/success)
+            nonlocal _last_update_time
+            # Only update if still in installing state
             if current_status['label'] == 'installing':
+                # Debounce: update at most every 2s to keep progress bar smooth
+                now = _time.monotonic()
+                if now - _last_update_time < 2.0:
+                    return
+                _last_update_time = now
                 _update_live(status_label='installing', entry=None)
         
         # Capture logs from fabric-cicd and fabric_jumpstart
@@ -306,8 +318,39 @@ class jumpstart:
                 # Phase 7: Generate entry URL
                 entry_url = installer.generate_entry_url(target_ws, resolved_prefix)
                 
-                # Render success
+                # Render success — animate progress bar to 100% first
                 current_status['label'] = 'success'  # Prevent on_emit from overwriting
+
+                # Smooth fill: run ~2.5s of rapid updates to animate bar to 100%
+                if live_handle and HTML_cls is not None:
+                    import time as _t
+                    fill_start = _t.monotonic()
+                    fill_duration = 2.5
+                    while True:
+                        elapsed_fill = _t.monotonic() - fill_start
+                        if elapsed_fill >= fill_duration:
+                            break
+                        # Lerp from current progress to 100%
+                        base_elapsed = _t.monotonic() - _install_start_time
+                        html = render_install_status_html(
+                            status='installing',
+                            jumpstart_name=config.get('name', name),
+                            type=config.get('type', '').lower(),
+                            workspace_id=installer.workspace_id,
+                            entry_point=None,
+                            minutes_complete=config.get('minutes_to_complete_jumpstart'),
+                            minutes_deploy=config.get('minutes_to_deploy'),
+                            docs_uri=installer.effective_docs_uri,
+                            logs=log_buffer,
+                            elapsed_seconds=base_elapsed,
+                            progress_override=min(95 + (elapsed_fill / fill_duration) * 5, 100),
+                        )
+                        try:
+                            live_handle.update(HTML_cls(html))
+                        except Exception:
+                            pass
+                        _t.sleep(0.3)
+
                 status_html = render_install_status_html(
                     status='success',
                     jumpstart_name=config.get('name', name),

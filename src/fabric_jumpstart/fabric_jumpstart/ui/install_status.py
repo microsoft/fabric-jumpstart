@@ -21,7 +21,7 @@ def _format_minutes(minutes):
         return html.escape(str(minutes), quote=True)
 
 
-def render_install_status_html(*, status: str, jumpstart_name: str, type: str, workspace_id: Optional[str], entry_point, minutes_complete, minutes_deploy, docs_uri=None, logs=None, error_message: Optional[str] = None, extra_html: Optional[str] = None):
+def render_install_status_html(*, status: str, jumpstart_name: str, type: str, workspace_id: Optional[str], entry_point, minutes_complete, minutes_deploy, docs_uri=None, logs=None, error_message: Optional[str] = None, extra_html: Optional[str] = None, elapsed_seconds: float = 0.0, progress_override: Optional[float] = None):
     """Build a styled HTML status card for install results."""
     status_lower = status.lower()
     failure_states = {'error', 'failed', 'failure', 'conflict'}
@@ -40,15 +40,6 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
         pill_icon = '⏳'
 
     pill_content = f'{pill_icon} {pill_label}'
-    if status_lower == 'installing':
-        pill_content = ''.join([
-            '<span class="pill-label">⏳ Installing</span>',
-            '<span class="pill-dots" aria-hidden="true">',
-            '  <span class="pill-dot"></span>',
-            '  <span class="pill-dot"></span>',
-            '  <span class="pill-dot"></span>',
-            '</span>'
-        ])
 
     safe_name = html.escape(jumpstart_name or 'Jumpstart', quote=True)
     workspace_text = workspace_id or 'Current workspace'
@@ -71,11 +62,6 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
             f'<div class="install-status-item"><div class="install-status-label">Jumpstart documentation</div><div class="install-status-value">{docs_markup}</div></div>'
         )
 
-    # Top row also shows deploy estimate
-    minutes_deploy_label = _format_minutes(minutes_deploy)
-    top_items.append(
-        f'<div class="install-status-item"><div class="install-status-label">📦 Est. time to install</div><div class="install-status-value">{minutes_deploy_label}</div></div>'
-    )
 
 
     minutes_complete_label = _format_minutes(minutes_complete)
@@ -160,17 +146,39 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
         if rows:
             log_rows = ''.join(rows)
 
+    # Build logs block (only shown on terminal states, not during installing)
     logs_block = ''
-    if log_rows:
+    if log_rows and status_lower != 'installing':
         logs_block = ''.join([
             '<div class="install-status-logs">',
             '<details id="install-logs">',
             '<summary>Logs</summary>',
             log_rows,
             '</details>',
-            '<script>(function(){const k="__fabricJumpstartLogsOpen";const el=document.getElementById("install-logs");if(!el){return;}if(window[k]){el.open=true;}el.addEventListener("toggle",()=>{window[k]=el.open;});})();</script>',
             '</div>',
         ])
+
+    # Progress bar (only during installing)
+    progress_block = ''
+    if status_lower == 'installing':
+        try:
+            est_seconds = float(minutes_deploy or 0) * 60
+        except (TypeError, ValueError):
+            est_seconds = 0
+        if est_seconds > 0:
+            pct = progress_override if progress_override is not None else min(elapsed_seconds / est_seconds * 100, 95)
+            elapsed_m = int(elapsed_seconds) // 60
+            elapsed_s = int(elapsed_seconds) % 60
+            est_m = int(est_seconds) // 60
+            progress_block = ''.join([
+                '<div class="install-progress-wrap">',
+                f'<div class="install-progress-track"><div class="install-progress-fill" style="width:{pct:.1f}%"></div></div>',
+                '<div class="install-progress-label">',
+                f'<span>{elapsed_m}:{elapsed_s:02d} elapsed</span>',
+                f'<span>~{est_m} min est.</span>',
+                '</div>',
+                '</div>',
+            ])
 
     # Hide entry/output sections on success; CTA already handled in hero
     outcome_block = error_block if error_message else ''
@@ -182,14 +190,25 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
     main_sections = ''
     extra_block = extra_html or ''
 
-    if status_lower != 'success':
+    if status_lower == 'installing':
         main_sections = ''.join([
             '  <div class="install-status-header">',
             '    <div>',
             f'      <div class="install-status-title">{safe_name}</div>',
             f'      <div class="install-status-subtitle">Workspace: {safe_workspace}</div>',
             '    </div>',
-            f'    <div class="install-status-pill {pill_class}{" installing" if status_lower == "installing" else ""}">{pill_content}</div>',
+            f'    <div class="install-status-pill {pill_class} installing">{pill_content}</div>',
+            '  </div>',
+            progress_block,
+        ])
+    elif status_lower != 'success':
+        main_sections = ''.join([
+            '  <div class="install-status-header">',
+            '    <div>',
+            f'      <div class="install-status-title">{safe_name}</div>',
+            f'      <div class="install-status-subtitle">Workspace: {safe_workspace}</div>',
+            '    </div>',
+            f'    <div class="install-status-pill {pill_class}">{pill_content}</div>',
             '  </div>',
             '  <div class="install-status-section">',
             '    <div class="install-status-section-title">Installation details</div>',

@@ -236,6 +236,27 @@ class TestRegistryValidation:
                     f"(expected logical_id to be '{expected}')"
                 )
 
+    def test_diagram_svgs_exist(self):
+        """Verify every jumpstart with a mermaid_diagram has light and dark SVGs in assets."""
+        diagrams_dir = Path(__file__).resolve().parent.parent.parent.parent / 'assets' / 'images' / 'diagrams'
+        registry_data = load_registry_data()
+
+        missing = []
+        for jumpstart in registry_data:
+            if not jumpstart.get('mermaid_diagram'):
+                continue
+            logical_id = jumpstart.get('logical_id', '<unknown>')
+            for variant in ('light', 'dark'):
+                svg_path = diagrams_dir / f"{logical_id}_{variant}.svg"
+                if not svg_path.exists():
+                    missing.append(f"{logical_id}_{variant}.svg")
+
+        if missing:
+            pytest.fail(
+                "Missing diagram SVGs in assets/images/diagrams/:\n"
+                + "\n".join(f"  - {f}" for f in missing)
+            )
+
     def test_workload_tag_images_exist(self):
         """Verify every workload tag used in scenarios has a corresponding image in shared assets."""
         shared_assets = Path(__file__).resolve().parent.parent.parent.parent / 'assets' / 'images' / 'tags' / 'workload'

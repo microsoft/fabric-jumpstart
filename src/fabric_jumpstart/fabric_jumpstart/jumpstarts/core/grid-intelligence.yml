@@ -15,7 +15,6 @@ source:
   repo_url: https://github.com/slavatrofimov/Real-Time-Grid-Intelligence-with-Microsoft-Fabric.git
   repo_ref: jumpstart-v0.11
   workspace_path: workspace/
-  preview_image_path: media/RTI-Grid-Intelligence-Video-Screenshot.png
   files_source_path: data/
   files_destination_lakehouse: ReferenceDataLH
   files_destination_path: data/

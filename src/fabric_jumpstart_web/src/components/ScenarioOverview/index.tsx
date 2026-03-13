@@ -6,7 +6,10 @@ import dynamic from 'next/dynamic';
 import { tokens } from '@fluentui/react-components';
 import { useThemeContext } from '@components/Providers/themeProvider';
 import { workloadColors } from '@components/JumpstartCard';
+import itemDisplayNamesData from '@data/item-display-names.json';
 import type { ScenarioCard } from '@scenario/scenario';
+
+const itemDisplayNames = itemDisplayNamesData as Record<string, string>;
 
 const ExpandedModal = dynamic(() => import('@components/MermaidDiagram/ExpandedModal'), { ssr: false });
 
@@ -205,9 +208,9 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
                   borderRadius: '12px',
                   backgroundColor: isDark
                     ? `${wc?.primary ?? '#0078d4'}25`
-                    : `${wc?.light ?? '#deecf9'}`,
+                    : `${wc?.primary ?? '#0078d4'}20`,
                   color: isDark
-                    ? (wc?.mid ?? wc?.primary ?? '#0078d4')
+                    ? (wc?.primary ?? '#0078d4')
                     : (wc?.secondary ?? '#0078d4'),
                   fontWeight: 500,
                 }}>
@@ -254,7 +257,7 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
                 backgroundColor: tokens.colorPaletteBlueForeground2,
                 flexShrink: 0,
               }} />
-              {item}
+              {itemDisplayNames[item] ?? item}
             </li>
           ))}
         </ul>

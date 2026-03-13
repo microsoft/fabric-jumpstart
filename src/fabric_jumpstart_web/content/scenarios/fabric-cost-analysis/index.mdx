@@ -25,6 +25,46 @@ FCA is fully developed utilizing Fabric capabilities, with Pipelines and Noteboo
 
 ![FCA](https://raw.githubusercontent.com/microsoft/fabric-toolbox/refs/heads/main/monitoring/fabric-cost-analysis/media/FCASolutionArchitecture.png)
 
+```mermaid
+graph LR
+ 
+  %% FABRIC WORKSPACE
+  subgraph Fabric:::Workspace
+    S_FC[Azure Cost]:::U1F4B3
+    S_RS[Azure Reservation]:::U1F4B0
+    S_QU[Azure Quotas]:::U1F4C8
+    LK[FCA]:::Lakehouse
+    DPM[Load FCA E2E]:::DataPipeline
+    DPQ[Load Quotas]:::DataPipeline
+    DPR[Load Reservations]:::DataPipeline
+    RUN[01_Load_Focus]:::Notebook
+    RUNQ[02_Load_Quotas]:::Notebook
+    RUNR[02_Load_Reservations]:::Notebook
+    SM[FCA_Core_SM]:::SemanticModel
+    RPT[FCA_Core_Report]:::Report
+    DA[Data Agent]:::DataAgent
+    RE[Fabric Activator]:::Reflex
+    direction LR
+  end
+ 
+  %% FLOWS
+  S_FC -.-> LK
+  S_RS -.-> LK
+  S_QU -.-> LK
+  DPM -.-> RUN
+  DPM -.-> DPQ
+  DPQ-.-> RUNQ
+  DPR-.-> RUNR
+  DPM -.-> DPR
+  RUN -.-> LK
+  RUNQ -.-> LK
+  RUNR -.-> LK
+  LK <-.-> SM
+  SM <-.- RPT
+  SM <-.- DA
+  SM <-.- RE
+```
+
 ### FCA Inputs
 
 FCA gathers diverse data in Lakehouse to provide cost insights:

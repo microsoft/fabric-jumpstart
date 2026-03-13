@@ -12,8 +12,8 @@ scenario_tags:
 - Monitoring
 type: Accelerator
 source:
-  repo_url: https://github.com/Pulsweb/fabric-toolbox.git
-  repo_ref: feature/ari/jumpStart
+  repo_url: https://github.com/microsoft/fabric-toolbox.git
+  repo_ref: main
   workspace_path: monitoring/fabric-cost-analysis/script/JumpStart/
   #preview_image_path: monitoring/fabric-cost-analysis/media/FCASolution.png
 items_in_scope:

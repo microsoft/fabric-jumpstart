@@ -17,6 +17,10 @@ source:
   #preview_image_path: monitoring/fabric-cost-analysis/media/FCASolution.png
 items_in_scope:
 - Notebook
+- Lakehouse
+- SemanticModel
+- Reflex
+- DataAgent
 jumpstart_docs_uri: 'https://github.com/microsoft/fabric-toolbox/blob/main/monitoring/fabric-cost-analysis/README.md'
 entry_point: 00_Deploy_FCA.Notebook
 test_suite: ''

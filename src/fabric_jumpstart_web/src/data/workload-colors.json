@@ -2,41 +2,41 @@
   "Data Engineering": {
     "primary": "#1fb6ef",
     "secondary": "#096bbc",
-    "light": "#BDF5FF",
-    "accent": "#0094E5",
-    "mid": "#50E0FF",
     "icon": "/images/tags/workload/data-engineering.svg"
   },
   "Data Factory": {
     "primary": "#239C6E",
     "secondary": "#0C695A",
-    "light": "#E5FAC1",
-    "accent": "#FFC600",
-    "mid": "#BAE884",
     "icon": "/images/tags/workload/data-factory.svg"
+  },
+  "Data Science": {
+    "primary": "#1fb6ef",
+    "secondary": "#096bbc",
+    "icon": "/images/tags/workload/data-science.svg"
   },
   "Data Warehouse": {
     "primary": "#1fb6ef",
     "secondary": "#096bbc",
-    "light": "#A1ECFF",
-    "accent": "#0094E5",
-    "mid": "#40D8F9",
     "icon": "/images/tags/workload/data-warehouse.svg"
   },
   "Power BI": {
     "primary": "#ffe642",
     "secondary": "#e2c718",
-    "light": "#F9E589",
-    "accent": "#E6AD10",
-    "mid": "#F6D751",
     "icon": "/images/tags/workload/power-bi.svg"
   },
   "Real-Time Intelligence": {
     "primary": "#fa4e56",
     "secondary": "#a41836",
-    "light": "#FF9C70",
-    "accent": "#670938",
-    "mid": "#FF835C",
     "icon": "/images/tags/workload/real-time-intelligence.svg"
+  },
+  "SQL Database": {
+    "primary": "#7e5ca7",
+    "secondary": "#633e8f",
+    "icon": "/images/tags/workload/sql-database.svg"
+  },
+  "Test": {
+    "primary": "#117865",
+    "secondary": "#0C695A",
+    "icon": ""
   }
 }

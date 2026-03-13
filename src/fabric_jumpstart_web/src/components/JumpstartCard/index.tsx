@@ -9,9 +9,6 @@ import type { ScenarioCard } from '@scenario/scenario';
 export interface WorkloadColor {
   primary: string;
   secondary: string;
-  light: string;
-  accent: string;
-  mid: string;
   icon: string;
 }
 

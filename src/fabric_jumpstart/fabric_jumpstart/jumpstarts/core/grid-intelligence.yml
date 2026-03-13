@@ -31,7 +31,7 @@ items_in_scope:
   - Reflex
   - DataAgent
   - Lakehouse
-jumpstart_docs_uri: "https://github.com/slavatrofimov/Real-Time-Grid-Intelligence-with-Microsoft-Fabric/blob/jumpstart-v0.11/README.md"
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/grid-intelligence
 entry_point: PostDeploymentConfig.Notebook
 test_suite: ""
 owner_email: fabricjumpstart.collab@microsoft.com
@@ -39,7 +39,7 @@ minutes_to_deploy: 5
 minutes_to_complete_jumpstart: 5
 video_url: "https://www.youtube.com/watch?v=6xjQD-g2nd0"
 difficulty: "Intermediate"
-last_updated: "2026-03-11"
+last_updated: "2026-03-13"
 mermaid_diagram: |
   graph LR
 

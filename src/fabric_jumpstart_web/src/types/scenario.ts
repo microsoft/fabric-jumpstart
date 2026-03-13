@@ -16,9 +16,13 @@
 // ─── YAML file shape ─────────────────────────────────────────
 
 export class ScenarioSource {
+  // Python-only (present in YAML, not used by TS at runtime)
   workspace_path: string = '';
   repo_url: string | undefined = undefined;
   repo_ref: string | undefined = undefined;
+  files_source_path: string | undefined = undefined;
+  files_destination_lakehouse: string | undefined = undefined;
+  files_destination_path: string | undefined = undefined;
 
   /** Field names allowed inside the `source:` block. */
   static allowedFields(): Set<string> {

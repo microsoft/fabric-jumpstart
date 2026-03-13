@@ -43,42 +43,42 @@ last_updated: "2026-03-13"
 mermaid_diagram: |
   graph LR
 
-    %% FABRIC WORKSPACE
-    AMI_ES[AMI Eventstream]:::Eventstream
-    VEHICLE_ES[Vehicle Eventstream]:::Eventstream
-    WEATHER_ES[Weather Eventstream]:::Eventstream
-    REFERENCE_LH[Reference Data Lakehouse]:::Lakehouse
-    PU_EH[Power Utilities Eventhouse]:::Eventhouse
-    REFSIM_N[Reference Data Simulation]:::Notebook
-    ROUTESIM_N[Route Simulation]:::Notebook
-    STORMSIM_N[Storm Simulation]:::Notebook
-    AMISIM_N[AMI Telemetry and Outage Simulation]:::Notebook
-    VEHICLESIM_N[Vehicle Telemetry Simulation]:::Notebook
-    METER_ACT[Meter Activator]:::Reflex
-    METER_DA[Meter Data Agent]:::DataAgent
-    VEHCTS_SM[Vehicle Telemetry Time Series Analysis]:::SemanticModel
-    MTTS_SM[Meter Telemetry Time Series Analysis]:::SemanticModel
-    VEHCTS_R[Vehicle Telemetry Time Series Analysis]:::Report
-    MTTS_R[Meter Telemetry Time Series Analysis]:::Report
-    ME_SM[Meter Exploration]:::SemanticModel
-    ME_R[Meter Exploration]:::Report
-    SA_MAP[Service Area Map]:::U1F30D	
-    VT_RTD[Vehicle Tracking]:::KQLDashboard
-    MS_RTD[Vehicle Tracking]:::KQLDashboard
+    %% ON PREM
+    S_VEHICLE[Vehicle Telemetry Simulation]:::U1F69A
+    S_REF[Reference Data]:::U1F3E2
+    S_WEATHER[Storm Simulation]:::U26C8
+    S_AMI[AMI Telemetry and Outage Simulation]:::U26A1
+
+      %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+        direction LR
+        AMI_ES[AMI Eventstream]:::Eventstream
+        VEHICLE_ES[Vehicle Eventstream]:::Eventstream
+        WEATHER_ES[Weather Eventstream]:::Eventstream
+        REFERENCE_LH[Reference Data Lakehouse]:::Lakehouse
+        PU_EH[Power Utilities Eventhouse]:::Eventhouse
+        METER_ACT[Meter Activator]:::Reflex
+        METER_DA[Meter Data Agent]:::DataAgent
+        VEHCTS_SM[Vehicle-Telemetry Time Series Analysis]:::SemanticModel
+        MTTS_SM[Meter-Telemetry Time Series Analysis]:::SemanticModel
+        VEHCTS_R[Vehicle Telemetry Time Series Analysis]:::Report
+        MTTS_R[Meter Telemetry Time Series Analysis]:::Report
+        ME_SM[Meter-Exploration]:::SemanticModel
+        ME_R[Meter Exploration]:::Report
+        SA_MAP[Service Area Map]:::U1F30D  
+        VT_RTD[Vehicle Tracking]:::KQLDashboard
+        MS_RTD[Meter Status]:::KQLDashboard
+    end
 
     %% FLOWS
-    REFERENCE_LH -.-> STORMSIM_N
-    REFERENCE_LH -.-> AMISIM_N
-    REFERENCE_LH -.-> VEHICLESIM_N
-    STORMSIM_N ==> WEATHER_ES
-    AMISIM_N ==> AMI_ES
-    VEHICLESIM_N ==> VEHICLE_ES
-    WEATHER_ES ==> PU_EH
+    S_WEATHER ==> WEATHER_ES
+    S_VEHICLE ==> VEHICLE_ES
     AMI_ES ==> PU_EH
+    WEATHER_ES ==> PU_EH
     VEHICLE_ES ==> PU_EH
     AMI_ES -.-> METER_ACT
-    PU_EH -.-> VEHCTS_SM
     PU_EH -.-> MTTS_SM
+    PU_EH -.-> VEHCTS_SM
     VEHCTS_SM -.-> VEHCTS_R
     MTTS_SM -.-> MTTS_R
     PU_EH -.-> SA_MAP
@@ -88,5 +88,6 @@ mermaid_diagram: |
     PU_EH -.-> VT_RTD
     PU_EH -.-> MS_RTD
     PU_EH -.-> METER_DA
-    REFSIM_N -.-> REFERENCE_LH
-    ROUTESIM_N -.-> REFERENCE_LH
+    S_AMI -.-> AMI_ES
+    S_REF -.-> REFERENCE_LH
+    REFERENCE_LH --> PU_EH

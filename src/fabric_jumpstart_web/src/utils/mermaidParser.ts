@@ -24,7 +24,7 @@ export const FABRIC_ITEM_ICON_MAP: Record<string, string> = {
   KQLDatabase: 'kql_database_32_item.svg',
   KQLQueryset: 'kql_queryset_32_item.svg',
   KQLDashboard: 'real_time_dashboard_32_item.svg',
-  Reflex: 'generic_placeholder_32_item.svg',
+  Reflex: 'generic_placeholder_32_item.svg', //reflex_32_item.svg is not in the NPM module
   DataPipeline: 'pipeline_32_item.svg',
   Dataflow: 'dataflow_gen2_32_item.svg',
   CopyJob: 'copy_job_32_item.svg',
@@ -37,7 +37,7 @@ export const FABRIC_ITEM_ICON_MAP: Record<string, string> = {
   DataAgent: 'data_agent_32_item.svg',
   MLExperiment: 'experiments_32_item.svg',
   UserDataFunction: 'user_data_function_32_item.svg',
-  GraphQLApi: 'generic_placeholder_32_item.svg',
+  GraphQLApi: 'generic_placeholder_32_item.svg', //graph_ql_32_item.svg is not in the NPM module
 };
 
 export const ITEM_WORKLOAD_MAP: Record<string, string> = {

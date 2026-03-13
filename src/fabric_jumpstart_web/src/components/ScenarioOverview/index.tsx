@@ -201,17 +201,28 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {scenario.workloadTags.map((tag) => {
               const wc = workloadColors[tag];
+              const primary = wc?.primary ?? '#0078d4';
+              const secondary = wc?.secondary ?? '#0078d4';
+              // Detect bright colors that wash out on light backgrounds
+              const r = parseInt(secondary.slice(1, 3), 16);
+              const g = parseInt(secondary.slice(3, 5), 16);
+              const b = parseInt(secondary.slice(5, 7), 16);
+              const isBright = (r * 299 + g * 587 + b * 114) / 1000 > 160;
+              const lightBg = isBright ? `${secondary}30` : `${secondary}18`;
+              const lightFg = isBright
+                ? `#${Math.round(r * 0.55).toString(16).padStart(2, '0')}${Math.round(g * 0.55).toString(16).padStart(2, '0')}${Math.round(b * 0.55).toString(16).padStart(2, '0')}`
+                : secondary;
               return (
                 <span key={tag} style={{
                   fontSize: '12px',
                   padding: '4px 12px',
                   borderRadius: '12px',
                   backgroundColor: isDark
-                    ? `${wc?.primary ?? '#0078d4'}25`
-                    : `${wc?.primary ?? '#0078d4'}20`,
+                    ? `${primary}25`
+                    : lightBg,
                   color: isDark
-                    ? (wc?.primary ?? '#0078d4')
-                    : (wc?.secondary ?? '#0078d4'),
+                    ? primary
+                    : lightFg,
                   fontWeight: 500,
                 }}>
                   {tag}

@@ -31,4 +31,8 @@ difficulty: Beginner
 last_updated: "2026-03-12"
 mermaid_diagram: |
   graph LR
+  %% FABRIC WORKSPACE
+  subgraph Fabric:::Workspace
     NB[mlv_get_started]:::Notebook --> LH[mlv_lakehouse]:::Lakehouse
+    direction LR
+  end

@@ -64,7 +64,7 @@ class TestUploadFilesToLakehouse:
             _mock_response(200),  # flush
         ]
 
-        count = upload_files_to_lakehouse("ws-1", "lh-1", single_file)
+        count = upload_files_to_lakehouse(MagicMock(), "lh-1", single_file)
 
         assert count == 1
         mock_requests.put.assert_called_once()
@@ -97,7 +97,7 @@ class TestUploadFilesToLakehouse:
             _mock_response(200),  # file 2
         ]
 
-        count = upload_files_to_lakehouse("ws-1", "lh-1", tmp_path)
+        count = upload_files_to_lakehouse(MagicMock(), "lh-1", tmp_path)
 
         assert count == 2
         assert mock_requests.put.call_count == 2
@@ -119,7 +119,11 @@ class TestUploadFilesToLakehouse:
         mock_requests.put.return_value = _mock_response(201)
         mock_requests.patch.side_effect = [_mock_response(202), _mock_response(200)]
 
-        upload_files_to_lakehouse("ws-1", "lh-1", f, destination_path="ref-data")
+        mock_ws = MagicMock()
+        mock_ws.endpoint.invoke.return_value = {
+            "body": {"properties": {"oneLakeFilesPath": "https://onelake.dfs.fabric.microsoft.com/ws-1/lh-1/Files"}}
+        }
+        upload_files_to_lakehouse(mock_ws, "lh-1", f, destination_path="ref-data")
 
         put_url = mock_requests.put.call_args[0][0]
         assert "/Files/ref-data/file.json" in put_url
@@ -141,7 +145,11 @@ class TestUploadFilesToLakehouse:
         mock_requests.put.return_value = _mock_response(201)
         mock_requests.patch.side_effect = [_mock_response(202), _mock_response(200)]
 
-        upload_files_to_lakehouse("ws-1", "lh-1", f, destination_path="")
+        mock_ws = MagicMock()
+        mock_ws.endpoint.invoke.return_value = {
+            "body": {"properties": {"oneLakeFilesPath": "https://onelake.dfs.fabric.microsoft.com/ws-1/lh-1/Files"}}
+        }
+        upload_files_to_lakehouse(mock_ws, "lh-1", f, destination_path="")
 
         put_url = mock_requests.put.call_args[0][0]
         assert put_url.endswith("/Files/file.json")
@@ -149,7 +157,7 @@ class TestUploadFilesToLakehouse:
     def test_upload_source_not_found_raises(self, tmp_path):
         """Non-existent source_path raises FileNotFoundError."""
         with pytest.raises(FileNotFoundError):
-            upload_files_to_lakehouse("ws-1", "lh-1", tmp_path / "nope")
+            upload_files_to_lakehouse(MagicMock(), "lh-1", tmp_path / "nope")
 
     @patch("fabric_jumpstart.utils._is_fabric_runtime", return_value=False)
     @patch("fabric_jumpstart.utils.resolve_token_credential")
@@ -168,7 +176,7 @@ class TestUploadFilesToLakehouse:
         mock_requests.put.return_value = _mock_response(403, "Forbidden")
 
         with pytest.raises(RuntimeError, match="Failed to create file"):
-            upload_files_to_lakehouse("ws-1", "lh-1", f)
+            upload_files_to_lakehouse(MagicMock(), "lh-1", f)
 
     @patch("fabric_jumpstart.utils._is_fabric_runtime", return_value=False)
     @patch("fabric_jumpstart.utils.resolve_token_credential")
@@ -184,7 +192,7 @@ class TestUploadFilesToLakehouse:
         cred.get_token.return_value = MagicMock(token="tok")
         mock_cred.return_value = cred
 
-        count = upload_files_to_lakehouse("ws-1", "lh-1", empty_dir)
+        count = upload_files_to_lakehouse(MagicMock(), "lh-1", empty_dir)
 
         assert count == 0
         mock_requests.put.assert_not_called()

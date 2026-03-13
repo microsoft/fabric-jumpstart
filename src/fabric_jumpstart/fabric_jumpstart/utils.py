@@ -218,7 +218,7 @@ def _apply_item_prefix(workspace_path: Path, item_prefix: Optional[str], base_na
     return mappings
 
 def upload_files_to_lakehouse(
-    workspace_id: str,
+    target_ws,
     lakehouse_id: str,
     source_path: Path,
     destination_path: str = "",
@@ -226,7 +226,7 @@ def upload_files_to_lakehouse(
     """Upload a file or folder to a Lakehouse Files area via the OneLake DFS API.
 
     Args:
-        workspace_id: Target workspace GUID
+        target_ws: FabricWorkspace instance (provides workspace_id and auth endpoint)
         lakehouse_id: Target lakehouse item GUID
         source_path: Local file or directory to upload
         destination_path: Destination path under Files/ (empty string for root)
@@ -257,9 +257,21 @@ def upload_files_to_lakehouse(
         token = token_obj.token
 
     headers = {"Authorization": f"Bearer {token}"}
-    base_url = (
-        f"https://onelake.dfs.fabric.microsoft.com/{workspace_id}/{lakehouse_id}/Files"
+       
+    # Resolve base url from lakehouse item properties
+    import fabric_cicd.constants as cicd_constants
+
+    if target_ws is None:
+        raise RuntimeError(
+            "target_ws (FabricWorkspace) is required to resolve the OneLake endpoint"
+        )
+    workspace_id = target_ws.workspace_id
+    url = (
+        f"{cicd_constants.DEFAULT_API_ROOT_URL}/v1/workspaces/{workspace_id}/lakehouses/{lakehouse_id}"
     )
+    response = target_ws.endpoint.invoke(method="GET", url=url)
+    base_url = response["body"]["properties"]["oneLakeFilesPath"]
+
     dest_prefix = destination_path.strip("/")
 
     files_to_upload: list[tuple[Path, str]] = []

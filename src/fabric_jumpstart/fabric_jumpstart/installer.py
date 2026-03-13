@@ -339,7 +339,7 @@ class JumpstartInstaller:
         )
 
         count = upload_files_to_lakehouse(
-            workspace_id=target_ws.workspace_id,
+            target_ws=target_ws,
             lakehouse_id=lakehouse_id,
             source_path=local_source,
             destination_path=dest_path,

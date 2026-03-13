@@ -1,13 +1,17 @@
 id: 21
 logical_id: fabric-cost-analysis
 name: Fabric Cost Analysis
-description: Fabric Cost Analysis (short: FCA) is a solution to enable holistic monitoring of Microsoft Fabric Cost with the help of Microsoft Fabric. FCA has the goal to provide a holistic view specified on Microsoft Fabric aspects and particularities (joining Financial and Operational forces) on top of the various information, which can be extracted from Azure Cost Management, personal enriched source of information, … allowing its users to analyze at a very high level, but also to deep dive into specific usage, Azure quotas, reservations and particularity of the platform for a more finer data analysis.
+description: Fabric Cost Analysis (FCA) is a solution to enable holistic monitoring of Microsoft Fabric Cost with the help of Microsoft Fabric. FCA has the goal to provide a holistic view specified on Microsoft Fabric aspects and particularities (joining Financial and Operational forces) on top of the various information, which can be extracted from Azure Cost Management, personal enriched source of information, … allowing its users to analyze at a very high level, but also to deep dive into specific usage, Azure quotas, reservations and particularity of the platform for a more finer data analysis.
 date_added: 03/13/2026
 include_in_listing: true
 workload_tags:
 - Power BI
+- Data Engineering
+- Data Analysis
+- Data Agent
 scenario_tags:
 - Monitoring
+- FinOps
 type: Accelerator
 source:
   repo_url: https://github.com/microsoft/fabric-toolbox.git
@@ -16,13 +20,18 @@ source:
   #preview_image_path: monitoring/fabric-cost-analysis/media/FCASolution.png
 items_in_scope:
 - Notebook
+- Pipeline
+- Lakehouse
+- Semantic Model
+- Data Agent
+- Report
 jumpstart_docs_uri: 'https://github.com/microsoft/fabric-toolbox/blob/main/monitoring/fabric-cost-analysis/README.md'
 entry_point: 00_Deploy_FCA.Notebook
 test_suite: ''
 owner_email: fabricjumpstart.fca@microsoft.com
 minutes_to_deploy: 2
 minutes_to_complete_jumpstart: 15
-video_url: ""
+video_url: "https://www.youtube.com/watch?v=6uOlYj_eSzo"
 difficulty: "Beginner"
 last_updated: "2026-03-13"
 mermaid_diagram: |

@@ -10,7 +10,7 @@ workload_tags:
   - Power BI
 scenario_tags:
   - Streaming
-type: Accelerator
+type: Demo
 source:
   repo_url: https://github.com/slavatrofimov/Real-Time-Grid-Intelligence-with-Microsoft-Fabric.git
   repo_ref: jumpstart-v0.11
@@ -40,3 +40,53 @@ minutes_to_complete_jumpstart: 5
 video_url: "https://www.youtube.com/watch?v=6xjQD-g2nd0"
 difficulty: "Intermediate"
 last_updated: "2026-03-11"
+mermaid_diagram: |
+  graph LR
+
+    %% FABRIC WORKSPACE
+    AMI_ES[AMI Eventstream]:::Eventstream
+    VEHICLE_ES[Vehicle Eventstream]:::Eventstream
+    WEATHER_ES[Weather Eventstream]:::Eventstream
+    REFERENCE_LH[Reference Data Lakehouse]:::Lakehouse
+    PU_EH[Power Utilities Eventhouse]:::Eventhouse
+    REFSIM_N[Reference Data Simulation]:::Notebook
+    ROUTESIM_N[Route Simulation]:::Notebook
+    STORMSIM_N[Storm Simulation]:::Notebook
+    AMISIM_N[AMI Telemetry and Outage Simulation]:::Notebook
+    VEHICLESIM_N[Vehicle Telemetry Simulation]:::Notebook
+    METER_ACT[Meter Activator]:::Reflex
+    METER_DA[Meter Data Agent]:::DataAgent
+    VEHCTS_SM[Vehicle Telemetry Time Series Analysis]:::SemanticModel
+    MTTS_SM[Meter Telemetry Time Series Analysis]:::SemanticModel
+    VEHCTS_R[Vehicle Telemetry Time Series Analysis]:::Report
+    MTTS_R[Meter Telemetry Time Series Analysis]:::Report
+    ME_SM[Meter Exploration]:::SemanticModel
+    ME_R[Meter Exploration]:::Report
+    SA_MAP[Service Area Map]:::U1F30D	
+    VT_RTD[Vehicle Tracking]:::KQLDashboard
+    MS_RTD[Vehicle Tracking]:::KQLDashboard
+
+    %% FLOWS
+    REFERENCE_LH -.-> STORMSIM_N
+    REFERENCE_LH -.-> AMISIM_N
+    REFERENCE_LH -.-> VEHICLESIM_N
+    STORMSIM_N ==> WEATHER_ES
+    AMISIM_N ==> AMI_ES
+    VEHICLESIM_N ==> VEHICLE_ES
+    WEATHER_ES ==> PU_EH
+    AMI_ES ==> PU_EH
+    VEHICLE_ES ==> PU_EH
+    AMI_ES -.-> METER_ACT
+    PU_EH -.-> VEHCTS_SM
+    PU_EH -.-> MTTS_SM
+    VEHCTS_SM -.-> VEHCTS_R
+    MTTS_SM -.-> MTTS_R
+    PU_EH -.-> SA_MAP
+    REFERENCE_LH -.-> SA_MAP
+    PU_EH -.-> ME_SM
+    ME_SM -.-> ME_R
+    PU_EH -.-> VT_RTD
+    PU_EH -.-> MS_RTD
+    PU_EH -.-> METER_DA
+    REFSIM_N -.-> REFERENCE_LH
+    ROUTESIM_N -.-> REFERENCE_LH

@@ -368,21 +368,21 @@
 }
 
 .difficulty-beginner {
-    background: #e6f4ef;
-    color: #0C695A;
-    border: 1px solid #b8e0d2;
+    background: #dff6dd;
+    color: #107c10;
+    border: 1px solid #b8e0b8;
 }
 
 .difficulty-intermediate {
-    background: #fff4e6;
-    color: #8a6100;
-    border: 1px solid #f0ddb8;
+    background: #fff4ce;
+    color: #797600;
+    border: 1px solid #e0dba0;
 }
 
 .difficulty-advanced {
-    background: #fce8e8;
-    color: #a41836;
-    border: 1px solid #f0c4c4;
+    background: #fde7e9;
+    color: #a4262c;
+    border: 1px solid #e0b8ba;
 }
 
 .meta-pills {

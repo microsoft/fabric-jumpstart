@@ -1,11 +1,12 @@
 id: 21
 logical_id: fabric-cost-analysis
 name: Fabric Cost Analysis
-description: Fabric Cost Analysis (FCA) delivers holistic cost monitoring for Microsoft Fabric using Fabric itself. It combines Azure Cost Management and enriched data to provide high‑level insights and deep dives into usage, quotas, reservations, and platform specifics.
+description: FCA delivers holistic cost monitoring for Microsoft Fabric using Fabric itself. It combines Azure Cost Management and enriched data to provide high‑level insights and deep dives into usage, quotas, reservations, and platform specifics.
 date_added: 03/13/2026
 include_in_listing: true
 workload_tags:
 - Power BI
+- Data Engineering
 scenario_tags:
 - Monitoring
 type: Accelerator

@@ -1,18 +1,13 @@
 id: 21
 logical_id: fabric-cost-analysis
 name: Fabric Cost Analysis
-<<<<<<< HEAD
 description: Provides holistic monitoring of Microsoft Fabric costs by combining financial and operational insights. It unifies Azure Cost Management and enriched sources to analyze high‑level spend and deep‑dive into usage, quotas, reservations, and platform specifics.
 date_added: 03/13/2026
 include_in_listing: true
 workload_tags:
 - Power BI
-- Data Engineering
-- Data Analysis
-- Data Agent
 scenario_tags:
 - Monitoring
-- FinOps
 type: Accelerator
 source:
   repo_url: https://github.com/microsoft/fabric-toolbox.git
@@ -21,11 +16,6 @@ source:
   #preview_image_path: monitoring/fabric-cost-analysis/media/FCASolution.png
 items_in_scope:
 - Notebook
-- Pipeline
-- Lakehouse
-- Semantic Model
-- Data Agent
-- Report
 jumpstart_docs_uri: 'https://github.com/microsoft/fabric-toolbox/blob/main/monitoring/fabric-cost-analysis/README.md'
 entry_point: 00_Deploy_FCA.Notebook
 test_suite: ''

@@ -6,7 +6,7 @@ description: >-
   shipment data. Applicable for both batch and streaming workloads, learn how to process incremental events from OneLake and Eventstream,
   and explore a production-ready streaming-first reference implementation.
 date_added: 3/11/2026
-include_in_listing: false
+include_in_listing: true
 workload_tags:
 - Data Engineering
 - Real-Time Intelligence

@@ -1,0 +1,45 @@
+---
+title: Materialized Lake Views — Get Started with Medallion Architecture
+toc: true
+---
+
+This jumpstart deploys a complete **bronze → silver → gold** medallion pipeline using materialized lake views in a Microsoft Fabric lakehouse. Run the tutorial notebook to create source tables, define materialized views with automatic refresh, and explore lineage tracking.
+
+<Callout>
+
+💡 Materialized lake views are precomputed, persisted query results stored as Delta tables. Fabric automatically refreshes them when source data changes — no orchestration needed.
+
+</Callout>
+
+## Getting Started
+
+After installing the jumpstart, open the **mlv_get_started** notebook and run each cell in order. The notebook is fully self-contained and creates all schemas, tables, and materialized views.
+
+## Architecture
+
+The jumpstart implements the medallion architecture with three layers:
+
+| Layer | Schema | Object | Description |
+|-------|--------|--------|-------------|
+| **Bronze** | `bronze` | `products`, `orders` | Raw source tables with sample data |
+| **Silver** | `silver` | `cleaned_order_data` (MLV) | Joins orders with products, calculates per-order revenue |
+| **Gold** | `gold` | `product_sales_summary` (MLV) | Aggregates by product — total quantity, revenue, avg order value |
+
+## How It Works
+
+1. **Source tables** are created in the `bronze` schema with sample product and order data
+2. **Change Data Feed (CDF)** is enabled on source tables so Fabric can use incremental refresh
+3. **Materialized lake views** are defined in `silver` and `gold` schemas using `CREATE MATERIALIZED LAKE VIEW` syntax
+4. **Automatic refresh** keeps views up-to-date as source data changes — Fabric determines the optimal strategy (incremental, full, or skip) based on the lineage graph
+
+## Prerequisites
+
+- A workspace with a Microsoft Fabric-enabled capacity
+- A lakehouse with **lakehouse schemas enabled** and **Fabric Runtime 1.3**
+
+## Resources
+
+- [What are materialized lake views?](https://learn.microsoft.com/en-us/fabric/data-engineering/materialized-lake-views/overview-materialized-lake-view)
+- [Spark SQL reference for materialized lake views](https://learn.microsoft.com/en-us/fabric/data-engineering/materialized-lake-views/create-materialized-lake-view)
+- [Refresh behavior (incremental, full, skip)](https://learn.microsoft.com/en-us/fabric/data-engineering/materialized-lake-views/refresh-materialized-lake-view)
+- [Full medallion architecture tutorial](https://learn.microsoft.com/en-us/fabric/data-engineering/materialized-lake-views/tutorial)

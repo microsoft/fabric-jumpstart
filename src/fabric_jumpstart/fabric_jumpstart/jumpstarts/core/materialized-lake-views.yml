@@ -1,0 +1,34 @@
+id: 21
+logical_id: materialized-lake-views
+name: Materialized Lake Views Get Started
+description: >-
+  Build a bronze-to-gold medallion pipeline using materialized lake views in a
+  Fabric lakehouse. Create source tables, define materialized views with
+  automatic refresh, and explore lineage tracking.
+date_added: 03/12/2026
+include_in_listing: true
+workload_tags:
+- Data Engineering
+scenario_tags:
+- Modeling
+- Batch Processing
+type: Tutorial
+source:
+  repo_url: https://github.com/abhishjain002/fabric-mlv-jumpstart.git
+  repo_ref: v1.0.0
+  workspace_path: materialized-lake-views/
+items_in_scope:
+- Lakehouse
+- Notebook
+jumpstart_docs_uri: https://learn.microsoft.com/en-us/fabric/data-engineering/materialized-lake-views/get-started-with-materialized-lake-views
+entry_point: mlv_get_started.Notebook
+test_suite: ''
+owner_email: fabricjumpstart.materialized-lake-views@microsoft.com
+minutes_to_deploy: 2
+minutes_to_complete_jumpstart: 15
+video_url: ""
+difficulty: Beginner
+last_updated: "2026-03-12"
+mermaid_diagram: |
+  graph LR
+    NB[mlv_get_started]:::Notebook --> LH[mlv_lakehouse]:::Lakehouse

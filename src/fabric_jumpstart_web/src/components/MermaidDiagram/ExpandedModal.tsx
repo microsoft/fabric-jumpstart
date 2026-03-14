@@ -28,6 +28,7 @@ export default function DiagramExpandedModal({ slug, title, onClose }: Props) {
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const start = useRef({ x: 0, y: 0 });
+  const zoomAreaRef = useRef<HTMLDivElement>(null);
 
   // Lock body scroll
   useEffect(() => {
@@ -43,9 +44,17 @@ export default function DiagramExpandedModal({ slug, title, onClose }: Props) {
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    setScale(s => Math.min(5, Math.max(0.2, s * (e.deltaY > 0 ? 0.9 : 1.1))));
+  // Native wheel listener with { passive: false } so preventDefault works
+  useEffect(() => {
+    const el = zoomAreaRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setScale(s => Math.min(5, Math.max(0.2, s * (e.deltaY > 0 ? 0.9 : 1.1))));
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
   }, []);
 
   const onDown = useCallback((e: React.MouseEvent) => {
@@ -140,8 +149,8 @@ export default function DiagramExpandedModal({ slug, title, onClose }: Props) {
 
         {/* Zoomable / pannable area */}
         <div
-          style={{ flex: 1, overflow: 'hidden', cursor: dragging ? 'grabbing' : 'grab', position: 'relative' }}
-          onWheel={onWheel}
+          ref={zoomAreaRef}
+          style={{ flex: 1, overflow: 'hidden', cursor: dragging ? 'grabbing' : 'grab', position: 'relative', userSelect: 'none' }}
           onMouseDown={onDown}
           onMouseMove={onMove}
           onMouseUp={onUp}

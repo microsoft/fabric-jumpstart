@@ -16,13 +16,13 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: { value: darkTheme, key: themeType.dark },
+  theme: { value: lightTheme, key: themeType.light },
   toggleTheme: () => {},
 });
 
 const defaultTheme = {
-  value: darkTheme,
-  key: themeType.dark,
+  value: lightTheme,
+  key: themeType.light,
 };
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
@@ -33,11 +33,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   useEffect(() => {
-    // Get the user's preferred theme from local storage, default to dark theme if not set
     let localTheme = localStorage.getItem('theme');
     if (!localTheme) {
-      localStorage.setItem('theme', themeType.dark);
-      localTheme = themeType.dark;
+      localStorage.setItem('theme', themeType.light);
+      localTheme = themeType.light;
     }
     // Determine the selected theme based on the user's preference
     const fluentTheme = localTheme === themeType.light ? lightTheme : darkTheme;

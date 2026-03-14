@@ -50,7 +50,7 @@ export default async function RootLayout({
         {uhfData.cssIncludes && parse(uhfData.cssIncludes)}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');var bg=t==='light'?'#f2f2f2':'#0F0F0F';document.documentElement.style.backgroundColor=bg;document.documentElement.setAttribute('data-theme',t||'dark');}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('theme');var bg=t==='dark'?'#0F0F0F':'#f2f2f2';document.documentElement.style.backgroundColor=bg;document.documentElement.setAttribute('data-theme',t||'light');}catch(e){}})();`,
           }}
         />
       </head>

@@ -153,10 +153,7 @@ export default function ScenarioCarousel() {
               key={scenario.id}
               style={{ width: '340px', maxWidth: '85vw' }}
             >
-              <Link
-                href={`/catalog/${scenario.slug}/?from=home`}
-                style={{ textDecoration: 'none', display: 'block' }}
-              >
+              <div style={{ position: 'relative' }}>
                 <JumpstartCard
                   scenario={scenario}
                   isDark={isDark}
@@ -172,7 +169,17 @@ export default function ScenarioCarousel() {
                     flexDirection: 'column',
                   }}
                 />
-              </Link>
+                {/* Stretched link overlay — covers entire card for reliable click area */}
+                <Link
+                  href={`/catalog/${scenario.slug}/?from=home`}
+                  aria-label={scenario.title}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 5,
+                  }}
+                />
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>
@@ -204,15 +211,13 @@ export default function ScenarioCarousel() {
           opacity: 0.6;
           pointer-events: none;
         }
+        .swiper-slide:not(.swiper-slide-active) {
+          transform-style: flat !important;
+        }
         .swiper-slide-active {
           filter: blur(0) brightness(1);
           opacity: 1;
           pointer-events: auto;
-        }
-        .swiper-slide-active a {
-          display: block;
-          position: relative;
-          z-index: 3;
         }
 
         .swiper-slide-active .carousel-card {

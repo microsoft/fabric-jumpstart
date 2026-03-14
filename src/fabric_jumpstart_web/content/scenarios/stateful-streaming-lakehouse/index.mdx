@@ -62,7 +62,7 @@ The `explore_streaming` notebook walks through streaming primitives with zero ab
 
 <Callout>
 
-🛡️ **Why normalize column names in bronze?** Source systems are unpredictable — column names may arrive as `PascalCase`, `camelCase`, contain spaces, or mix conventions across producers. Normalizing early means every downstream consumer gets a consistent contract from day one.
+🛡️ **Why normalize column names as early as possible?** Source systems are unpredictable — column names may arrive as `PascalCase`, `camelCase`, contain spaces, or even contain special characters that make data engineering unnecessarily tedious. Normalizing early means every downstream consumer gets a consistent contract from day one.
 
 </Callout>
 

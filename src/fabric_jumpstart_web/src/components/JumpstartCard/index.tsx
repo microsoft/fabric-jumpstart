@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { tokens, Tooltip } from '@fluentui/react-components';
 import workloadColorsData from '@data/workload-colors.json';
@@ -63,6 +63,7 @@ function CardHeader({
     .filter((c): c is { tag: string; color: WorkloadColor } => !!c.color?.icon);
 
   const isNew = new Date(scenario.lastUpdated) > new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
     <div
@@ -72,6 +73,7 @@ function CardHeader({
         width: '100%',
         height: '180px',
         overflow: 'visible',
+        pointerEvents: onExpandDiagram ? 'auto' : 'none',
       }}
     >
       {/* Architecture diagram */}
@@ -85,6 +87,7 @@ function CardHeader({
           zIndex: 1,
           overflow: 'hidden',
           cursor: onExpandDiagram ? 'zoom-in' : undefined,
+          pointerEvents: onExpandDiagram ? 'auto' : 'none',
           backgroundColor: isDark ? '#1e1e24' : '#ffffff',
           display: 'flex',
           alignItems: 'center',
@@ -97,10 +100,28 @@ function CardHeader({
           onExpandDiagram();
         } : undefined}
       >
+        {/* Pulsing skeleton while image loads */}
+        {!imgLoaded && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: isDark ? '#2a2a30' : '#e0e0e0',
+            animation: 'skeleton-pulse 1.6s ease-in-out infinite',
+          }} />
+        )}
         <img
           src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
           alt="Architecture diagram"
-          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', pointerEvents: 'none' }}
+          style={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+            objectFit: 'contain',
+            pointerEvents: 'none',
+            opacity: imgLoaded ? 1 : 0,
+            transition: 'opacity 0.3s ease',
+          }}
+          onLoad={() => setImgLoaded(true)}
+          onError={() => setImgLoaded(true)}
         />
         {/* Expand hint — only when expandable */}
         {onExpandDiagram && (
@@ -329,6 +350,7 @@ function CardBody({ scenario, isDark }: { scenario: ScenarioCard; isDark: boolea
 export default function JumpstartCard({ scenario, isDark, onExpandDiagram, className, style }: JumpstartCardProps) {
   return (
     <div className={className} style={style}>
+      <style>{`@keyframes skeleton-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
       <CardHeader scenario={scenario} isDark={isDark} onExpandDiagram={onExpandDiagram} />
       <CardBody scenario={scenario} isDark={isDark} />
     </div>

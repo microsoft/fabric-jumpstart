@@ -40,8 +40,8 @@ mermaid_diagram: |
   graph LR
 
   %% ON PREM
-  S_PS[package scanners]:::U1F69A
-  S_OP[on premise erp]:::U1F3E2
+  S_PS[Package Scanners]:::U1F69A
+  S_OP[On Premise ERP]:::U1F3E2
 
   %% FABRIC WORKSPACE
   subgraph Fabric:::Workspace
@@ -50,7 +50,7 @@ mermaid_diagram: |
     SJD[stream_all_zones]:::SparkJobDefinition
     ENV[stream_env]:::Environment
     EXP[explore_streaming]:::Notebook
-    ARC[acrflow_streaming]:::Notebook
+    ARC[acrflow_framework]:::Notebook
     direction LR
   end
 

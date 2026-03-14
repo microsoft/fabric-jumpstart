@@ -173,7 +173,7 @@ const HeroBanner = forwardRef<HTMLDivElement, BannerProps>(
                 >
                   <span>🚀</span>
                   <a
-                    href="/getting-started"
+                    href="/getting-started?from=home"
                     style={{
                       color: '#0078d4',
                       textDecoration: 'none',

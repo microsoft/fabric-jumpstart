@@ -58,7 +58,7 @@ export default function TableOfContents({ headings }: { headings: TocItem[] }) {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
   const entries = getTocEntries(headings);
-  const [activeNode] = useIntersectionObserver(entries, '0% 0% -55% 0%', 1);
+  const [activeNode] = useIntersectionObserver(entries);
 
   const accentColor = isDark ? '#6dcfb8' : '#0e7a5e';
   const borderColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';

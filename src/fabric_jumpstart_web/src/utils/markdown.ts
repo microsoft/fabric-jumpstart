@@ -204,6 +204,14 @@ export const getPathName = (path: string, params?: { slug: string }) => {
   return path;
 };
 
+/** Deterministic slug for heading text → DOM id. */
+export function headingSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 export const refactorMarkdown = async (
   data: string,
   currentNode: any,

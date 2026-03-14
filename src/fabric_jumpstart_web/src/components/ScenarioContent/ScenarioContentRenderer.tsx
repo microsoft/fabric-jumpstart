@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import Markdown from 'markdown-to-jsx';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import {
@@ -9,6 +9,7 @@ import {
 } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useThemeContext } from '@components/Providers/themeProvider';
 import { tokens } from '@fluentui/react-components';
+import { headingSlug } from '@utils/markdown';
 import Callout from './Callout';
 import QuoteBlock from './QuoteBlock';
 import YouTubeEmbed from './YouTubeEmbed';
@@ -31,10 +32,7 @@ function extractHeadings(source: string): TocItem[] {
     if (match) {
       const level = match[1].length;
       const title = match[2].replace(/[`*_~\[\]]/g, '').trim();
-      const id = title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
+      const id = headingSlug(title);
       headings.push({ title, id, level });
     }
   }
@@ -135,10 +133,7 @@ function HeadingWithId({ level, children, ...props }: any) {
     : Array.isArray(children)
       ? children.filter((c: any) => typeof c === 'string').join('')
       : '';
-  const id = text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
+  const id = headingSlug(text);
   const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
   return <Tag id={id} {...props}>{children}</Tag>;
 }
@@ -150,10 +145,26 @@ export default function ScenarioContentRenderer({
 }: ScenarioContentRendererProps) {
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
+  const articleRef = useRef<HTMLElement>(null);
+  const [headings, setHeadings] = useState<TocItem[]>([]);
 
-  const headings = useMemo(() => {
-    if (!showToc || !isMdx) return [];
-    return extractHeadings(rawMarkdown);
+  // After markdown renders, read actual heading IDs from the DOM.
+  // This guarantees the TOC selectors always match the rendered elements.
+  useEffect(() => {
+    if (!showToc || !isMdx || !articleRef.current) return;
+    const els = articleRef.current.querySelectorAll('h2[id], h3[id]');
+    const items: TocItem[] = [];
+    els.forEach((el) => {
+      const id = el.getAttribute('id');
+      if (id) {
+        items.push({
+          title: el.textContent?.trim() ?? '',
+          id,
+          level: el.tagName === 'H2' ? 2 : 3,
+        });
+      }
+    });
+    setHeadings(items);
   }, [showToc, isMdx, rawMarkdown]);
 
   const proseVars = {
@@ -190,7 +201,7 @@ export default function ScenarioContentRenderer({
 
   return (
     <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
-      <article className={styles.prose} style={{ ...proseVars, flex: 1, minWidth: 0 }}>
+      <article ref={articleRef} className={styles.prose} style={{ ...proseVars, flex: 1, minWidth: 0 }}>
         <Markdown options={{ overrides }}>
           {rawMarkdown}
         </Markdown>

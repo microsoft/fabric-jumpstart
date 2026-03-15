@@ -11,6 +11,7 @@ import { useThemeContext } from '@components/Providers/themeProvider';
 import JumpstartCard from '@components/JumpstartCard';
 import SkeletonCard from '@components/JumpstartCard/SkeletonCard';
 import scenariosData from '@data/scenarios.json';
+import featuredSlugs from '@data/featured.json';
 import type { ScenarioCard } from '@scenario/scenario';
 
 import 'swiper/css';
@@ -18,14 +19,18 @@ import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 
 export default function ScenarioCarousel() {
-  const scenarios = scenariosData as ScenarioCard[];
-  const [activeIndex, setActiveIndex] = useState(0);
+  const allScenarios = scenariosData as ScenarioCard[];
+  const scenarioMap = new Map(allScenarios.map((s) => [s.slug, s]));
+  const scenarios = featuredSlugs
+    .map((slug) => scenarioMap.get(slug))
+    .filter((s): s is ScenarioCard => !!s);
+  const [activeIndex, setActiveIndex] = useState(Math.floor(scenarios.length / 2));
   const [ready, setReady] = useState(false);
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
 
   const handleSlideChange = useCallback((swiper: SwiperType) => {
-    setActiveIndex(swiper.realIndex);
+    setActiveIndex(swiper.activeIndex);
   }, []);
 
   // Preload diagram images before revealing cards
@@ -77,6 +82,14 @@ export default function ScenarioCarousel() {
           }}>
             Featured Jumpstarts
           </h2>
+          <p style={{
+            fontSize: '13px',
+            color: tokens.colorNeutralForeground4,
+            margin: '4px 0 0',
+            fontWeight: 500,
+          }}>
+            {activeIndex + 1} of {scenarios.length}
+          </p>
         </div>
         <Link
           href="/catalog"
@@ -128,12 +141,13 @@ export default function ScenarioCarousel() {
             ))}
           </div>
         )}
-        <div style={{ visibility: ready ? 'visible' : 'hidden', height: ready ? 'auto' : 0, overflow: 'hidden' }}>
+        <div style={{ visibility: ready ? 'visible' : 'hidden', height: ready ? 'auto' : 0, overflow: ready ? 'visible' : 'hidden' }}>
         <Swiper
           modules={[EffectCoverflow, Navigation, Keyboard]}
           effect="coverflow"
           grabCursor
           centeredSlides
+          initialSlide={Math.floor(scenarios.length / 2)}
           slidesPerView="auto"
           keyboard={{ enabled: true }}
           coverflowEffect={{
@@ -144,7 +158,6 @@ export default function ScenarioCarousel() {
             slideShadows: false,
           }}
           navigation
-          loop={scenarios.length > 3}
           onSlideChange={handleSlideChange}
           style={{ padding: '20px 0 40px', overflow: 'visible' }}
         >

@@ -48,8 +48,8 @@ export const lightTheme: Theme = {
 
   // Neutral foreground overrides
   colorNeutralForeground2: '#242424',
-  colorNeutralForeground3: '#ffffff',
-  colorNeutralForeground4: '#ffffff',
+  colorNeutralForeground3: '#707070',
+  colorNeutralForeground4: '#999999',
   colorNeutralForegroundInvertedLink: '#050505',
   colorTransparentStrokeDisabled: 'rgba(0, 0, 0, 0)',
 
@@ -112,8 +112,8 @@ export const darkTheme: Theme = {
 
   // Neutral foreground overrides
   colorNeutralForeground2: '#E6E6E6',
-  colorNeutralForeground3: 'rgba(36, 36, 36, 1)',
-  colorNeutralForeground4: '#0F0F0F',
+  colorNeutralForeground3: '#ADADAD',
+  colorNeutralForeground4: '#8A8A8A',
   colorNeutralForegroundInvertedLink: '#FFFFFF',
   colorTransparentStrokeDisabled: 'rgba(0, 0, 0, 0)',
 

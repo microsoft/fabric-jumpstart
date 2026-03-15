@@ -1,0 +1,7 @@
+[
+  "grid-intelligence",
+  "multivariate-anomaly-detection",
+  "stateful-streaming-rocksdb",
+  "stateful-streaming-lakehouse",
+  "materialized-lake-views"
+]

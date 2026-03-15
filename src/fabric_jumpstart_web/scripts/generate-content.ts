@@ -154,7 +154,7 @@ function generateDocs(scenarios: ScenarioYml[]): void {
 
   // Generate docs per listed scenario
   for (const scenario of scenarios) {
-    if (!scenario.include_in_listing) continue;
+    if (scenario.include_in_listing === false) continue;
 
     const scenarioDir = path.join(rootDocsDir, scenario.logical_id);
     const imgDir = path.join(scenarioDir, 'img');
@@ -189,7 +189,7 @@ function generateSideMenu(scenarios: ScenarioYml[]): SideMenuItem {
   const scenarioChildren: SideMenuItem[] = [];
 
   for (const scenario of scenarios) {
-    if (!scenario.include_in_listing) continue;
+    if (scenario.include_in_listing === false) continue;
 
     scenarioChildren.push({
       name: scenario.logical_id,
@@ -279,7 +279,7 @@ function isNewJumpstart(dateAdded: string): boolean {
 
 function generateScenariosJson(scenarios: TaggedScenarioYml[]): ScenarioCard[] {
   return scenarios
-    .filter((s) => s.include_in_listing)
+    .filter((s) => s.include_in_listing !== false)
     .map((s) => {
       // Read body content from generated content.md
       const contentPath = path.join(
@@ -439,7 +439,7 @@ async function main(): Promise<void> {
 
   // Generate docs
   generateDocs(scenarios);
-  const listed = scenarios.filter((s) => s.include_in_listing).length;
+  const listed = scenarios.filter((s) => s.include_in_listing !== false).length;
   console.log(`  Generated docs for ${listed} listed scenarios`);
 
   // Generate data files

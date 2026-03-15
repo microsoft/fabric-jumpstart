@@ -41,7 +41,6 @@ describe('Scenario YAML contract', () => {
     'name',
     'description',
     'date_added',
-    'include_in_listing',
     'workload_tags',
     'scenario_tags',
     'type',
@@ -64,7 +63,7 @@ describe('Scenario YAML contract', () => {
     expect(typeof data.logical_id).toBe('string');
     expect(typeof data.name).toBe('string');
     expect(typeof data.description).toBe('string');
-    expect(typeof data.include_in_listing).toBe('boolean');
+    expect(typeof data.include_in_listing === 'undefined' || typeof data.include_in_listing === 'boolean').toBe(true);
     expect(Array.isArray(data.workload_tags)).toBe(true);
     expect(Array.isArray(data.scenario_tags)).toBe(true);
     expect(['Demo', 'Tutorial', 'Accelerator']).toContain(data.type);
@@ -92,7 +91,7 @@ describe('Scenario YAML contract', () => {
   );
 
   test.each(
-    scenarios.filter((s) => s.data.include_in_listing)
+    scenarios.filter((s) => s.data.include_in_listing !== false)
   )('listed scenario $file has non-empty description', ({ data }) => {
     expect(data.description.length).toBeGreaterThan(10);
   });

@@ -25,12 +25,14 @@ export const emptyFilters: FilterState = {
 };
 
 export type SortOption =
+  | 'featured'
   | 'newest'
   | 'oldest'
   | 'name-asc'
   | 'name-desc';
 
 export const sortLabels: Record<SortOption, string> = {
+  featured: 'Featured first',
   newest: 'Newest first',
   oldest: 'Oldest first',
   'name-asc': 'Name (A–Z)',
@@ -50,7 +52,7 @@ const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
 export const FilterProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [filters, setFiltersState] = useState<FilterState>({ ...emptyFilters });
-  const [sort, setSortState] = useState<SortOption>('newest');
+  const [sort, setSortState] = useState<SortOption>('featured');
 
   const hasActiveFilters =
     filters.search !== '' ||

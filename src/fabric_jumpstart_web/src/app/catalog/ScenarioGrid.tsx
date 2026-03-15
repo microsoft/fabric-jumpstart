@@ -4,6 +4,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { createPortal } from 'react-dom';
 import scenariosData from '@data/scenarios.json';
+import featuredSlugs from '@data/featured.json';
 import { makeStyles, tokens, shorthands } from '@fluentui/react-components';
 import { useThemeContext } from '@components/Providers/themeProvider';
 import { useFilterContext } from '@components/Providers/filterProvider';
@@ -99,8 +100,15 @@ export default function ScenarioGrid() {
   const filteredScenarios = useMemo(() => {
     const base = matchingSlugs ? scenarios.filter((s) => matchingSlugs.has(s.slug)) : scenarios;
     const sorted = [...base];
+    const featuredSet = new Set(featuredSlugs as string[]);
     const secondarySort = (a: ScenarioCard, b: ScenarioCard) => {
       switch (sort) {
+        case 'featured': {
+          const fa = featuredSet.has(a.slug) ? 0 : 1;
+          const fb = featuredSet.has(b.slug) ? 0 : 1;
+          if (fa !== fb) return fa - fb;
+          return b.lastUpdated.localeCompare(a.lastUpdated);
+        }
         case 'newest':
           return b.lastUpdated.localeCompare(a.lastUpdated);
         case 'oldest':

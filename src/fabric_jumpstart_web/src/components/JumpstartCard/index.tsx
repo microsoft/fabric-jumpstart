@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { tokens, Tooltip } from '@fluentui/react-components';
 import workloadColorsData from '@data/workload-colors.json';
@@ -64,6 +64,17 @@ function CardHeader({
 
   const isNew = new Date(scenario.lastUpdated) > new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const src = `/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`;
+
+  // Handle cached images whose load event fires before React attaches onLoad
+  useEffect(() => {
+    setImgLoaded(false);
+    const img = imgRef.current;
+    if (img?.complete) {
+      setImgLoaded(true);
+    }
+  }, [src]);
 
   return (
     <div
@@ -110,7 +121,8 @@ function CardHeader({
           }} />
         )}
         <img
-          src={`/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`}
+          ref={imgRef}
+          src={src}
           alt="Architecture diagram"
           style={{
             maxWidth: '100%',

@@ -367,7 +367,11 @@ export function getMatchingSlugs(filters: FilterState): Set<string> | null {
 
   const matches = new Set<string>();
   for (const s of scenarios) {
-    if (search && !s.title.toLowerCase().includes(search.toLowerCase())) continue;
+    if (search) {
+      const q = search.toLowerCase();
+      const haystack = [s.title, s.description, ...(s.tags ?? []), ...(s.workloadTags ?? [])];
+      if (!haystack.some((h) => h.toLowerCase().includes(q))) continue;
+    }
     if (types.length > 0 && !types.includes(s.type)) continue;
     if (difficulties.length > 0 && !difficulties.includes(s.difficulty)) continue;
     if (classes.length > 0) {

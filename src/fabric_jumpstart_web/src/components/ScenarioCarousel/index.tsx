@@ -223,6 +223,16 @@ export default function ScenarioCarousel() {
           filter: blur(2px) brightness(${isDark ? '0.45' : '0.65'});
           opacity: 0.6;
           pointer-events: none;
+          height: auto;
+        }
+        .swiper-wrapper {
+          align-items: stretch;
+        }
+        .swiper-slide > div {
+          height: 100%;
+        }
+        .swiper-slide .carousel-card {
+          height: 100%;
         }
         .swiper-slide:not(.swiper-slide-active) {
           transform-style: flat !important;

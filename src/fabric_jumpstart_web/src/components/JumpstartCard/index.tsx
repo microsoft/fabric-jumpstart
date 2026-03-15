@@ -325,6 +325,7 @@ function CardBody({ scenario, isDark }: { scenario: ScenarioCard; isDark: boolea
         WebkitLineClamp: 3,
         WebkitBoxOrient: 'vertical' as const,
         overflow: 'hidden',
+        flexGrow: 1,
       }}>
         {scenario.description}
       </div>

@@ -3,8 +3,7 @@ logical_id: multivariate-anomaly-detection
 name: Multivariate Anomaly Detection
 description: >-
   Monitor and maintain high-value industrial equipment, detect subtle anomalies using advanced algorithms, send automated alerts and provide comprehensive visualization capabilities to facilitate diagnostics and root cause analysis.
-date_added: 03/13/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
   - Real-Time Intelligence
   - Power BI

@@ -3,8 +3,7 @@ logical_id: grid-intelligence
 name: Real-Time Grid Intelligence
 description: >-
   Monitor electrical grids, coordinate response to weather-related outages and optimize quality of service using Advanced Metering Infrastructure (AMI) data fused with weather data and vehicle telematics from repair crews.
-date_added: 03/11/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
   - Real-Time Intelligence
   - Power BI

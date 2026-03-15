@@ -6,8 +6,7 @@ description: >-
   Intelligence. Track Spark job performance metrics, visualize data streams on
   live dashboards, and gain operational insights to optimize your data
   engineering pipelines.
-date_added: 3/3/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
 - Data Engineering
 - Real-Time Intelligence

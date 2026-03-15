@@ -5,8 +5,7 @@ description: >-
   Extract and catalog your entire Fabric tenant inventory in a semi-structured
   format for comprehensive visibility. Track workspaces, items, and
   configuration details with automated pipelines and real-time KQL dashboards.
-date_added: 02/03/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
 - Real-Time Intelligence
 - Data Factory

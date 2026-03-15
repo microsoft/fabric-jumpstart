@@ -5,8 +5,7 @@ description: >-
   Experience real-time retail sales monitoring using Fabric Real-Time
   Intelligence. Watch as streaming sales data from multiple stores flows into an
   Eventhouse and powers live KQL dashboards for instant business insights.
-date_added: 02/13/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
 - Real-Time Intelligence
 scenario_tags:

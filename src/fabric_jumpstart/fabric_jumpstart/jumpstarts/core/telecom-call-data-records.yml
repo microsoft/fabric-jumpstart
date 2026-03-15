@@ -5,8 +5,7 @@ description: >-
   Monitor real-time telecom call data records using Fabric Real-Time Intelligence.
   Stream call data through Eventstream into an Eventhouse and visualize usage
   patterns on live KQL dashboards.
-date_added: 03/03/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
 - Real-Time Intelligence
 scenario_tags:

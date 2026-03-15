@@ -5,8 +5,7 @@ description: >-
   Monitor on-premises data gateway performance and usage with real-time data
   ingestion into Fabric. Track gateway health, query execution metrics, and
   resource utilization through live dashboards and Power BI reports.
-date_added: 02/03/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
 - Real-Time Intelligence
 - Data Factory

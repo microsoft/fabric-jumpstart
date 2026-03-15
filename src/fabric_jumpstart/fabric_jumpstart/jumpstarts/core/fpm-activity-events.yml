@@ -6,8 +6,7 @@ description: >-
   for near real-time analysis and data-driven actions. Monitor Fabric platform
   activities with live dashboards powered by KQL queries and automated data
   pipelines.
-date_added: 02/03/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
 - Real-Time Intelligence
 - Data Factory

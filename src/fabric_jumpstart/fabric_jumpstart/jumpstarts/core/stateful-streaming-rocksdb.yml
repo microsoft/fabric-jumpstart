@@ -5,8 +5,7 @@ description: >-
   Learn stateful, low-latency (sub-second) stream processing with Spark Structured Streaming and RocksDB.
   Monitor heartbeat events from browser-based producers, track health state
   transitions in real-time, and visualize results on a companion website.
-date_added: 03/07/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
 - Data Engineering
 - Real-Time Intelligence

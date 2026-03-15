@@ -5,8 +5,7 @@ description: >-
   Build a bronze-to-gold medallion pipeline using materialized lake views in a
   Fabric lakehouse. Create source tables, define materialized views with
   automatic refresh, and explore lineage tracking.
-date_added: 03/12/2026
-include_in_listing: true
+date_added: 03/15/2026
 workload_tags:
 - Data Engineering
 scenario_tags:

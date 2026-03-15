@@ -1,6 +1,6 @@
 id: 21
 logical_id: materialized-lake-views
-name: Materialized Lake Views Get Started
+name: Getting Started with Materialized Lake Views
 description: >-
   Build a bronze-to-gold medallion pipeline using materialized lake views in a
   Fabric lakehouse. Create source tables, define materialized views with

@@ -102,6 +102,10 @@ The notebook will:
 
 ### Running Simulations
 
+When you run the post-deployment notebook, all event simulator notebooks will be started automatically. You may skip to the [Viewing Reports and Dashboards](###viewing-reports-and-dashboards) section.
+
+By default, these simulations will run for 2 hours and stop. To restart the simulations, please follow these steps:
+
 #### 1. Start AMI Telemetry Simulation
 
 ```
@@ -136,7 +140,7 @@ Data Generated: GPS coordinates and operational vehicle telemetry every 10 secon
 
 ```
 Location: Simulation/StormSimulation
-Duration: approximately 2 minutes (triggers outages)
+Duration: 120 minutes
 Data Generated: geospatial data representing the progression of a severe thunderstorm through the service area.
 ```
 
@@ -144,7 +148,7 @@ Data Generated: geospatial data representing the progression of a severe thunder
 2. Click **Run all**
 3. Observe progression of the storm by opening the **Meter Analytics** report and navigating to the **Meter Outages + Weather** page. Note that storm progression is accelerated -- it will take ~2 minutes for the storm to pass through the service area.
 4. Storm events will trigger correlated meter outages in the AMI simulation (when **AMITelemetryAndOutageSimulation** notebook is running)
-
+5. New storm fronts will continue to pass through the service area while the simulation is in progress.
 
 ### Viewing Reports and Dashboards
 

@@ -32,7 +32,20 @@ difficulty: Beginner
 last_updated: "2026-02-13"
 mermaid_diagram: |
   graph LR
-    NB[RetailSalesEmulator]:::Notebook --> ES[shipment_scan_events]:::Eventstream
-    ES --> EH[shipment_data]:::Eventhouse
-    EH --> KDB[shipment_kqldb]:::KQLDatabase
-    KDB --> DASH[sales_dashboard]:::KQLDashboard
+  
+    %% ON PREM
+    SRC[Retail Sales]:::U1F9FE
+  
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      ES[RetailSalesStream]:::Eventstream
+      EH[RetailSalesDatabase]:::KQLDatabase
+      KD[RetailSalesDashboard]:::KQLDashboard
+      EM[RetailSalesEmulator]:::Notebook
+      direction LR
+    end
+  
+    %% FLOWS
+    SRC -.-> ES
+    ES -.-> EH
+    EH <-.- KD

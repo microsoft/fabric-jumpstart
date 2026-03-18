@@ -33,7 +33,20 @@ difficulty: Beginner
 last_updated: "2026-02-13"
 mermaid_diagram: |
   graph LR
-    NB[BankingLoanFraudEmulator]:::Notebook --> ES[loan_fraud_events]:::Eventstream
-    ES --> EH[fraud_detection]:::Eventhouse
-    EH --> KDB[fraud_kqldb]:::KQLDatabase
-    KDB --> DASH[fraud_dashboard]:::KQLDashboard
+  
+    %% ON PREM
+    BLE[Bank Loan Events]:::U1F3E6
+  
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      ES[BankingLoanFraudStream]:::Eventstream
+      EH[BankingLoanFraud]:::KQLDatabase
+      KD[BankingLoanFraudDashboard]:::KQLDashboard
+      EXP[BankingLoanFraudEmulator]:::Notebook
+      direction LR
+    end
+  
+    %% FLOWS
+    BLE -.-> ES
+    ES -.-> EH
+    EH <-.- KD

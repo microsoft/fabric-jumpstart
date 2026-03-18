@@ -33,7 +33,20 @@ difficulty: Beginner
 last_updated: "2026-02-03"
 mermaid_diagram: |
   graph LR
-    NB[HealthcareBillingDataEmulator]:::Notebook --> ES[billing_events]:::Eventstream
-    ES --> EH[billing_eventhouse]:::Eventhouse
-    EH --> KDB[billing_kqldb]:::KQLDatabase
-    KDB --> DASH[billing_dashboard]:::KQLDashboard
+  
+    %% ON PREM
+    SRC[Billing Events]:::U1F3E5
+  
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      ES[HealthcareBillingDataStream]:::Eventstream
+      EH[HealthcareBillingSystem]:::KQLDatabase
+      KD[HealthcareBillingReport]:::KQLDashboard
+      EM[HealthcareBillingDataEmulator]:::Notebook
+      direction LR
+    end
+  
+    %% FLOWS
+    SRC -.-> ES
+    ES -.-> EH
+    EH <-.- KD

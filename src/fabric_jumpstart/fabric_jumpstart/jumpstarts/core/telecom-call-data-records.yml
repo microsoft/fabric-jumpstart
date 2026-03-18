@@ -32,7 +32,20 @@ difficulty: Beginner
 last_updated: "2026-03-03"
 mermaid_diagram: |
   graph LR
-    NB[TelecomCallDataRecordsEmulator]:::Notebook --> ES[call_data_events]:::Eventstream
-    ES --> EH[telecom_eventhouse]:::Eventhouse
-    EH --> KDB[telecom_kqldb]:::KQLDatabase
-    KDB --> DASH[telecom_dashboard]:::KQLDashboard
+  
+    %% ON PREM
+    SRC[Call Records]:::U1F4DE
+  
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      ES[TelecomCallDataRecordsStream]:::Eventstream
+      EH[TelecomCallDataRecordsDatabase]:::KQLDatabase
+      KD[TelecomCallDataRecordsDashboard]:::KQLDashboard
+      EM[TelecomCallDataRecordsEmulator]:::Notebook
+      direction LR
+    end
+  
+    %% FLOWS
+    SRC -.-> ES
+    ES -.-> EH
+    EH <-.- KD

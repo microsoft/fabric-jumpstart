@@ -14,7 +14,7 @@ scenario_tags:
 type: Accelerator
 source:
   repo_url: https://github.com/slavatrofimov/Multivariate-Anomaly-Detection-with-Microsoft-Fabric.git
-  repo_ref: jumpstart-v0.11
+  repo_ref: jumpstart-v0.20
   workspace_path: workspace/
   files_source_path: data/
   files_destination_lakehouse: ReferenceDataLH
@@ -42,7 +42,7 @@ minutes_to_deploy: 5
 minutes_to_complete_jumpstart: 15
 video_url: "https://youtu.be/b-LAZZHX20A"
 difficulty: "Intermediate"
-last_updated: "2026-03-13"
+last_updated: "2026-04-16"
 mermaid_diagram: |
   graph LR
 

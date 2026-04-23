@@ -17,7 +17,7 @@
     },
     "generate-content": {
       "executor": "nx:run-commands",
-      "cache": true,
+      "cache": false,
       "options": {
         "cwd": "src/fabric_jumpstart_web",
         "commands": ["npx tsx scripts/generate-content.ts"],

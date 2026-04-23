@@ -1,0 +1,19 @@
+{
+  "_comment": "Install count offsets from previous Application Insights workspace migrations. Values here are added to the live counts from the current App Insights instance.",
+  "stateful-streaming-lakehouse": 1,
+  "healthcare-billing-system": 0,
+  "fpm-capacity-events": 0,
+  "fpm-activity-events": 0,
+  "fpm-fabric-inventory": 0,
+  "fpm-gateway-monitoring": 0,
+  "banking-loan-fraud": 0,
+  "retail-sales": 0,
+  "fpm-workspace-item-events": 0,
+  "stateful-streaming-rocksdb": 0,
+  "spark-monitoring-and-optimization": 0,
+  "telecom-call-data-records": 0,
+  "materialized-lake-views": 0,
+  "fabric-cost-analysis": 0,
+  "grid-intelligence": 0,
+  "multivariate-anomaly-detection": 0
+}

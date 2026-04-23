@@ -8,6 +8,7 @@ from typing import Optional
 from .installer import JumpstartInstaller
 from .logger import log_capture_context
 from .registry import JumpstartRegistry
+from .telemetry import track_install
 from .ui import ConflictUI, render_install_status_html, render_jumpstart_list
 
 logger = logging.getLogger(__name__)
@@ -317,6 +318,14 @@ class jumpstart:
 
                 # Phase 7: Generate entry URL
                 entry_url = installer.generate_entry_url(target_ws, resolved_prefix)
+
+                # Telemetry: record successful install
+                track_install(
+                    jumpstart_id=name,
+                    jumpstart_numeric_id=config.get("id", 0),
+                    jumpstart_type=config.get("type", ""),
+                    status="success",
+                )
                 
                 # Render success — animate progress bar to 100% first
                 current_status['label'] = 'success'  # Prevent on_emit from overwriting
@@ -379,6 +388,12 @@ class jumpstart:
                     return status_html
                     
             except Exception as e:
+                track_install(
+                    jumpstart_id=name,
+                    jumpstart_numeric_id=config.get("id", 0),
+                    jumpstart_type=config.get("type", ""),
+                    status="failure",
+                )
                 logger.exception(f"Failed to install jumpstart '{name}'")
                 error_text = str(e).strip() or e.__class__.__name__
                 

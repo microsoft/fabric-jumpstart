@@ -41,6 +41,12 @@ export function getDifficultyTooltip(difficulty: string): string {
   }
 }
 
+export function formatInstallCount(count: number): string {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, '')}k`;
+  return String(count);
+}
+
 interface JumpstartCardProps {
   scenario: ScenarioCard;
   isDark: boolean;
@@ -158,26 +164,58 @@ function CardHeader({
           </div>
         )}
       </div>
-      {/* NEW badge */}
-      {isNew && (
+      {/* Top-right badges: install count + NEW */}
+      {((scenario.installCount ?? 0) > 0 || isNew) && (
         <div
           style={{
             position: 'absolute',
             top: '6px',
             right: '6px',
             zIndex: 2,
-            backgroundColor: '#212121',
-            color: '#FFFFFF',
-            border: isDark ? '1px solid #e0e0e0' : 'none',
-            padding: '2px 12px',
-            borderRadius: '2px',
-            fontSize: '11px',
-            fontWeight: 700,
-            textTransform: 'uppercase' as const,
-            letterSpacing: '0.5px',
+            display: 'flex',
+            gap: '6px',
+            alignItems: 'center',
           }}
         >
-          NEW
+          {(scenario.installCount ?? 0) > 0 && (
+            <div
+              style={{
+                backgroundColor: isDark ? '#212121' : '#FFFFFF',
+                color: isDark ? '#FFFFFF' : '#212121',
+                border: isDark ? '1px solid #e0e0e0' : '1px solid rgba(0,0,0,0.12)',
+                padding: '2px 10px',
+                borderRadius: '2px',
+                fontSize: '11px',
+                fontWeight: 700,
+                letterSpacing: '0.3px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                <path d="M8 1v10M4 8l4 4 4-4M2 14h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {formatInstallCount(scenario.installCount)}
+            </div>
+          )}
+          {isNew && (
+            <div
+              style={{
+                backgroundColor: '#212121',
+                color: '#FFFFFF',
+                border: isDark ? '1px solid #e0e0e0' : 'none',
+                padding: '2px 12px',
+                borderRadius: '2px',
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase' as const,
+                letterSpacing: '0.5px',
+              }}
+            >
+              NEW
+            </div>
+          )}
         </div>
       )}
       {/* Workload ribbon */}

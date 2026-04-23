@@ -28,6 +28,7 @@ export default function MermaidDiagram({ chart, className, bare, seamless }: Mer
       const mermaid = (await import('mermaid')).default;
       mermaid.initialize({
         startOnLoad: false,
+        securityLevel: 'loose' as const,
         theme: 'base',
         themeVariables: {
           primaryColor: isDark ? '#2a2a32' : '#f5f8fa',

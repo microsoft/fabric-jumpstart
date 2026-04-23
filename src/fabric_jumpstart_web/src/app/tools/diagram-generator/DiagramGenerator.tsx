@@ -40,6 +40,7 @@ const SAMPLE_CHART = `graph LR
 
 const MERMAID_CONFIG_LIGHT = {
   startOnLoad: false,
+  securityLevel: 'loose' as const,
   theme: 'base' as const,
   themeVariables: {
     primaryColor: '#f5f8fa',

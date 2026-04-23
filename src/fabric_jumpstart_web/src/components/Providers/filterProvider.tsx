@@ -29,10 +29,12 @@ export type SortOption =
   | 'newest'
   | 'oldest'
   | 'name-asc'
-  | 'name-desc';
+  | 'name-desc'
+  | 'popularity';
 
 export const sortLabels: Record<SortOption, string> = {
   featured: 'Featured first',
+  popularity: 'Most installed',
   newest: 'Newest first',
   oldest: 'Oldest first',
   'name-asc': 'Name (A–Z)',

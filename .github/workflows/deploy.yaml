@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:
@@ -23,4 +25,6 @@ jobs:
       - name: "🚀 Deploy Projects"
         env:
           WEBSITE_STORAGE_CONN_STRING: ${{ secrets.WEBSITE_STORAGE_CONN_STRING }}
+          APPINSIGHTS_APP_ID: ${{ secrets.APPINSIGHTS_APP_ID }}
+          APPINSIGHTS_API_KEY: ${{ secrets.APPINSIGHTS_API_KEY }}
         run: npx nx run-many -t deploy --parallel=3 --output-style=stream

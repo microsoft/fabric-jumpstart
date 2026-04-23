@@ -109,6 +109,8 @@ export default function ScenarioGrid() {
           if (fa !== fb) return fa - fb;
           return b.lastUpdated.localeCompare(a.lastUpdated);
         }
+        case 'popularity':
+          return (b.installCount ?? 0) - (a.installCount ?? 0);
         case 'newest':
           return b.lastUpdated.localeCompare(a.lastUpdated);
         case 'oldest':

@@ -82,4 +82,5 @@ export class ScenarioCard {
   core: boolean = true;
   isNew: boolean = false;
   mermaid_diagram: string = '';
+  installCount: number = 0;
 }

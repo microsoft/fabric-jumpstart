@@ -314,8 +314,73 @@ function generateScenariosJson(scenarios: TaggedScenarioYml[]): ScenarioCard[] {
         core: s._core,
         isNew: isNewJumpstart(s.date_added),
         mermaid_diagram: s.mermaid_diagram || '',
+        installCount: 0,
       };
     });
+}
+
+// ─── Install counts from Application Insights ───────────────
+
+async function fetchInstallCounts(): Promise<Record<string, number>> {
+  const appId = process.env.APPINSIGHTS_APP_ID?.trim();
+  const apiKey = process.env.APPINSIGHTS_API_KEY?.trim();
+
+  if (!appId || !apiKey) {
+    console.log('  ⚠ APPINSIGHTS_APP_ID / APPINSIGHTS_API_KEY not set — skipping install counts');
+    return {};
+  }
+
+  const query = [
+    'customEvents',
+    '| where name == "jumpstart_installed"',
+    '| extend jumpstart_id = tostring(customDimensions.jumpstart_id),',
+    '         status = tostring(customDimensions.status)',
+    '| where status == "success"',
+    '| summarize install_count = count() by jumpstart_id',
+  ].join('\n');
+
+  const url = `https://api.applicationinsights.io/v1/apps/${appId}/query`;
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+      },
+      body: JSON.stringify({ query }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!res.ok) {
+      console.log(`  ⚠ App Insights query failed (HTTP ${res.status}) — skipping install counts`);
+      return {};
+    }
+
+    const json = (await res.json()) as {
+      tables: Array<{ columns: Array<{ name: string }>; rows: Array<Array<string | number>> }>;
+    };
+
+    const table = json.tables?.[0];
+    if (!table) return {};
+
+    const idIdx = table.columns.findIndex((c) => c.name === 'jumpstart_id');
+    const countIdx = table.columns.findIndex((c) => c.name === 'install_count');
+    if (idIdx < 0 || countIdx < 0) return {};
+
+    const counts: Record<string, number> = {};
+    for (const row of table.rows) {
+      const id = String(row[idIdx]);
+      const count = Number(row[countIdx]);
+      if (id && count > 0) counts[id] = count;
+    }
+
+    console.log(`  Fetched install counts for ${Object.keys(counts).length} jumpstarts`);
+    return counts;
+  } catch (err) {
+    console.log(`  ⚠ App Insights query error — skipping install counts: ${err}`);
+    return {};
+  }
 }
 
 // ─── Workload color extraction ────────────────────────────────
@@ -453,6 +518,46 @@ async function main(): Promise<void> {
   console.log('  Generated side-menu.json');
 
   const scenariosJson = generateScenariosJson(scenarios);
+
+  // Merge install counts from Application Insights
+  const installCounts = await fetchInstallCounts();
+  if (Object.keys(installCounts).length > 0) {
+    for (const card of scenariosJson) {
+      card.installCount = installCounts[card.id] ?? 0;
+    }
+  } else {
+    // No fresh counts available — preserve existing counts from previous build
+    const scenariosPath = path.join(DATA_DIR, 'scenarios.json');
+    if (fs.existsSync(scenariosPath)) {
+      try {
+        const existing = JSON.parse(fs.readFileSync(scenariosPath, 'utf-8')) as ScenarioCard[];
+        const prevCounts = new Map(existing.map((s) => [s.id, s.installCount ?? 0]));
+        for (const card of scenariosJson) {
+          card.installCount = prevCounts.get(card.id) ?? 0;
+        }
+        console.log('  Preserved install counts from previous build');
+      } catch {
+        // If we can't read the previous file, leave counts at 0
+      }
+    }
+  }
+
+  // Apply migration offsets from previous App Insights workspaces
+  const offsetsPath = path.join(DATA_DIR, 'install-count-offsets.json');
+  if (fs.existsSync(offsetsPath)) {
+    try {
+      const offsets = JSON.parse(fs.readFileSync(offsetsPath, 'utf-8')) as Record<string, number>;
+      for (const card of scenariosJson) {
+        const offset = offsets[card.id];
+        if (offset && offset > 0) {
+          card.installCount += offset;
+        }
+      }
+    } catch {
+      // Ignore malformed offsets file
+    }
+  }
+
   fs.writeFileSync(
     path.join(DATA_DIR, 'scenarios.json'),
     JSON.stringify(scenariosJson, null, 2)

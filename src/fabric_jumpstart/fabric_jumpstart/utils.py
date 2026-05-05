@@ -1,3 +1,5 @@
+import base64
+import json
 import logging
 import os
 import shutil
@@ -24,37 +26,46 @@ _CREDENTIAL_CLASS_MAP = {
 
 
 def resolve_token_credential():
-    """Resolve a token credential from the environment variable.
+    """Resolve a token credential for Fabric API access.
 
-    Reads ``FABRIC_JUMPSTART_TOKEN_CREDENTIAL`` and returns the corresponding
-    ``azure.identity`` credential instance, or ``None`` when the variable is
-    unset (preserving the default behaviour of ``fabric_cicd``).
+    Resolution order:
+    1. ``FABRIC_JUMPSTART_TOKEN_CREDENTIAL`` environment variable
+    2. Fabric notebook runtime (auto-generates a credential via ``notebookutils``)
+    3. ``DefaultAzureCredential`` (fallback)
 
     Returns:
-        A ``TokenCredential`` instance or ``None``.
+        A ``TokenCredential`` instance.
 
     Raises:
         ValueError: If the env-var value is not in the supported set.
     """
     override = os.environ.get(CREDENTIAL_OVERRIDE_ENV_VAR)
-    if not override:
-        return None
+    if override:
+        qualified = _CREDENTIAL_CLASS_MAP.get(override)
+        if qualified is None:
+            supported = ", ".join(sorted(_CREDENTIAL_CLASS_MAP))
+            raise ValueError(
+                f"Unsupported {CREDENTIAL_OVERRIDE_ENV_VAR} value '{override}'. "
+                f"Supported values: {supported}"
+            )
 
-    qualified = _CREDENTIAL_CLASS_MAP.get(override)
-    if qualified is None:
-        supported = ", ".join(sorted(_CREDENTIAL_CLASS_MAP))
-        raise ValueError(
-            f"Unsupported {CREDENTIAL_OVERRIDE_ENV_VAR} value '{override}'. "
-            f"Supported values: {supported}"
-        )
+        module_path, class_name = qualified.rsplit(".", 1)
+        import importlib
+        module = importlib.import_module(module_path)
+        cls = getattr(module, class_name)
+        credential = cls()
+        logger.info("Using %s credential from %s", override, CREDENTIAL_OVERRIDE_ENV_VAR)
+        return credential
 
-    module_path, class_name = qualified.rsplit(".", 1)
-    import importlib
-    module = importlib.import_module(module_path)
-    cls = getattr(module, class_name)
-    credential = cls()
-    logger.info("Using %s credential from %s", override, CREDENTIAL_OVERRIDE_ENV_VAR)
-    return credential
+    if _is_fabric_runtime():
+        logger.info("Fabric runtime detected; using FabricTokenCredential")
+        return _generate_fabric_credential()
+
+    # Lazy import to avoid errors in Fabric notebook environments
+    from azure.identity import DefaultAzureCredential
+
+    logger.info("Using DefaultAzureCredential")
+    return DefaultAzureCredential()
 
 
 def _is_fabric_runtime() -> bool:
@@ -68,6 +79,70 @@ def _is_fabric_runtime() -> bool:
         return False
     except Exception:
         return False
+
+
+def _decode_jwt(token: str) -> dict:
+    """Decode a JWT token and return the payload as a dictionary.
+
+    Args:
+        token: The JWT token to decode.
+
+    Returns:
+        Decoded payload dictionary.
+
+    Raises:
+        ValueError: If the token has an invalid JWT format.
+    """
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError("The token has an invalid JWT format")
+
+    payload = parts[1]
+    padding = "=" * (4 - len(payload) % 4)
+    payload += padding
+    decoded_bytes = base64.urlsafe_b64decode(payload.encode("utf-8"))
+    decoded_str = decoded_bytes.decode("utf-8")
+    return json.loads(decoded_str)
+
+
+def _generate_fabric_credential():
+    """Generate a TokenCredential for Fabric using notebookutils.
+
+    Returns a credential that retrieves tokens from the Fabric notebook
+    runtime via ``notebookutils.credentials.getToken``.
+    """
+    from datetime import datetime, timezone
+
+    class FabricTokenCredential:
+        """Custom credential that uses notebookutils to get tokens."""
+
+        def __init__(self, audience: str = "pbi") -> None:
+            self.audience = audience
+
+        def get_token(self, *scopes, **kwargs):
+            """Get token using notebookutils."""
+            import notebookutils  # type: ignore[import-untyped]
+
+            token_string = notebookutils.credentials.getToken(self.audience)
+
+            try:
+                payload = _decode_jwt(token_string)
+                expires_on = payload.get("exp")
+                if expires_on:
+                    from azure.core.credentials import AccessToken
+
+                    return AccessToken(token_string, expires_on)
+            except Exception:
+                pass  # Fall back to default expiration
+
+            from azure.core.credentials import AccessToken
+
+            return AccessToken(
+                token_string,
+                int(datetime.now(timezone.utc).timestamp()) + 3600,
+            )
+
+    return FabricTokenCredential("pbi")
 
 def download_file(url: str, dest: str):
     with requests.get(url, stream=True) as r:

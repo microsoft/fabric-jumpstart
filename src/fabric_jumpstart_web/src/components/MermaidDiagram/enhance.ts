@@ -130,9 +130,9 @@ export function enhanceDiagram(
   const TYPE_COLOR = isDark ? 'rgba(180,190,200,0.7)' : 'rgba(80,90,100,0.75)';
 
   for (const g of root.querySelectorAll('g.node')) {
-    // Match by Mermaid node ID (e.g. id="flowchart-NB-0" → nodeId "NB")
+    // Match by Mermaid node ID (e.g. id="flowchart-NB-0" or "prefix-flowchart-NB-0" → nodeId "NB")
     const gId = g.getAttribute('id') ?? '';
-    const idMatch = gId.match(/^flowchart-(.+)-\d+$/);
+    const idMatch = gId.match(/flowchart-(.+)-\d+$/);
     const info = idMatch ? nodeMap.get(idMatch[1]) : undefined;
     if (!info) continue;
 

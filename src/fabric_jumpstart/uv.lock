@@ -291,7 +291,7 @@ wheels = [
 
 [[package]]
 name = "fabric-cicd"
-version = "0.3.1"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-identity" },
@@ -303,7 +303,7 @@ dependencies = [
     { name = "requests" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/f3/a00521aefbfac0795f64e03e82fbbca8708ae01dd6eb58fc735d35bdc85f/fabric_cicd-0.3.1-py3-none-any.whl", hash = "sha256:450ff1cb28799ec97d6086d354479b8211a34ac47770ca31bce15ba3291ef5df", size = 114955, upload-time = "2026-03-12T00:59:12.662Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/16/a9bb520472d059dab6f773673e9e631352a886f062e3e9374923e6b820d2/fabric_cicd-1.0.0-py3-none-any.whl", hash = "sha256:25b1b78c2f79bc8ab4c38ef045502badc550ad02e1d53362c5993d7ac364e51b", size = 120048, upload-time = "2026-04-20T14:11:04.049Z" },
 ]
 
 [[package]]
@@ -335,9 +335,9 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fabric-cicd", specifier = "==0.3.1" },
+    { name = "fabric-cicd", specifier = "==1.0.0" },
     { name = "ipython", specifier = ">=8.20.0" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
 ]
 
 [package.metadata.requires-dev]

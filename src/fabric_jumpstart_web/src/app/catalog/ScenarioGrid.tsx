@@ -11,6 +11,7 @@ import { useFilterContext } from '@components/Providers/filterProvider';
 import { sortLabels, type SortOption } from '@components/Providers/filterProvider';
 import { getMatchingSlugs } from '@components/SideMenu/SidebarFilters';
 import JumpstartCard from '@components/JumpstartCard';
+import SkeletonCard from '@components/JumpstartCard/SkeletonCard';
 import type { ScenarioCard } from '@scenario/scenario';
 
 const ExpandedModal = dynamic(
@@ -93,7 +94,7 @@ export default function ScenarioGrid() {
   const scenarios = scenariosData as ScenarioCard[];
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
-  const { filters, hasActiveFilters, sort, setSort } = useFilterContext();
+  const { filters, hasActiveFilters, sort, setSort, isInitialized } = useFilterContext();
   const [expandedChart, setExpandedChart] = useState<{ slug: string; title: string } | null>(null);
 
   const matchingSlugs = useMemo(() => getMatchingSlugs(filters), [filters]);
@@ -136,7 +137,7 @@ export default function ScenarioGrid() {
     <div className={styles.container}>
       <div className={styles.toolbar}>
         <span className={styles.resultCount}>
-          {hasActiveFilters ? (
+          {isInitialized && hasActiveFilters ? (
             <>
               Showing{' '}
               <span className={styles.resultCountBold}>{filteredScenarios.length}</span>{' '}
@@ -144,7 +145,8 @@ export default function ScenarioGrid() {
             </>
           ) : (
             <>
-              <span className={styles.resultCountBold}>{scenarios.length}</span> jumpstarts
+              <span className={styles.resultCountBold}>{isInitialized ? scenarios.length : ''}</span>{' '}
+              {isInitialized ? 'jumpstarts' : ''}
             </>
           )}
         </span>
@@ -162,7 +164,13 @@ export default function ScenarioGrid() {
           </select>
         </div>
       </div>
-      {filteredScenarios.length === 0 ? (
+      {!isInitialized ? (
+        <div className={styles.grid}>
+          {Array.from({ length: 12 }).map((_, i) => (
+            <SkeletonCard key={i} isDark={isDark} className={styles.card} />
+          ))}
+        </div>
+      ) : filteredScenarios.length === 0 ? (
         <div
           style={{
             textAlign: 'center',

@@ -1,45 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import {
+  type FilterState,
+  type SortOption,
+  emptyFilters,
+  sortLabels,
+} from '@utils/filterTypes';
 
-export interface FilterState {
-  search: string;
-  types: string[];
-  difficulties: string[];
-  workloadTags: string[];
-  scenarioTags: string[];
-  minMinutesToComplete: number | null;
-  maxMinutesToComplete: number | null;
-  classes: string[]; // empty = all, ['Core'] or ['Community'] to filter
-}
-
-export const emptyFilters: FilterState = {
-  search: '',
-  types: [],
-  difficulties: [],
-  workloadTags: [],
-  scenarioTags: [],
-  minMinutesToComplete: null,
-  maxMinutesToComplete: null,
-  classes: [],
-};
-
-export type SortOption =
-  | 'featured'
-  | 'newest'
-  | 'oldest'
-  | 'name-asc'
-  | 'name-desc'
-  | 'popularity';
-
-export const sortLabels: Record<SortOption, string> = {
-  featured: 'Featured first',
-  popularity: 'Most installed',
-  newest: 'Newest first',
-  oldest: 'Oldest first',
-  'name-asc': 'Name (A–Z)',
-  'name-desc': 'Name (Z–A)',
-};
+// Re-export for consumers that import from this module.
+export type { FilterState, SortOption };
+export { emptyFilters, sortLabels };
 
 interface FilterContextType {
   filters: FilterState;
@@ -48,6 +19,9 @@ interface FilterContextType {
   clearFilters: () => void;
   sort: SortOption;
   setSort: (sort: SortOption) => void;
+  /** False until URL params have been applied on the client — use to show skeletons. */
+  isInitialized: boolean;
+  setInitialized: () => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -55,6 +29,7 @@ const FilterContext = createContext<FilterContextType | undefined>(undefined);
 export const FilterProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [filters, setFiltersState] = useState<FilterState>({ ...emptyFilters });
   const [sort, setSortState] = useState<SortOption>('featured');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const hasActiveFilters =
     filters.search !== '' ||
@@ -78,8 +53,12 @@ export const FilterProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setSortState(next);
   }, []);
 
+  const setInitialized = useCallback(() => {
+    setIsInitialized(true);
+  }, []);
+
   return (
-    <FilterContext.Provider value={{ filters, setFilters, hasActiveFilters, clearFilters, sort, setSort }}>
+    <FilterContext.Provider value={{ filters, setFilters, hasActiveFilters, clearFilters, sort, setSort, isInitialized, setInitialized }}>
       {children}
     </FilterContext.Provider>
   );

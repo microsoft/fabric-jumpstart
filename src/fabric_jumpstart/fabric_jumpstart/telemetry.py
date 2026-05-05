@@ -133,6 +133,8 @@ def _track_install_worker(
     jumpstart_numeric_id: int,
     jumpstart_type: str,
     status: str,
+    duration_seconds: Optional[float] = None,
+    install_mode: Optional[str] = None,
 ) -> None:
     """Worker that resolves user hash and sends the telemetry event."""
     endpoint, ikey = _parse_connection_string(conn_str)
@@ -141,15 +143,21 @@ def _track_install_worker(
 
     user_hash = _resolve_user_hash()
 
+    properties: dict[str, str] = {
+        "jumpstart_id": jumpstart_id,
+        "jumpstart_numeric_id": str(jumpstart_numeric_id),
+        "type": jumpstart_type,
+        "status": status,
+    }
+    if duration_seconds is not None:
+        properties["duration_seconds"] = str(duration_seconds)
+    if install_mode:
+        properties["install_mode"] = install_mode
+
     envelope = _build_envelope(
         ikey=ikey,
         event_name="jumpstart_installed",
-        properties={
-            "jumpstart_id": jumpstart_id,
-            "jumpstart_numeric_id": str(jumpstart_numeric_id),
-            "type": jumpstart_type,
-            "status": status,
-        },
+        properties=properties,
         user_hash=user_hash,
     )
     payload = json.dumps(envelope).encode("utf-8")
@@ -161,6 +169,8 @@ def track_install(
     jumpstart_numeric_id: int,
     jumpstart_type: str,
     status: str,
+    duration_seconds: Optional[float] = None,
+    install_mode: Optional[str] = None,
 ) -> None:
     """Record a jumpstart install event (fire-and-forget).
 
@@ -175,6 +185,7 @@ def track_install(
         t = threading.Thread(
             target=_track_install_worker,
             args=(conn_str, jumpstart_id, jumpstart_numeric_id, jumpstart_type, status),
+            kwargs={"duration_seconds": duration_seconds, "install_mode": install_mode},
             daemon=True,
         )
         t.start()

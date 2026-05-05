@@ -214,3 +214,85 @@ class TestTrackInstallWorker:
         )
 
         mock_send.assert_not_called()
+
+    @patch("fabric_jumpstart.telemetry._send")
+    @patch("fabric_jumpstart.telemetry._resolve_user_hash")
+    def test_includes_duration_in_properties(self, mock_resolve, mock_send):
+        """Worker includes duration_seconds in event properties."""
+        mock_resolve.return_value = None
+        conn_str = "InstrumentationKey=test-key;IngestionEndpoint=https://example.com"
+
+        _track_install_worker(
+            conn_str=conn_str,
+            jumpstart_id="test-js",
+            jumpstart_numeric_id=42,
+            jumpstart_type="Demo",
+            status="success",
+            duration_seconds=15.3,
+        )
+
+        mock_send.assert_called_once()
+        _, payload_bytes = mock_send.call_args[0]
+        payload = json.loads(payload_bytes.decode("utf-8"))
+        assert payload["data"]["baseData"]["properties"]["duration_seconds"] == "15.3"
+
+    @patch("fabric_jumpstart.telemetry._send")
+    @patch("fabric_jumpstart.telemetry._resolve_user_hash")
+    def test_omits_duration_when_none(self, mock_resolve, mock_send):
+        """Worker omits duration_seconds from properties when not provided."""
+        mock_resolve.return_value = None
+        conn_str = "InstrumentationKey=test-key;IngestionEndpoint=https://example.com"
+
+        _track_install_worker(
+            conn_str=conn_str,
+            jumpstart_id="test-js",
+            jumpstart_numeric_id=42,
+            jumpstart_type="Demo",
+            status="success",
+        )
+
+        mock_send.assert_called_once()
+        _, payload_bytes = mock_send.call_args[0]
+        payload = json.loads(payload_bytes.decode("utf-8"))
+        assert "duration_seconds" not in payload["data"]["baseData"]["properties"]
+
+    @patch("fabric_jumpstart.telemetry._send")
+    @patch("fabric_jumpstart.telemetry._resolve_user_hash")
+    def test_includes_install_mode_in_properties(self, mock_resolve, mock_send):
+        """Worker includes install_mode in event properties."""
+        mock_resolve.return_value = None
+        conn_str = "InstrumentationKey=test-key;IngestionEndpoint=https://example.com"
+
+        _track_install_worker(
+            conn_str=conn_str,
+            jumpstart_id="test-js",
+            jumpstart_numeric_id=42,
+            jumpstart_type="Demo",
+            status="success",
+            install_mode="update",
+        )
+
+        mock_send.assert_called_once()
+        _, payload_bytes = mock_send.call_args[0]
+        payload = json.loads(payload_bytes.decode("utf-8"))
+        assert payload["data"]["baseData"]["properties"]["install_mode"] == "update"
+
+    @patch("fabric_jumpstart.telemetry._send")
+    @patch("fabric_jumpstart.telemetry._resolve_user_hash")
+    def test_omits_install_mode_when_none(self, mock_resolve, mock_send):
+        """Worker omits install_mode from properties when not provided."""
+        mock_resolve.return_value = None
+        conn_str = "InstrumentationKey=test-key;IngestionEndpoint=https://example.com"
+
+        _track_install_worker(
+            conn_str=conn_str,
+            jumpstart_id="test-js",
+            jumpstart_numeric_id=42,
+            jumpstart_type="Demo",
+            status="success",
+        )
+
+        mock_send.assert_called_once()
+        _, payload_bytes = mock_send.call_args[0]
+        payload = json.loads(payload_bytes.decode("utf-8"))
+        assert "install_mode" not in payload["data"]["baseData"]["properties"]

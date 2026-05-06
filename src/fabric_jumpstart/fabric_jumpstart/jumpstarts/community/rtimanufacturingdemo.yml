@@ -1,10 +1,10 @@
-id: 24
-logical_id: rtimanufacturingdemo
-name: Real-Time Manufacturing Demo
+id: 25
+logical_id: real-time-manufacturing
+name: Real-Time Manufacturing
 description: >-
   Monitor manufacturing operations in real-time, combine data from quality test benches and IoT senors with masterdata from your SAP ERP system.
   Ask an AI agent questions on the data and do advanced analytics with Power BI reports on the history of data.  
-date_added: 05/05/2026
+date_added: 05/06/2026
 workload_tags:
   - Real-Time Intelligence
   - Power BI
@@ -39,7 +39,7 @@ test_suite: ""
 owner_email: andreas.rederer@microsoft.com
 minutes_to_deploy: 8
 minutes_to_complete_jumpstart: 10
-#video_url: "https://www.youtube.com/watch?v=6xjQD-g2nd0"
+video_url: 
 difficulty: "Intermediate"
 last_updated: "2026-05-05"
 mermaid_diagram: |

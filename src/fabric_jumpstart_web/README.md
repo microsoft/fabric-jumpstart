@@ -1,4 +1,6 @@
-# ⚡️Fabric Jumpstart Web
+<p align="center">
+  <img src="https://github.com/microsoft/fabric-jumpstart/raw/main/src/fabric_jumpstart_web/public/dark-logo-right.svg" alt="Arc Jumpstart logo" width="520">
+</p>
 
 The catalog website for [Fabric Jumpstart](../fabric_jumpstart/README.md) — browse, search, and discover available Jumpstarts at [jumpstart.fabric.microsoft.com](https://jumpstart.fabric.microsoft.com).
 

@@ -1,9 +1,13 @@
-# ⚡️Fabric Jumpstart CLI
+<p align="center">
+  <img src="https://github.com/microsoft/fabric-jumpstart/raw/main/src/fabric_jumpstart_web/public/dark-logo-right.svg" alt="Arc Jumpstart logo" width="520">
+   <p align="center">
+      [![PyPI version](https://img.shields.io/pypi/v/fabric-jumpstart)](https://pypi.org/project/fabric-jumpstart/)
+      [![Python](https://img.shields.io/pypi/pyversions/fabric-jumpstart)](https://pypi.org/project/fabric-jumpstart/)
+      <br />
+      Fabric Jumpstart accelerates Microsoft Fabric adoption with ready-to-run accelerators, demos, and tutorials that install directly into your workspace in minutes via [fabric-cicd](https://microsoft.github.io/fabric-cicd/latest/).
+   </p>
+</p>
 
-[![PyPI version](https://img.shields.io/pypi/v/fabric-jumpstart)](https://pypi.org/project/fabric-jumpstart/)
-[![Python](https://img.shields.io/pypi/pyversions/fabric-jumpstart)](https://pypi.org/project/fabric-jumpstart/)
-
-Fabric Jumpstart accelerates Microsoft Fabric adoption with ready-to-run accelerators, demos, and tutorials that install directly into your workspace in minutes via [fabric-cicd](https://microsoft.github.io/fabric-cicd/latest/).
 
 ## Install the Library
 

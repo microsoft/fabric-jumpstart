@@ -1,16 +1,10 @@
 ---
-title: Realtime Manufacturing Demo - End-to-end Microsoft Fabric demo that showcases a modern manufacturing scenario: streaming machine telemetry, ingesting SAP master data, building a Lakehouse + Eventhouse, and surfacing insights through Power BI reports, a real-time KQL dashboard, and an AI Data Agent.
+title: Real-time Manufacturing
 
 toc: true
 ---
 
-# 🏭 Real-Time Intelligence Manufacturing Demo
-
-End-to-end Microsoft Fabric demo that showcases a modern manufacturing scenario: streaming machine telemetry, ingesting SAP master data, building a Lakehouse + Eventhouse, and surfacing insights through Power BI reports, a real-time KQL dashboard, and an AI Data Agent.
-
-## 🖼️ Architecture
-
-![Architecture](https://raw.githubusercontent.com/DaSenf1860/jumpstartdemos/refs/heads/main/rtimanufacturingdemo_light.svg)
+This jumpstart deploys an end-to-end demo that showcases a modern manufacturing scenario: streaming machine telemetry, ingesting SAP master data, building a Lakehouse + Eventhouse, and surfacing insights through Power BI reports, a real-time KQL dashboard, and an AI Data Agent.
 
 ## ✨ What's Inside
 
@@ -22,37 +16,29 @@ End-to-end Microsoft Fabric demo that showcases a modern manufacturing scenario:
 - 📊 **Reporting** — Power BI report, Semantic Model, and an MQTT Real-Time Dashboard
 - 🤖 **AI Data Agent** — natural-language Q&A over the manufacturing data
 
-## Deploy It
-
-After install fabric-jumpstart, you can deploy this scenario to your Fabric workspace with a single line of code:
-
-```python
-jumpstart.install('real-time-manufacturing')
-```
-
 ## 🛠️ Post-Deployment Setup
 
-After the items are published, open the **`PostDeploymentNotebook`** in the Fabric workspace and run it. It wires everything together — loading sample data, configuring connections, and getting the demo ready to use.
+After installing the jumpstart, run the **`PostDeploymentNotebook`**. It wires everything together — loading sample data, configuring connections, and getting the demo ready to use.
 
 ## 🎉 Have Fun
 
-Once the **`PostDeploymentNotebook`** has been running for 5 minutes, you can already see streaming data visualized in the RealtimeDashboard (Reporting Folder).
+Once the **`PostDeploymentNotebook`** has been running for about 5 minutes, you can already see streaming data visualized in the Real-Time Dashboard (Reporting Folder).
 
 ![RealtimeDashboard](https://raw.githubusercontent.com/DaSenf1860/jumpstartdemos/refs/heads/main/rtidashboard1.png)
 
-You see your core KPIs updating in Realtime, also explore the other pages of this dashboard to drill down on sensor data timeseries and to see the most recent data coming in.
+You see the core KPIs updating in real-time. Explore the other pages of this dashboard to drill down on sensor data timeseries and to see the most recent records arriving.
 
-Once the **`PostDeploymentNotebook`** has been running for 10 minutes, you can also go to the Power BI report **`ManufacturingOperationsReport`** and dive deeper on how KPIs have been trending over time, and how they differ by dimensions like sites, time, shifts and machines.
+Once the **`PostDeploymentNotebook`** has been running for about 10 minutes, you can also go to the Power BI report **`ManufacturingOperationsReport`** and dive deeper on how KPIs have been trending over time, and how they differ by dimensions like sites, time, shifts and machines.
 
 ![ManufacturingOperationsReport](https://raw.githubusercontent.com/DaSenf1860/jumpstartdemos/refs/heads/main/powerbireport.png)
 
-You can also open the **🤖 `TalkToManufacturingData`** Data Agent and ask natural-language questions like *"What is the latest sensor data for the compressor motor in the shangai industrial site?"* or *"Which site had the lowest quality in the last 4 weeks?"*
+Lastly, open the **🤖 `TalkToManufacturingData`** Data Agent and ask natural-language questions like *"What is the latest sensor data for the compressor motor in the shangai industrial site?"* or *"Which site had the lowest quality in the last 4 weeks?"*:
 
 ![TalkToManufacturingData](https://raw.githubusercontent.com/DaSenf1860/jumpstartdemos/refs/heads/main/dataagent.png)
 
-Feel free to explore the Notebooks, Eventhouse KQL queries, and pipeline to see how all the pieces fit together. 🔍
+Explore the Notebooks, Eventhouse KQL queries, and Pipelines to see how the entire solution fits together. 🔍
 
-## 📁 Repository Layout
+## 📁 Folder Organization
 
 | Folder | Purpose |
 | --- | --- |

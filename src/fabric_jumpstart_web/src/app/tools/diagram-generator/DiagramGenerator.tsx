@@ -13,7 +13,7 @@ import {
   Eye24Regular,
 } from '@fluentui/react-icons';
 import { useThemeContext } from '@components/Providers/themeProvider';
-import { enhanceDiagram } from '@components/MermaidDiagram/enhance';
+import { renderMermaidSvg } from '@utils/mermaidRender';
 
 const SAMPLE_CHART = `graph LR
 
@@ -38,40 +38,6 @@ const SAMPLE_CHART = `graph LR
   LH <-.-> SJD
   SJD --- ENV`;
 
-const MERMAID_CONFIG_LIGHT = {
-  startOnLoad: false,
-  securityLevel: 'loose' as const,
-  theme: 'base' as const,
-  themeVariables: {
-    primaryColor: '#f5f8fa',
-    primaryTextColor: '#242424',
-    primaryBorderColor: '#c8c8c8',
-    lineColor: '#219580',
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif',
-    fontSize: '13px',
-  },
-  flowchart: {
-    useMaxWidth: false,
-    htmlLabels: true,
-    curve: 'basis' as const,
-    padding: 22,
-    nodeSpacing: 70,
-    rankSpacing: 85,
-  },
-};
-
-const MERMAID_CONFIG_DARK = {
-  ...MERMAID_CONFIG_LIGHT,
-  themeVariables: {
-    primaryColor: '#2a2a32',
-    primaryTextColor: '#e0e0e0',
-    primaryBorderColor: '#4a4a55',
-    lineColor: '#5a8a9a',
-    fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif',
-    fontSize: '13px',
-  },
-};
-
 const CODE_HEIGHT = 400;
 
 function zoomBtnStyle(dark: boolean): React.CSSProperties {
@@ -86,37 +52,6 @@ function zoomBtnStyle(dark: boolean): React.CSSProperties {
     fontWeight: 600,
     lineHeight: '1',
   };
-}
-
-async function renderMermaidSvg(
-  chart: string,
-  isDark: boolean,
-  container: HTMLDivElement,
-): Promise<string | null> {
-  const mermaid = (await import('mermaid')).default;
-  mermaid.initialize(isDark ? MERMAID_CONFIG_DARK : MERMAID_CONFIG_LIGHT);
-
-  const id = `mermaid-gen-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-  try {
-    // Strip :::Type annotations from subgraph lines before Mermaid render
-    const strippedChart = chart.replace(/^(\s*subgraph\s+.+?):::(\w+)\s*$/gm, '$1');
-    const { svg } = await mermaid.render(id, strippedChart);
-    container.innerHTML = svg;
-
-    const svgEl = container.querySelector('svg') as SVGSVGElement | null;
-    if (svgEl) {
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-          enhanceDiagram(svgEl, chart, isDark);
-          resolve();
-        });
-      });
-      return svgEl.outerHTML;
-    }
-  } catch (err) {
-    console.error('Mermaid render error:', err);
-  }
-  return null;
 }
 
 function downloadSvg(svgContent: string, filename: string) {
@@ -154,20 +89,9 @@ export default function DiagramGenerator() {
 
     setError(null);
     try {
-      const mermaid = (await import('mermaid')).default;
-      mermaid.initialize(isDark ? MERMAID_CONFIG_DARK : MERMAID_CONFIG_LIGHT);
-
-      const id = `mermaid-preview-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-      // Strip :::Type annotations from subgraph lines before Mermaid render
-      const strippedChart = chart.replace(/^(\s*subgraph\s+.+?):::(\w+)\s*$/gm, '$1');
-      const { svg } = await mermaid.render(id, strippedChart);
-      container.innerHTML = svg;
-
-      const svgEl = container.querySelector('svg') as SVGSVGElement | null;
-      if (svgEl) {
-        requestAnimationFrame(() => {
-          enhanceDiagram(svgEl, chart, isDark);
-        });
+      const svgHtml = await renderMermaidSvg(chart, isDark, container);
+      if (!svgHtml) {
+        container.innerHTML = '';
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid Mermaid syntax');

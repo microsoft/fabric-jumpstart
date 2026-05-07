@@ -27,4 +27,5 @@ jobs:
           WEBSITE_STORAGE_CONN_STRING: ${{ secrets.WEBSITE_STORAGE_CONN_STRING }}
           APPINSIGHTS_APP_ID: ${{ secrets.APPINSIGHTS_APP_ID }}
           APPINSIGHTS_API_KEY: ${{ secrets.APPINSIGHTS_API_KEY }}
+          NEXT_PUBLIC_GITHUB_PR_TOKEN: ${{ secrets.GITHUB_PR_TOKEN }}
         run: npx nx run-many -t deploy --parallel=3 --output-style=stream

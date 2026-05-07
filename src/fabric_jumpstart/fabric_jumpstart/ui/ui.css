@@ -977,6 +977,14 @@
     background: linear-gradient(90deg, #0C695A, #12a38a);
     transition: width 1s linear;
 }
+.install-progress-fill.indeterminate {
+    width: 40% !important;
+    animation: progress-slide 1.6s ease-in-out infinite;
+}
+@keyframes progress-slide {
+    0%   { transform: translateX(-120%); }
+    100% { transform: translateX(300%); }
+}
 .install-progress-label {
     display: flex;
     justify-content: space-between;

@@ -1,6 +1,7 @@
 export const INTERNAL_ROUTE = {
   OVERVIEW: '/',
   SCENARIOS: '/catalog',
+  CREATE: '/catalog/create',
   GETTING_STARTED: '/getting-started',
   COMMUNITY: 'https://github.com/microsoft/fabric-jumpstart/discussions',
   MISSION: '/',

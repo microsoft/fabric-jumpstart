@@ -1,17 +1,25 @@
 <p align="center">
   <img src="https://github.com/microsoft/fabric-jumpstart/raw/main/src/fabric_jumpstart_web/public/dark-logo-right.svg" alt="Arc Jumpstart logo" width="520">
-   <p align="center">
-      [![PyPI version](https://img.shields.io/pypi/v/fabric-jumpstart)](https://pypi.org/project/fabric-jumpstart/)
-      [![Python](https://img.shields.io/pypi/pyversions/fabric-jumpstart)](https://pypi.org/project/fabric-jumpstart/)
-      <br />
-      Fabric Jumpstart accelerates Microsoft Fabric adoption with ready-to-run accelerators, demos, and tutorials that install directly into your workspace in minutes via [fabric-cicd](https://microsoft.github.io/fabric-cicd/latest/).
-   </p>
 </p>
 
+<p align="center">
+  <a href="https://pypi.org/project/fabric-jumpstart/">
+    <img src="https://img.shields.io/pypi/v/fabric-jumpstart" alt="PyPI version">
+  </a>
+  <a href="https://pypi.org/project/fabric-jumpstart/">
+    <img src="https://img.shields.io/pypi/pyversions/fabric-jumpstart" alt="Python versions">
+  </a>
+</p>
+
+<p align="center">
+  <br />
+  Fabric Jumpstart accelerates Microsoft Fabric adoption with ready-to-run accelerators, demos, and tutorials that install directly into your workspace in minutes via
+  <a href="https://microsoft.github.io/fabric-cicd/latest/">fabric-cicd</a>.
+</p>
 
 ## Install the Library
 
-Requirements: Python 3.10–3.12 and access to a Microsoft Fabric workspace.
+Requirements: Python 3.10–3.13 and access to a Microsoft Fabric workspace.
 
 ```bash
 pip install fabric-jumpstart
@@ -28,7 +36,7 @@ import fabric_jumpstart as jumpstart
 jumpstart.list()
 
 # Copy the install command from the catalog, past in another cell and run!
-jumpstart.install("spark-structured-streaming")
+jumpstart.install("stateful-streaming-lakehouse")
 ```
 
 Notes

@@ -1,6 +1,5 @@
-<!-- PROJECT LOGO -->
 <p align="center">
-  <img src="https://github.com/microsoft/fabric-jumpstart/raw/main/src/fabric_jumpstart_web/public/dark-logo-right.svg" alt="Arc Jumpstart logo" width="320">
+  <img src="https://github.com/microsoft/fabric-jumpstart/raw/main/src/fabric_jumpstart_web/public/dark-logo-right.svg" alt="Arc Jumpstart logo" width="720">
   <p align="center">
     Ready-to-run accelerators, demos, and tutorials for <a href="https://www.microsoft.com/en-us/microsoft-fabric">Microsoft Fabric</a> — automated, high-quality, and open-source.
     <br />

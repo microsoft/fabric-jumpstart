@@ -1,0 +1,86 @@
+id: 25
+logical_id: real-time-manufacturing
+name: Real-Time Manufacturing
+description: >-
+  Monitor manufacturing operations in real-time, combine data from quality test benches and IoT senors with masterdata from your SAP ERP system.
+  Ask an AI agent questions on the data and do advanced analytics with Power BI reports on the history of data.  
+date_added: 05/06/2026
+workload_tags:
+  - Real-Time Intelligence
+  - Power BI
+  - Data Engineering
+  - Data Science
+scenario_tags:
+  - Streaming
+type: Demo
+source:
+  repo_url: https://github.com/DaSenf1860/jumpstartdemos.git
+  repo_ref: v1
+  workspace_path: rtimanufacturingdemo/
+  files_source_path: rtimanufacturingdemo_data/
+  files_destination_lakehouse: ManufacturingData
+  files_destination_path: data/
+items_in_scope:
+  - Notebook
+  - Eventhouse
+  - Eventstream
+  - KQLDatabase
+  - KQLDashboard
+  - KQLQueryset
+  - SemanticModel
+  - Report
+  - Reflex
+  - DataAgent
+  - Lakehouse
+  - DataPipeline
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/rtimanufacturingdemo
+entry_point: PostDeploymentNotebook.Notebook
+test_suite: ""
+owner_email: andreas.rederer@microsoft.com
+minutes_to_deploy: 8
+minutes_to_complete_jumpstart: 10
+video_url: 
+difficulty: "Intermediate"
+last_updated: "2026-05-05"
+mermaid_diagram: |
+  graph LR
+
+    %% DATA SOURCES
+    MASTERDATA[SAP ERP Masterdata]:::U1F3E2
+    QUALITYSOURCE[Quality Test Data]:::U1F3ED
+    MACHINESOURCE[Machine Sensor Data]:::U1F916
+
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      direction LR
+      SENSOR[SensorDataEvents]:::Eventstream
+      QUALITY[QualityDataEvents]:::Eventstream
+      INGEST[IngestSAPData]:::Notebook
+      PREPARE[ProcessMasterdata]:::Notebook
+      GOLD[UpdateLakehouseWithSparkStructuredStreaming]:::Notebook
+      MFG_LH[ManufacturingData]:::Lakehouse
+      RT_ANALYTICS[ManufacturingRealtimeAnalytics]:::Eventhouse
+      SEM_MODEL[ManufacturingOperationsSemanticModel]:::SemanticModel
+      PBI_REPORT[ManufacturingOperationsReport]:::Report
+      AGENTS[TalkToManufacturingData]:::DataAgent
+      RT_DASHBOARD[RealtimeDashboard]:::KQLDashboard
+    end
+
+    %% FLOWS
+    QUALITYSOURCE -.-> QUALITY
+    MACHINESOURCE -.-> SENSOR
+    MFG_LH -.-> PREPARE
+    MASTERDATA -.-> INGEST
+    INGEST -.-> MFG_LH
+    PREPARE -.-> MFG_LH
+    MFG_LH -.-> SEM_MODEL
+    SEM_MODEL -.-> PBI_REPORT
+    MFG_LH -.-> AGENTS
+    MFG_LH -.-> GOLD
+    GOLD -.-> MFG_LH
+    RT_ANALYTICS -.-> MFG_LH
+    SENSOR -.-> RT_ANALYTICS
+    QUALITY -.-> RT_ANALYTICS
+    RT_ANALYTICS -.-> RT_DASHBOARD
+    RT_ANALYTICS -.-> AGENTS
+  

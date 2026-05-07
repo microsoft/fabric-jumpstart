@@ -34,7 +34,7 @@ items_in_scope:
   - DataAgent
   - Lakehouse
   - DataPipeline
-jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/rtimanufacturingdemo
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/real-time-manufacturing
 entry_point: PostDeploymentNotebook.Notebook
 test_suite: ""
 owner_email: andreas.rederer@microsoft.com

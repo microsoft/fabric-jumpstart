@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import RootProvider from '@components/Providers/rootProvider';
 import '@styles/global.css';
-import OGImage from '@images/logo.jpg';
+import OGImage from '@images/scenarios.svg';
 import Header from '@components/Header';
 import Footer from '@components/Footer';
 import type { UhfData } from '@components/Footer';

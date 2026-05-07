@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "fabric-jumpstart"
 authors = [{ name = "Microsoft Corporation" }]
-version = "0.1.5"
+version = "0.1.7"
 description = "Get started quickly with pre-built solutions, tutorials, demos, and accelerators—automated, high-quality, and open-source."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
@@ -19,9 +19,9 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "fabric-cicd==0.3.1", # for testing local build: "fabric-cicd @ file:///C:/.../fabric-cicd/dist/fabric_cicd-0.1.34-py3-none-any.whl",
+    "fabric-cicd==1.0.0", # for testing local build: "fabric-cicd @ file:///C:/.../fabric-cicd/dist/fabric_cicd-0.1.34-py3-none-any.whl",
     "ipython>=8.20.0",
-    "pyyaml>=6.0.3",
+    "pyyaml>=6.0.2",
 ]
 
 [tool.hatch.build]

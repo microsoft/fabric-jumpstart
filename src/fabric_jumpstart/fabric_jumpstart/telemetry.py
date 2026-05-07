@@ -10,6 +10,7 @@ Telemetry can be disabled by setting the environment variable
 overridden via ``APPLICATIONINSIGHTS_CONNECTION_STRING``.
 """
 
+import hashlib
 import json
 import logging
 import os
@@ -23,6 +24,11 @@ logger = logging.getLogger(__name__)
 _DEFAULT_CONNECTION_STRING = "InstrumentationKey=d7c982d9-221f-4bf8-b4be-93ae54703f5f;IngestionEndpoint=https://centralus-2.in.applicationinsights.azure.com/;LiveEndpoint=https://centralus.livediagnostics.monitor.azure.com/;ApplicationId=5bd92c67-500e-4d3d-b282-80680dfc9b20"
 
 _TRACK_PATH = "/v2/track"
+
+# Static salt to prevent cross-system correlation of hashed user IDs.
+_USER_HASH_SALT = "fabric-jumpstart-telemetry-v1"
+
+_FABRIC_API_SCOPE = "https://api.fabric.microsoft.com/.default"
 
 
 def _parse_connection_string(conn_str: str) -> tuple[str, str]:
@@ -49,13 +55,47 @@ def _get_connection_string() -> Optional[str]:
     )
 
 
+def _hash_user_id(oid: str) -> str:
+    """Compute a salted SHA-256 hash of an Azure AD object ID.
+
+    The static salt ensures this hash cannot be correlated with the same
+    OID hashed in other telemetry systems.
+    """
+    return hashlib.sha256(f"{_USER_HASH_SALT}{oid}".encode("utf-8")).hexdigest()
+
+
+def _resolve_user_hash() -> Optional[str]:
+    """Best-effort resolution of a hashed user identifier from the auth token.
+
+    Returns a salted SHA-256 hash of the ``oid`` claim in the user's JWT,
+    or None if the hash cannot be determined (credential unavailable,
+    token not a JWT, missing ``oid`` claim, etc.).
+
+    This function is designed to run on the telemetry daemon thread and
+    never raises.
+    """
+    try:
+        from .utils import _decode_jwt, resolve_token_credential
+
+        credential = resolve_token_credential()
+        token_obj = credential.get_token(_FABRIC_API_SCOPE)
+        payload = _decode_jwt(token_obj.token)
+        oid = payload.get("oid")
+        if oid:
+            return _hash_user_id(oid)
+    except Exception:
+        pass
+    return None
+
+
 def _build_envelope(
     ikey: str,
     event_name: str,
     properties: dict[str, str],
+    user_hash: Optional[str] = None,
 ) -> dict:
     """Build an Application Insights Track API envelope."""
-    return {
+    envelope: dict = {
         "name": "Microsoft.ApplicationInsights.Event",
         "time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "iKey": ikey,
@@ -68,6 +108,9 @@ def _build_envelope(
             },
         },
     }
+    if user_hash:
+        envelope["tags"] = {"ai.user.id": user_hash}
+    return envelope
 
 
 def _send(endpoint: str, payload: bytes) -> None:
@@ -84,11 +127,50 @@ def _send(endpoint: str, payload: bytes) -> None:
         pass
 
 
+def _track_install_worker(
+    conn_str: str,
+    jumpstart_id: str,
+    jumpstart_numeric_id: int,
+    jumpstart_type: str,
+    status: str,
+    duration_seconds: Optional[float] = None,
+    install_mode: Optional[str] = None,
+) -> None:
+    """Worker that resolves user hash and sends the telemetry event."""
+    endpoint, ikey = _parse_connection_string(conn_str)
+    if not ikey:
+        return
+
+    user_hash = _resolve_user_hash()
+
+    properties: dict[str, str] = {
+        "jumpstart_id": jumpstart_id,
+        "jumpstart_numeric_id": str(jumpstart_numeric_id),
+        "type": jumpstart_type,
+        "status": status,
+    }
+    if duration_seconds is not None:
+        properties["duration_seconds"] = str(duration_seconds)
+    if install_mode:
+        properties["install_mode"] = install_mode
+
+    envelope = _build_envelope(
+        ikey=ikey,
+        event_name="jumpstart_installed",
+        properties=properties,
+        user_hash=user_hash,
+    )
+    payload = json.dumps(envelope).encode("utf-8")
+    _send(endpoint, payload)
+
+
 def track_install(
     jumpstart_id: str,
     jumpstart_numeric_id: int,
     jumpstart_type: str,
     status: str,
+    duration_seconds: Optional[float] = None,
+    install_mode: Optional[str] = None,
 ) -> None:
     """Record a jumpstart install event (fire-and-forget).
 
@@ -100,23 +182,12 @@ def track_install(
         if not conn_str:
             return
 
-        endpoint, ikey = _parse_connection_string(conn_str)
-        if not ikey:
-            return
-
-        envelope = _build_envelope(
-            ikey=ikey,
-            event_name="jumpstart_installed",
-            properties={
-                "jumpstart_id": jumpstart_id,
-                "jumpstart_numeric_id": str(jumpstart_numeric_id),
-                "type": jumpstart_type,
-                "status": status,
-            },
+        t = threading.Thread(
+            target=_track_install_worker,
+            args=(conn_str, jumpstart_id, jumpstart_numeric_id, jumpstart_type, status),
+            kwargs={"duration_seconds": duration_seconds, "install_mode": install_mode},
+            daemon=True,
         )
-        payload = json.dumps(envelope).encode("utf-8")
-
-        t = threading.Thread(target=_send, args=(endpoint, payload), daemon=True)
         t.start()
     except Exception:
         pass

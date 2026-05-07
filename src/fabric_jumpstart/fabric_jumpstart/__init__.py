@@ -1,4 +1,7 @@
 from .core import jumpstart as _Jumpstart
+import os
+
+os.environ["FABRIC_CICD_VERSION_CHECK_DISABLED"] = "1"
 
 # Singleton instance used for convenience imports
 jumpstart = _Jumpstart()

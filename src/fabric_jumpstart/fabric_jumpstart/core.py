@@ -228,6 +228,7 @@ class jumpstart:
 
         # Initialize live rendering if not in unattended mode
         import time as _time
+        _telemetry_start_time = _time.monotonic()
         try:
             if not unattended:
                 from IPython.display import HTML as _HTML
@@ -282,6 +283,7 @@ class jumpstart:
                 
                 # If conflicts remain unresolved, render UI and fail
                 if remaining_conflicts:
+                    conflict_already_rendered = True
                     conflict_html = ConflictUI.render_conflict_html(
                         remaining_conflicts,
                         instance_name,
@@ -300,7 +302,6 @@ class jumpstart:
                         err=None,
                         extra_html=conflict_html
                     )
-                    conflict_already_rendered = True
                     
                     # Raise error to mark cell as failed
                     raise RuntimeError(f"Conflicting items detected: {', '.join(remaining_conflicts)}")
@@ -320,11 +321,15 @@ class jumpstart:
                 entry_url = installer.generate_entry_url(target_ws, resolved_prefix)
 
                 # Telemetry: record successful install
+                install_mode = "update" if had_conflicts and installer.update_existing else "new"
+
                 track_install(
                     jumpstart_id=name,
                     jumpstart_numeric_id=config.get("id", 0),
                     jumpstart_type=config.get("type", ""),
                     status="success",
+                    duration_seconds=round(_time.monotonic() - _telemetry_start_time, 1),
+                    install_mode=install_mode,
                 )
                 
                 # Render success — animate progress bar to 100% first
@@ -388,12 +393,18 @@ class jumpstart:
                     return status_html
                     
             except Exception as e:
-                track_install(
-                    jumpstart_id=name,
-                    jumpstart_numeric_id=config.get("id", 0),
-                    jumpstart_type=config.get("type", ""),
-                    status="failure",
-                )
+                # Skip telemetry for conflict-aborted installs (never reached deploy)
+                if not conflict_already_rendered:
+                    fail_install_mode = "update" if installer.had_conflicts and installer.update_existing else "new"
+
+                    track_install(
+                        jumpstart_id=name,
+                        jumpstart_numeric_id=config.get("id", 0),
+                        jumpstart_type=config.get("type", ""),
+                        status="failure",
+                        duration_seconds=round(_time.monotonic() - _telemetry_start_time, 1),
+                        install_mode=fail_install_mode,
+                    )
                 logger.exception(f"Failed to install jumpstart '{name}'")
                 error_text = str(e).strip() or e.__class__.__name__
                 

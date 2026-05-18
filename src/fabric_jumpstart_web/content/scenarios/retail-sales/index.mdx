@@ -11,29 +11,7 @@ This jumpstart deploys an end-to-end **real-time retail analytics stack** into y
 
 </Callout>
 
-## Install
-
-```python
-import fabric_jumpstart as jumpstart
-
-# Renders the catalog so you can browse other Jumpstarts too
-jumpstart.list()
-
-# Deploy this demo into your current workspace
-jumpstart.install("retail-sales")
-```
-
-Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
-
-```python
-jumpstart.install("retail-sales", workspace_id="<workspace_guid>")
-```
-
-<Callout>
-
 ⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to start the emulator and open the dashboard.
-
-</Callout>
 
 ## What Gets Deployed
 
@@ -61,7 +39,7 @@ while(True):
 
 <Callout>
 
-⚠️ The emulator loops indefinitely. **Stop the notebook session** (or interrupt the cell) when you are done exploring — otherwise it will keep ingesting events and consuming CU.
+⚠️ The emulator loops indefinitely while the notebook session is active. **Stop the notebook session** (or interrupt the cell) when you are done exploring — otherwise it will keep ingesting events and consuming CUs.
 
 </Callout>
 

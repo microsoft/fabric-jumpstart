@@ -11,29 +11,7 @@ This jumpstart deploys an end-to-end **On-Premises Data Gateway observability st
 
 </Callout>
 
-## Install
-
-```python
-import fabric_jumpstart as jumpstart
-
-# Renders the catalog so you can browse other Jumpstarts too
-jumpstart.list()
-
-# Deploy this accelerator into your current workspace
-jumpstart.install("fpm-gateway-monitoring")
-```
-
-Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
-
-```python
-jumpstart.install("fpm-gateway-monitoring", workspace_id="<workspace_guid>")
-```
-
-<Callout>
-
 ⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes inside Fabric for the walkthrough — plus a separate one-time install of the PowerShell uploader on each On-Premises Data Gateway machine you want to monitor.
-
-</Callout>
 
 ## What Gets Deployed
 

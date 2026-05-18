@@ -11,29 +11,7 @@ This jumpstart deploys a **Fabric tenant audit pipeline** into your workspace. A
 
 </Callout>
 
-## Install
-
-```python
-import fabric_jumpstart as jumpstart
-
-# Renders the catalog so you can browse other Jumpstarts too
-jumpstart.list()
-
-# Deploy this accelerator into your current workspace
-jumpstart.install("fpm-activity-events")
-```
-
-Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
-
-```python
-jumpstart.install("fpm-activity-events", workspace_id="<workspace_guid>")
-```
-
-<Callout>
-
 ⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to register a service principal, drop its credentials into a Key Vault, run the setup notebook, and enable the pipeline schedule.
-
-</Callout>
 
 ## What Gets Deployed
 

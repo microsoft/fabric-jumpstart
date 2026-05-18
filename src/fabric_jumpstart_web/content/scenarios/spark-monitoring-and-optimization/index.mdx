@@ -11,29 +11,7 @@ This jumpstart deploys an end-to-end **Spark observability stack** into your Mic
 
 </Callout>
 
-## Install
-
-```python
-import fabric_jumpstart as jumpstart
-
-# Renders the catalog so you can browse other Jumpstarts too
-jumpstart.list()
-
-# Deploy this accelerator into your current workspace
-jumpstart.install("spark-monitoring-and-optimization")
-```
-
-Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
-
-```python
-jumpstart.install("spark-monitoring-and-optimization", workspace_id="<workspace_guid>")
-```
-
-<Callout>
-
 ⏱️ **Deploy time: ~3 minutes.** Plan another ~20 minutes to walk through the dashboard, run the simulator, and exercise the Spark Advisor.
-
-</Callout>
 
 ## What Gets Deployed
 
@@ -76,7 +54,7 @@ The **Setup notebook** is the entry point. It does three things:
 
 ### Generate workload — the simulator
 
-`Vasa Spark Simulator Pipeline` runs a sequential `ForEach` over `@range(1, 30)` (30 jobs), invoking `Vasa Spark Simulator` each time with the `actual_job` parameter. The pipeline also passes `num_rows` and `duration_minutes` parameters, but the notebook hard-codes its own values (`NUM_ROWS = 1_000_000`, `DURATION_MINUTES = 2`) and ignores those parameters. After the loop the pipeline also runs the clinical-trial workload pair: the upstream ` Clinical Trial Results Orginial` notebook and `Clinical Trial Results Optimized`. Trigger the pipeline once and you get a representative mix of telemetry for the dashboard and recommender. Or run each notebook individually if you want to control the comparison timing yourself.
+`Vasa Spark Simulator Pipeline` runs a sequential `ForEach` over `@range(1, 30)` (30 jobs), invoking `Vasa Spark Simulator` each time with the `actual_job` parameter. After the loop the pipeline also runs the clinical-trial workload pair: the upstream ` Clinical Trial Results Orginial` notebook and `Clinical Trial Results Optimized`. Trigger the pipeline once and you get a representative mix of telemetry for the dashboard and recommender. Or run each notebook individually if you want to control the comparison timing yourself.
 
 | Notebook | Purpose |
 |----------|---------|

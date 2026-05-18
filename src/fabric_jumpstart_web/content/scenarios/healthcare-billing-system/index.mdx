@@ -11,29 +11,7 @@ This jumpstart deploys an end-to-end **real-time patient-billing analytics stack
 
 </Callout>
 
-## Install
-
-```python
-import fabric_jumpstart as jumpstart
-
-# Renders the catalog so you can browse other Jumpstarts too
-jumpstart.list()
-
-# Deploy this demo into your current workspace
-jumpstart.install("healthcare-billing-system")
-```
-
-Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
-
-```python
-jumpstart.install("healthcare-billing-system", workspace_id="<workspace_guid>")
-```
-
-<Callout>
-
 ⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to start the emulator and explore the dashboard.
-
-</Callout>
 
 ## What Gets Deployed
 
@@ -47,7 +25,7 @@ jumpstart.install("healthcare-billing-system", workspace_id="<workspace_guid>")
 
 <Callout>
 
-🔄 **`DemosEH` is shared.** Because the Eventhouse logical name (`DemosEH`) is reused across the `ecotte/fabric-rti-demos` repo, installing multiple rti-demos jumpstarts into the same workspace will land their KQL databases side-by-side inside one Eventhouse — no duplicate Eventhouse provisioned, no extra steady-state cost.
+🔄 **`DemosEH` is shared.** Because the Eventhouse logical name (`DemosEH`) is reused across other demos, installing multiple RTI Jumpstarts demos into the same workspace will land their KQL databases side-by-side inside one Eventhouse — no duplicate Eventhouse provisioned, no extra steady-state cost.
 
 </Callout>
 
@@ -143,7 +121,7 @@ The KQL database (`HealthcareBillingSystem`) lives inside the shared `DemosEH` E
 
 <Callout>
 
-💰 The Eventhouse is the main steady-state cost driver. The emulator emits 50 events every ~1 second during catch-up and every 80 seconds at steady state, which is tiny — but the dashboard's 1-second auto-refresh keeps the KQL engine warm. **Stop the emulator notebook when you're done exploring**, or it will keep ingesting indefinitely. Eventstream throughput is set to `Low` and retention to 1 day, so spend stays bounded even if you forget.
+💰 The Eventhouse is the main steady-state cost driver. The emulator emits 50 events every ~1 second during catch-up and every 80 seconds at steady state, which is tiny — but the dashboard's 1-second auto-refresh keeps the KQL engine warm. **Stop the emulator notebook when you're done exploring**, or it will keep producing events as long as the notebook session is active. Eventstream throughput is set to `Low` and retention to 1 day, so spend stays bounded even if you forget.
 
 </Callout>
 

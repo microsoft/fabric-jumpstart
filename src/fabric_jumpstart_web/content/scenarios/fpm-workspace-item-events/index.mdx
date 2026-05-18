@@ -11,29 +11,7 @@ This jumpstart deploys a **tenant-wide audit feed for Fabric item lifecycle even
 
 </Callout>
 
-## Install
-
-```python
-import fabric_jumpstart as jumpstart
-
-# Renders the catalog so you can browse other Jumpstarts too
-jumpstart.list()
-
-# Deploy this accelerator into your current workspace
-jumpstart.install("fpm-workspace-item-events")
-```
-
-Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
-
-```python
-jumpstart.install("fpm-workspace-item-events", workspace_id="<workspace_guid>")
-```
-
-<Callout>
-
 ⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to verify ingestion, query the parsed table, and (optionally) follow the upstream landing page at [aka.ms/fabric-platform-monitoring](https://aka.ms/fabric-platform-monitoring) for end-to-end guidance.
-
-</Callout>
 
 ## What Gets Deployed
 

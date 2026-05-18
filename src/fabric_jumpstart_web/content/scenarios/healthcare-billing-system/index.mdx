@@ -1,0 +1,146 @@
+---
+title: Real-Time Healthcare Billing System
+toc: true
+---
+
+This jumpstart deploys an end-to-end **real-time patient-billing analytics stack** into your Microsoft Fabric workspace — a Python event emulator that streams synthetic Contoso Health Systems billing events into an Eventstream, a shared Eventhouse-backed KQL database that lands every event in a `bronze_contoso_health` table, and a Real-Time Dashboard with curated tiles for collections, claims rejections, daily patient counts, and outstanding balances by insurance type.
+
+<Callout>
+
+🩺 Watch a hospital revenue-cycle stream come to life. The emulator pushes synthetic billing events for ten departments across five payers every second; the dashboard surfaces collection rates, rejection rates, and outstanding balances in near-real-time — all with a one-line install.
+
+</Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to start the emulator and explore the dashboard.
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `HealthcareBillingDataEmulator` | Notebook | The producer. Installs `azure-eventhub==5.11.5` and `semantic-link-labs==0.13.2`, looks up the Eventstream's `CustomEndpoint-Source` connection string via `sempy_labs.eventstream`, then loops forever, emitting one event per (department × payer) every ~1 second of simulated time (back-dated 3 days at start). |
+| `HealthcareBillingDataStream` | Eventstream | Source: a `CustomEndpoint` named `CustomEndpoint-Source`. Destination: the shared `DemosEH` Eventhouse, table `bronze_contoso_health`, mode `DirectIngestion`, mapping `bronze_contoso_health_mapping`. |
+| `DemosEH` | Eventhouse | **Shared across the `fabric-rti-demos` jumpstarts** — the same Eventhouse is reused by sibling demos in the repo. This jumpstart provisions it (if missing) and adds its KQL database below; other rti-demos jumpstarts add their own databases beside it. |
+| `HealthcareBillingSystem` | KQLDatabase | The billing-specific KQL database inside `DemosEH`. Lands raw events in `bronze_contoso_health`; a `silver_contoso_health` table is populated by a transactional update policy running the `parse_constoso_health()` function, which projects per-event `Department`, `department_code`, `base_claims`, `Billed_Amount`, `Collection_Amount`, and `Claims_Rejections` columns out of the raw `sensor_data` dynamic. |
+| `HealthcareBillingReport` | KQLDashboard | Real-time dashboard with 1-second auto-refresh and a Time-range duration parameter. Tiles: Average Treatment Cost (daily), Daily Claims Closed, Claims Cycle Time by Department, Claims Approval Status, Monthly Billing by Insurance Company, Outstanding Claims Balance by Insurance Type, Daily Patient Count by Division, Overall Patient Satisfaction. |
+
+<Callout>
+
+🔄 **`DemosEH` is shared.** Because the Eventhouse logical name (`DemosEH`) is reused across other demos, installing multiple RTI Jumpstarts demos into the same workspace will land their KQL databases side-by-side inside one Eventhouse — no duplicate Eventhouse provisioned, no extra steady-state cost.
+
+</Callout>
+
+## How It Works
+
+### Producer — the data emulator
+
+`HealthcareBillingDataEmulator` is a Python notebook that simulates Contoso Health Systems' billing event stream. On run it:
+
+1. Installs the Event Hub SDK (`azure-eventhub==5.11.5`) and `semantic-link-labs==0.13.2`.
+2. Calls `sempy_labs.eventstream.get_eventstream_topology("HealthcareBillingDataStream")` to find the `CustomEndpoint-Source` and pull its primary connection string and Event Hub name — no secrets are hard-coded.
+3. Constructs an `EventHubProducerClient` from that connection string.
+4. Loops forever inside `simulate_hospital_data()`. Each iteration steps a virtual clock forward by 80 seconds (starting 3 days in the past so the dashboard is non-empty on first load), and for each of the **10 hospital departments** (Cardiology, Neurology, Oncology, Pediatrics, Radiology, Orthopedics, Emergency, Dermatology, Gastroenterology, Urology) it emits one event per **5 payer sources** (United Care-HMO, Medicare, Athens-HMO, Self Pay, Workers Comp) — 50 events per tick.
+
+Each event payload has shape:
+
+```json
+{
+  "timestamp": "2026-05-14 09:21:36",
+  "event_id": "<uuid>",
+  "source": "Medicare",
+  "sensor_data": {
+    "Department": "Cardiology",
+    "department_code": "DGBW",
+    "base_claims": 50,
+    "Billed_Amount": 187.0,
+    "Collection_Amount": 162.0,
+    "Claims_Rejections": 120
+  }
+}
+```
+
+`Billed_Amount` is mostly drawn from a $100–$300 uniform range with a 0.1% chance of jumping to $300–$500 (the long-tail "expensive event" mass). `Collection_Amount` falls in `[0.5 × Billed, 1.0 × Billed]` 95% of the time and exceeds the bill the other 5% (over-collection / refund-needed cases). `Claims_Rejections` is scaled higher for self-pay and workers-comp payers.
+
+<Callout>
+
+⏰ The simulator catches up from 3 days ago in fast-forward (1-second waits) until it reaches wall-clock now, then settles into one tick every 80 seconds. This means the dashboard has meaningful history within the first minute of running.
+
+</Callout>
+
+### Ingest — Eventstream to Eventhouse
+
+`HealthcareBillingDataStream` is the simplest possible Eventstream topology — one source, one destination, no operators:
+
+- **Source** `CustomEndpoint-Source` (type `CustomEndpoint`) — exposes the Event Hub endpoint the emulator pushes to.
+- **Destination** `Eventhouse` (type `Eventhouse`, mode `DirectIngestion`) — writes every event row into `bronze_contoso_health` in the `HealthcareBillingSystem` KQL database, using `bronze_contoso_health_mapping`.
+
+Eventstream throughput level is `Low` and retention is 1 day — appropriate for a demo and cheap to leave running.
+
+### Storage — bronze and silver in the shared Eventhouse
+
+The KQL database (`HealthcareBillingSystem`) lives inside the shared `DemosEH` Eventhouse:
+
+- **`bronze_contoso_health`** — raw landing table. One row per emitted event, with `sensor_data` as a dynamic column.
+- **`silver_contoso_health`** — parsed materialized table populated by a transactional update policy bound to `parse_constoso_health()`. Seven of the eight dashboard tiles read `silver_contoso_health` for the typed fields (`Department`, `department_code`, `base_claims`, `Billed_Amount`, `Collection_Amount`, `Claims_Rejections`). The eighth tile (**Monthly Billing by Insurance Company**) parses `bronze_contoso_health` inline and carries the original AI-generated KQL comment that shows the parse expression used to derive the same view.
+
+### Consume — the Real-Time Dashboard
+
+`HealthcareBillingReport` opens with 1-second auto-refresh and a "Time range" duration parameter (default: last 1 hour). The tiles, drawn directly from the eight queries in `RealTimeDashboard.json`:
+
+| Tile | Visual | What it shows |
+|------|--------|---------------|
+| Average Treatment Cost - Daily | Card | `avg(Billed_Amount) × 10` per day, dollar-formatted. |
+| Daily Claims Closed | Card | `sum((Billed_Amount - Claims_Rejections) × 10)` per day, dollar-formatted. |
+| Claims Cycle Time by Department | Stacked column | Daily `sum(Claims_Rejections)` grouped by payer source. |
+| Claims Approval Status | Line | 10-minute time series of total billed amount and total claims rejections. |
+| Monthly Billing by Insurance Company | Table | Per-event source, billed amount, collection amount, and collection percentage. |
+| Outstanding Claims Balance by Insurance Type | Column | `sum(Billed) - sum(Collected)` by payer source. |
+| Daily Patient Count by Division | Table | Per-department daily inpatient/outpatient totals with day-over-day delta. |
+| Overall Patient Satisfaction | Pie | Same `Billed - Collected` slice by source — proxy for unpaid balance. |
+
+## Try It — A 5-Minute Walkthrough
+
+1. **Install** — `jumpstart.install("healthcare-billing-system")` and wait for the ~2-minute deploy.
+2. **Start the emulator** — open `HealthcareBillingDataEmulator` and **Run all**. The notebook installs its dependencies, resolves the Eventstream endpoint, and starts emitting events; it does **not** stop on its own, so let it run while you explore.
+3. **Open the dashboard** — open `HealthcareBillingReport`. Within a minute the eight tiles populate from the back-dated history; thereafter they refresh every second.
+4. **Filter the time range** — change the "Time range" duration parameter at the top (last 15 minutes, last 6 hours, last 1 day) to see how rejections and collections shift across windows.
+5. **Inspect the raw data** — open the `HealthcareBillingSystem` KQL database and run `bronze_contoso_health | take 50` to see raw events, then `silver_contoso_health | take 50` to see the parsed columns the dashboard tiles consume.
+6. **Stop the emulator** — interrupt the notebook to halt ingestion when you're done; the dashboard keeps the last hour of data visible thanks to the default time range.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Replace the emulator with real billing events | Point your EHR / claims-system producer at the same Eventstream `CustomEndpoint-Source` — payload schema only needs `timestamp`, `event_id`, `source`, and a `sensor_data` object matching the bronze table fields. |
+| Add more payer sources or departments | Edit the `Hospital_Departments` dict or the payer list in `simulate_hospital_data()` inside the emulator notebook — no schema changes needed. |
+| Add an Activator alert | Add a Fabric Activator on a KQL query against `silver_contoso_health` that fires when `Claims_Rejections / Billed_Amount` crosses a threshold for a given department or payer. |
+| Add a Power BI report | Connect a DirectQuery Power BI model to the `HealthcareBillingSystem` KQL database for self-service slicers on top of the same `silver_contoso_health` view. |
+| Layer in a Data Agent | Add a Fabric Data Agent grounded on the KQL database with sample prompts like "which department had the worst collection rate yesterday?" — the parse logic in `silver_contoso_health` makes the schema agent-friendly. |
+| Reuse the shared Eventhouse | Because `DemosEH` is shared across `fabric-rti-demos` jumpstarts, you can install a sibling rti-demo into the same workspace and both KQL databases will sit side-by-side under one Eventhouse. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the main steady-state cost driver. The emulator emits 50 events every ~1 second during catch-up and every 80 seconds at steady state, which is tiny — but the dashboard's 1-second auto-refresh keeps the KQL engine warm. **Stop the emulator notebook when you're done exploring**, or it will keep producing events as long as the notebook session is active. Eventstream throughput is set to `Low` and retention to 1 day, so spend stays bounded even if you forget.
+
+</Callout>
+
+The Real-Time Dashboard cost is per-query, not per-minute, so leaving the page open isn't expensive — but each second of auto-refresh issues 8 KQL queries (one per tile). Lower the refresh interval in the dashboard's settings if you'd rather minimize that load.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventhouse + Real-Time Dashboard need it).
+- Permissions to create Notebook, Eventstream, Eventhouse, KQL Database, and KQL Dashboard items.
+- Outbound internet from the Fabric Spark session running `HealthcareBillingDataEmulator` — it pip-installs `azure-eventhub` and `semantic-link-labs` on first run.
+- No external Event Hub provisioning required — the Eventstream's `CustomEndpoint-Source` exposes its own endpoint and the emulator discovers it via `sempy_labs`.
+
+## Resources
+
+- [Source repository — ecotte/fabric-rti-demos @ v0.1.8 (healthcare-billing-system)](https://github.com/ecotte/fabric-rti-demos/tree/v0.1.8/healthcare-billing-system)
+- [Microsoft Fabric — Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Eventstream documentation](https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/overview)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Real-Time Dashboard documentation](https://learn.microsoft.com/fabric/real-time-intelligence/dashboard-real-time-create)
+- [Kusto Query Language (KQL) reference](https://learn.microsoft.com/kusto/query/)
+- [`semantic-link-labs` — sempy_labs.eventstream](https://github.com/microsoft/semantic-link-labs)
+- [`azure-eventhub` Python SDK](https://learn.microsoft.com/python/api/overview/azure/eventhub-readme)

@@ -1,0 +1,136 @@
+---
+title: Fabric Platform Monitoring - Capacity Events
+toc: true
+---
+
+This jumpstart deploys a **Fabric capacity observability stack** into your workspace — a one-cell setup notebook that subscribes every capacity you administer to the Fabric Capacity Events feed, an Eventstream that funnels those events into an Eventhouse-backed KQL database with three pre-built parsing functions and update policies, and a multi-page real-time KQL Dashboard that visualizes capacity utilization, throttling thresholds, overage, workload mix, and capacity state changes — all installed with one call.
+
+<Callout>
+
+⚡ Stop hunting for capacity-throttling root causes in the portal. This accelerator pipes live `Microsoft.Fabric.Capacity.Summary` and `Microsoft.Fabric.Capacity.State` events into KQL and surfaces them on a curated real-time dashboard — installed in about two minutes.
+
+</Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to run the setup notebook, watch the first events land, and open the dashboard.
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `Capacity Events Update Eventstream` | Notebook | One-cell bootstrap. Pip-installs `fabric-deployment-tool`, then calls `FabDeploymentTool().update_capcity_events_eventstream(workspace_name)` to subscribe every Fabric capacity where the executing user is an Administrator to the `CapacityEvents` Eventstream's `Capacity` CustomEndpoint. |
+| `Capacity Events Update Eventstream` | DataPipeline | Wraps the setup notebook in a single `TridentNotebook` activity named `Update Eventstream`. Ships with a **disabled** daily schedule at 01:00 UTC — enable it if you want the capacity subscription to refresh automatically as admin assignments change. |
+| `CapacityEvents` | Eventstream | Source: a `CustomEndpoint` named `Capacity` that the setup notebook subscribes capacities to. Two destinations: `CustomOutput` (a `CustomEndpoint` for downstream consumers) and `Eventhouse` via DirectIngestion into the `CapacityEventsRaw` table using the `CapacityEventsRaw_mapping` JSON mapping. Stream properties: `eventThroughputLevel: Low`, `retentionTimeInDays: 1` — sized for steady-state low-volume capacity events. |
+| `Fabric Platform Monitoring` | Eventhouse | Container for the KQL database below. The Eventhouse itself ships with default properties (`EventhouseProperties.json` is `{}`); per-database OneLake caching/storage on `Capacity Utilization` is `P365000D` (effectively unbounded) — actual aging is governed by the per-table retention policies described below. |
+| `Capacity Utilization` | KQLDatabase | All capacity telemetry lives here. Raw events land in `CapacityEventsRaw`; three update policies fan them out into typed tables. See "How It Works" below for the schema. |
+| `Capacity Monitoring` | KQLDashboard | Two-page real-time KQL Dashboard (auto-refresh every 30s) — `Capacity Summary` for the fleet-wide overview and `Capacity Details` for per-capacity drill-through. |
+
+## How It Works
+
+### Setup — subscribing your capacities to the Eventstream
+
+The **setup notebook** is the entry point. It runs two cells:
+
+1. `%pip install fabric-deployment-tool --quiet`.
+2. Resolves the current workspace name via `sempy.fabric.get_notebook_workspace_id()` and `fabric.list_workspaces(...)`, then calls `FabDeploymentTool().update_capcity_events_eventstream(workspace_name)`.
+
+That single call discovers every Fabric capacity where **the executing user is a Capacity Administrator**, then reconfigures the `CapacityEvents` Eventstream's `Capacity` CustomEndpoint to subscribe to events for exactly that set — adding new capacities and removing any the user no longer administers.
+
+<Callout>
+
+🛡️ Admin-only by design. Capacities the user can't administer are silently skipped — there is no opt-in list. To monitor a capacity you must run the setup notebook under an identity that is a Capacity Administrator on it. The same rule applies to the scheduled pipeline run: it executes under the pipeline owner's identity.
+
+</Callout>
+
+### Scheduling refresh with the pipeline
+
+`Capacity Events Update Eventstream` (DataPipeline) wraps the notebook in a single `TridentNotebook` activity called `Update Eventstream`. The shipped `.schedules` config defines a **daily 01:00 UTC** trigger that is **disabled by default** — enable it once you've decided which identity should own ongoing capacity discovery. Once enabled, every admin reassignment is picked up within 24 hours without any manual edit.
+
+### Ingest — Eventstream to Eventhouse
+
+`CapacityEvents` has:
+
+- **Source** — one `CustomEndpoint` named `Capacity`. The Fabric Capacity Events service emits CloudEvents (`Microsoft.Fabric.Capacity.Summary`, `Microsoft.Fabric.Capacity.State`) for each subscribed capacity.
+- **Destinations** — `CustomOutput` (a `CustomEndpoint`, in case you want to fan out to another consumer) and `Eventhouse` with `dataIngestionMode: DirectIngestion`, writing to `CapacityEventsRaw` using the `CapacityEventsRaw_mapping` JSON mapping.
+
+Every capacity event lands in `CapacityEventsRaw` within seconds, durably stored and KQL-queryable from the `Capacity Utilization` database.
+
+### Parse — raw events become typed, queryable tables
+
+`Capacity Utilization`'s `DatabaseSchema.kql` defines four tables and three parsing functions. The raw table has a short, hot retention; the parsed tables are tuned for two years of analytics.
+
+| Table | What's in it | Retention | Hot cache |
+|-------|--------------|-----------|-----------|
+| `CapacityEventsRaw` | The raw CloudEvent envelope — `specversion`, `source`, `time`, `id`, `subject`, `dataschemaversion`, `type`, and a dynamic `data` payload. Folder `Raw`. | 1 hour | 1 day |
+| `CapacitySummary` | Typed projection of `Microsoft.Fabric.Capacity.Summary` events — base/timepoint CU, CU-ms and CU-seconds, interactive/background utilization, preview utilization, overage CU-ms (total / added / burndown / billing limit), throttling thresholds (interactive delay, interactive reject, background reject), and the `capacityUnitUtilizationBreakdown` payload. | 730 days | 90 days |
+| `CapacityState` | Typed projection of `Microsoft.Fabric.Capacity.State` events — `transitionTime`, `capacityState`, `stateChangeReason`. | 730 days | 90 days |
+| `CapacityWorkloadSummary` | `mv-expand`ed workload-level breakdown extracted from the `capacityUnitUtilizationBreakdown` payload on summary events — `workloadKind`, `interactiveCU`, `backgroundCU`, `interactivePreviewCU`, `backgroundPreviewCU` per workload. | (uses database default) | (uses database default) |
+
+The three parse functions live in the `UpdatePolicyFunctions` folder and are bound as **transactional update policies** on the three destination tables (`CapacitySummary`, `CapacityState`, `CapacityWorkloadSummary`), each with `CapacityEventsRaw` as the source:
+
+- `parse_CapacityEventsSummary()` — filters `type == "Microsoft.Fabric.Capacity.Summary"`, projects typed columns, and derives `timepointCapacityUnits = baseCapacityUnits * 30` and `capacityUnitSecond = capacityUnitMs / 1000.0`.
+- `parse_CapacityEventsState()` — filters `type == "Microsoft.Fabric.Capacity.State"` and projects the state-transition fields.
+- `parse_CapacityEventsWorkloadSummary()` — filters summary events that have a non-empty `capacityUnitUtilizationBreakdown`, then `mv-expand`s the per-workload utilization rows.
+
+The result: anything you write into `CapacityEventsRaw` from the Eventstream is automatically and transactionally fanned out into the three typed tables — no orchestration needed.
+
+<Callout>
+
+📦 `CapacityEventsRaw` keeps data for **only one hour** by design — the typed tables are the long-term store. If you need to re-parse history you can lower `SoftDeletePeriod` on the raw table or replay from the `CustomOutput` Eventstream destination.
+
+</Callout>
+
+### Consume — the Capacity Monitoring dashboard
+
+`Capacity Monitoring` is a two-page KQL Dashboard with auto-refresh every 30 seconds, sourced from the `Capacity Utilization` database.
+
+- **`Capacity Summary`** — fleet-wide view. Tiles: `Capacities` (count card), `Capacity Overview` (table with drill-through to per-capacity pages), and `Capacity State`.
+- **`Capacity Details`** — per-capacity drill-through. Tiles: `Total CU in Time Range by Utilization Type`, `Utilization Type Distribution`, `Capacity Utilization`, `Overage`, `% Capacity Utilization (Current)`, `Throttling Threshold`, `Capacity State` (also appears here), `Workspaces With Activity`, `Workload Breakdown`, `% Interactive Delay Threshold`, `% Interactive Reject Threshold`, `% Background Reject Threshold`, and `Nº Workloads`.
+
+The dashboard exposes parameters for `Capacity Sku`, `Capacity`, `Workspace Name Search`, `Workspace Name Exact (Limit 1000)`, `Item`, and `Time range`, with `Capacity Id` flowing through cross-filters and drill-through pairs.
+
+## Try It — A Five-Minute Walkthrough
+
+1. **Install** — `jumpstart.install("fpm-capacity-events")` and wait for the ~2-minute deploy.
+2. **Bootstrap** — open `Capacity Events Update Eventstream` (the notebook) and run all cells. Make sure you're signed in as a Capacity Administrator on at least one capacity, otherwise the subscription will be empty.
+3. **Wait for ingestion** — within a minute or two, `CapacityEventsRaw` should start populating. Open `Capacity Utilization` and run `CapacityEventsRaw | take 10` and `CapacitySummary | take 10` to confirm raw events and typed projections.
+4. **Open the dashboard** — launch `Capacity Monitoring`, land on the `Capacity Summary` page, and pick a capacity. Click into a row to drill through to `Capacity Details`.
+5. **Schedule the refresh (optional)** — open the `Capacity Events Update Eventstream` pipeline and enable the daily 01:00 UTC schedule so the capacity subscription tracks admin changes automatically.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Track admin reassignments automatically | Enable the disabled daily schedule on `Capacity Events Update Eventstream` (pipeline). The pipeline executes the notebook under the pipeline owner's identity, so make sure that identity is a Capacity Administrator on the capacities you want to monitor. |
+| Fan out to another consumer | The Eventstream already exposes a `CustomOutput` (`CustomEndpoint`) destination — point Reflex, Spark structured streaming, or any other consumer at that endpoint without touching the Eventhouse path. |
+| Alert on capacity throttling | Add an Activator (Reflex) on a KQL query against `CapacitySummary` that fires when `utilizationInteractive`, `utilizationBackground`, or `processedOverageCapacityUnitsMs` cross a threshold — or against `CapacityState` for state-change notifications. |
+| Re-parse history | The raw table only retains 1 hour by default. To re-parse historical events lower the `SoftDeletePeriod` on `CapacityEventsRaw` *before* ingestion, or replay from the `CustomOutput` endpoint into a side table. |
+| Add per-workload chargeback views | Build a Power BI semantic model or KQL queryset over `CapacityWorkloadSummary` — it already breaks down `interactiveCU` / `backgroundCU` per `workloadKind`, which is the unit of chargeback most teams want. |
+| Increase event throughput | The Eventstream is provisioned with `eventThroughputLevel: Low`. If you subscribe many capacities or emit higher-volume custom events, bump it via the Eventstream settings. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the main steady-state cost driver — it ingests one summary event per capacity every 30 seconds for as long as the subscription is active. With the Eventstream sized to `eventThroughputLevel: Low` and a 1-hour raw retention on `CapacityEventsRaw`, idle cost is small — but the typed tables grow at ~2 years of retention by design. Trim `SoftDeletePeriod` on `CapacitySummary` / `CapacityState` if you don't need the full window.
+
+</Callout>
+
+The setup notebook and pipeline cost almost nothing — they only run when triggered, and the pipeline schedule ships disabled. The KQL Dashboard's auto-refresh is the second cost item to watch: every 30 seconds it re-runs every visible tile's KQL against the database.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventhouse + Real-Time Dashboard need it).
+- The user running the setup notebook (and the identity owning the pipeline, if scheduled) must be a **Capacity Administrator** on every capacity you want to monitor — there is no manual capacity list.
+- Permissions to create Eventstream, Eventhouse, KQL Database, KQL Dashboard, Notebook, and Data Pipeline items.
+- Outbound internet from the notebook session — it pip-installs `fabric-deployment-tool` on each run.
+
+## Resources
+
+- [Source repository — ecotte/fabric-platform-monitoring @ v0.2.3](https://github.com/ecotte/fabric-platform-monitoring/tree/v0.2.3/capacity-events/src/fabric-platform-monitoring)
+- [`fabric-deployment-tool` on PyPI](https://pypi.org/project/fabric-deployment-tool/)
+- [Microsoft Fabric — Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Eventstream overview](https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/overview)
+- [KQL update policies](https://learn.microsoft.com/kusto/management/update-policy)
+- [Kusto Query Language (KQL) reference](https://learn.microsoft.com/kusto/query/)
+- [Microsoft Fabric capacity metrics & throttling](https://learn.microsoft.com/fabric/enterprise/throttling)

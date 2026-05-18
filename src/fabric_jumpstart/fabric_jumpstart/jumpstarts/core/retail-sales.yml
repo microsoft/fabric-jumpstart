@@ -32,20 +32,31 @@ difficulty: Beginner
 last_updated: "2026-02-13"
 mermaid_diagram: |
   graph LR
-  
-    %% ON PREM
-    SRC[Retail Sales]:::U1F9FE
-  
-    %% FABRIC WORKSPACE
+
+    %% Synthetic POS producer. RetailSalesEmulator IS a real Fabric notebook
+    %% deployed inside the workspace (listed in items_in_scope) — it is drawn
+    %% outside the Fabric subgraph only to visually represent the "store POS
+    %% terminals" it simulates. The notebook uses azure-eventhub + semantic-link
+    %% labs to publish JSON sales events to the Eventstream's CustomEndpoint.
+    SIM[RetailSalesEmulator]:::U1F6D2
+
+    %% Real-Time Intelligence backbone deployed in the Fabric workspace
     subgraph Fabric:::Workspace
-      ES[RetailSalesStream]:::Eventstream
-      EH[RetailSalesDatabase]:::KQLDatabase
-      KD[RetailSalesDashboard]:::KQLDashboard
-      EM[RetailSalesEmulator]:::Notebook
       direction LR
+
+      ES[RetailSalesStream]:::Eventstream
+      EH[DemosEH]:::Eventhouse
+      KDB[RetailSales]:::KQLDatabase
+      DASH[RetailSalesDashboard]:::KQLDashboard
     end
-  
-    %% FLOWS
-    SRC -.-> ES
-    ES -.-> EH
-    EH <-.- KD
+
+    %% Producer to Eventstream (crosses workspace boundary)
+    SIM -.-> ES
+
+    %% Eventstream DirectIngestion into the SalesRaw table inside the
+    %% shared DemosEH Eventhouse / RetailSales KQL DB
+    ES --> EH
+    EH --> KDB
+
+    %% Consumption: dashboard queries SalesSilver / SalesGold in the KQL DB
+    KDB --> DASH

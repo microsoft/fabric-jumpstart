@@ -4,7 +4,7 @@ name: Fabric Platform Monitoring - Gateway Monitoring
 description: >-
   Monitor on-premises data gateway performance and usage with real-time data
   ingestion into Fabric. Track gateway health, query execution metrics, and
-  resource utilization through live dashboards and Power BI reports.
+  resource utilization through a live Power BI report.
 date_added: 03/15/2026
 workload_tags:
 - Real-Time Intelligence
@@ -22,9 +22,6 @@ items_in_scope:
 - Eventhouse
 - Eventstream
 - KQLDatabase
-- KQLDashboard
-- DataPipeline
-- VariableLibrary
 - SemanticModel
 - Report
 jumpstart_docs_uri: ''
@@ -38,11 +35,35 @@ difficulty: Beginner
 last_updated: "2026-02-03"
 mermaid_diagram: |
   graph LR
-    NB[gateway_monitoring_setup]:::Notebook --> DP[gateway_pipeline]:::DataPipeline
-    DP --> ES[gateway_events]:::Eventstream
-    ES --> EH[monitoring_eventhouse]:::Eventhouse
-    EH --> KDB[gateway_kqldb]:::KQLDatabase
-    KDB --> DASH[gateway_dashboard]:::KQLDashboard
-    KDB --> SM[gateway_model]:::SemanticModel
-    SM --> RPT[gateway_report]:::Report
-    VL[config_variables]:::VariableLibrary -.-> DP
+
+    %% External gateway host and local logs stay outside the Fabric workspace.
+    LOGS[Gateway Log Files]:::U1F4C4
+    GW[Gateway PowerShell Uploader]:::U1F5A5
+
+    subgraph Fabric:::Workspace
+      direction LR
+
+      NB_SETUP[Gateway Monitoring Setup]:::Notebook
+
+      ES_HB[GatewayMonitoringHeartbeat]:::Eventstream
+      ES_RPT[GatewayMonitoringReports]:::Eventstream
+
+      EH[Fabric Platform Monitoring]:::Eventhouse
+      KDB[Gateway Monitoring]:::KQLDatabase
+
+      SM[Gateway Monitoring]:::SemanticModel
+      RPT[Gateway Monitoring]:::Report
+    end
+
+    %% Setup notebook generates config.json with the Eventstream connection strings.
+    NB_SETUP -.-> GW
+
+    %% Runtime telemetry flow.
+    LOGS --> GW
+    GW -.-> ES_HB
+    GW -.-> ES_RPT
+    ES_HB --> EH
+    ES_RPT --> EH
+    EH --> KDB
+    KDB --> SM
+    SM --> RPT

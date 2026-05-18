@@ -1,0 +1,171 @@
+---
+title: Real-Time Retail Sales Monitoring
+toc: true
+---
+
+This jumpstart deploys an end-to-end **real-time retail analytics stack** into your Microsoft Fabric workspace — a notebook that emulates point-of-sale terminals streaming JSON sales events, an Eventstream that captures them at a `CustomEndpoint`, a shared Eventhouse with a Bronze/Silver/Gold KQL pipeline that flattens nested order lines on the fly, and a live KQL dashboard that visualizes orders, revenue, top/bottom stores, and a geographic map of sales — all installed with one call.
+
+<Callout>
+
+🛒 Watch retail sales arrive live. The emulator pushes synthetic order events to an Eventstream, an update policy materializes a flattened `SalesSilver` table the moment data lands, and a 1-second auto-refresh dashboard renders the result.
+
+</Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to start the emulator and open the dashboard.
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `RetailSalesEmulator` | Notebook | Synthetic POS producer. Installs `azure-eventhub==5.11.5` and `semantic-link-labs`, then uses `sempy_labs.eventstream` to look up the Eventstream's `CustomEndpoint-Source` connection string and pushes JSON sales events in an infinite `while(True)` loop via `EventHubProducerClient`. Each event has an `OrderKey` (GUID), `OrderDate`/`DeliveryDate` (Unix seconds), `CustomerKey`, `StoreKey`, and a `lines[]` array (`LineNumber`, `ProductKey`, `Quantity`, `UnitPrice`, `NetPrice`, `UnitCost`, `CurrencyCode`, `ExchangeRate`). |
+| `RetailSalesStream` | Eventstream | Source: a `CustomEndpoint` named `CustomEndpoint-Source`. Destination: the `DemosEH` Eventhouse, writing to the `SalesRaw` table via `DirectIngestion` with mapping `SalesRaw_mapping`. |
+| `DemosEH` | Eventhouse | Shared Eventhouse used by every jumpstart in the upstream `fabric-rti-demos` repo. Contains the `RetailSales` KQL database. |
+| `RetailSales` | KQLDatabase | All telemetry lives here. Three logical tiers: `SalesRaw` (Bronze — raw nested events), `SalesSilver` (Silver — flattened order lines, fed by an update policy), `SalesGold` (Gold — materialized view summarizing daily total sales). |
+| `RetailSalesDashboard` | KQLDashboard | Two-page real-time dashboard with auto-refresh set to **1 second**. Page 1 ("Sales Stats") shows total order count, line count, sales over time, total sales, last sale, and top/bottom 3 stores. Page 2 ("Map") plots sales by city using a `lookup` against an `external_table('customer_ex')` for lat/lng. |
+
+## How It Works
+
+### Produce — RetailSalesEmulator notebook
+
+The emulator is the entry point. Open it and run all cells; the last cell loops forever, generating one synthetic sale per iteration:
+
+```python
+while(True):
+    sale = generate_sale()
+    sendToEventsHub(jsonEvent=sale, producer=producer_events, process_id=1)
+```
+
+`generate_sale()` builds a random order with 1–10 line items, each with a random `ProductKey` (1–2517), `Quantity` (1–10), `UnitPrice` and `UnitCost`. The connection string is not hard-coded — the notebook calls `sempy_eventstream.get_eventstream_source_connection(...)` to resolve `RetailSalesStream`'s `CustomEndpoint-Source` connection string at runtime, so the emulator works the moment the Eventstream is provisioned.
+
+<Callout>
+
+⚠️ The emulator loops indefinitely while the notebook session is active. **Stop the notebook session** (or interrupt the cell) when you are done exploring — otherwise it will keep ingesting events and consuming CUs.
+
+</Callout>
+
+### Ingest — Eventstream to SalesRaw
+
+`RetailSalesStream` has a single destination: the `DemosEH` Eventhouse, table `SalesRaw`, mode `DirectIngestion`, with mapping rule `SalesRaw_mapping` that converts the Unix-seconds `OrderDate`/`DeliveryDate` into `datetime` via `DateTimeFromUnixSeconds` and keeps the `lines` array as a `dynamic` column:
+
+```kql
+.create-merge table SalesRaw
+    (OrderKey:guid, OrderDate:datetime, DeliveryDate:datetime,
+     CustomerKey:int, StoreKey:int, lines:dynamic)
+```
+
+### Transform — SalesRaw to SalesSilver via update policy
+
+The `RetailSales` KQL database defines a function and an update policy that fire on every batch landed into `SalesRaw`:
+
+```kql
+.create-or-alter function RetailSalesSilverTransformation() {
+    SalesRaw
+    | mv-expand lines
+    | project OrderKey, OrderDate, DeliveryDate, CustomerKey, StoreKey,
+              CurrencyCode = tostring(lines.CurrencyCode),
+              ExchangeRate = tolong(lines.ExchangeRate),
+              LineNumber   = tolong(lines.LineNumber),
+              NetPrice     = toreal(lines.NetPrice),
+              ProductKey   = tolong(lines.ProductKey),
+              Quantity     = tolong(lines.Quantity),
+              UnitCost     = toreal(lines.UnitCost),
+              UnitPrice    = toreal(lines.UnitPrice)
+}
+
+.alter table SalesSilver policy update
+  "[{\"IsEnabled\":true,\"Source\":\"SalesRaw\",
+     \"Query\":\"RetailSalesSilverTransformation()\",
+     \"IsTransactional\":true,\"PropagateIngestionProperties\":false}]"
+```
+
+Each `SalesRaw` row produces one `SalesSilver` row per order line. The policy is **transactional**, so an ingest into `SalesRaw` is rolled back if the transformation fails.
+
+### Aggregate — SalesGold materialized view
+
+```kql
+.create-or-alter materialized-view SalesGold on table SalesSilver {
+    SalesSilver
+    | summarize TotalSales = sum(UnitPrice * Quantity) by bin(OrderDate, 1d)
+}
+```
+
+`SalesGold` is queried like a table but maintained incrementally — daily revenue is precomputed and stays current as new events arrive.
+
+### Consume — RetailSalesDashboard
+
+The dashboard auto-refreshes every **1 second**. All tiles share a single base query named `SalesBase`:
+
+```kql
+SalesSilver
+| where OrderDate between (_startTime .. _endTime)
+```
+
+`_startTime`/`_endTime` come from a built-in **Time range** parameter (default: last 1 hour). The eight tiles are:
+
+| Page | Tile | Visual | What it computes |
+|------|------|--------|------------------|
+| Sales Stats | Sales Count | card | `count_distinct(OrderKey)` |
+| Sales Stats | Total Lines | card | `count` |
+| Sales Stats | Total Sales Last Day | card | `sum(Quantity * UnitPrice)` rounded |
+| Sales Stats | Last Sale | card | `arg_max(OrderDate, *)` total per latest order |
+| Sales Stats | Sales over time | timechart | `sum(TotalSales) by bin(OrderDate, 1m)` — cross-filtered by `CategoryName` |
+| Sales Stats | Top 3 stores by Sales | multistat | `top 3` stores by line count (`count()` over `SalesSilver`, one row per line item) |
+| Sales Stats | Bottom 3 stores by Sales | multistat | `bottom 3` stores by line count (`top 3 by count_ asc`) |
+| Map | Sales by City | map | `lookup external_table('customer_ex')` to join customer lat/lng, then `summarize TotalSales by City, Country, Continent, Latitude, Longitude` |
+
+<Callout>
+
+🗺️ The **Map** tile depends on an external table named `customer_ex` that resolves customer GPS coordinates. The schema for it is not deployed by this jumpstart — if you have not registered an `external_table('customer_ex')` in the `RetailSales` KQL DB pointing at a customer reference file (the upstream Wide-World-Importers / Contoso customer dataset is a common choice), that tile will return an error while the rest of the dashboard still works.
+
+</Callout>
+
+## Try It
+
+1. **Install** — `jumpstart.install("retail-sales")` and wait ~2 minutes.
+2. **Start producing events** — open `RetailSalesEmulator`, run all cells. The last cell is an infinite loop that publishes one synthetic order per iteration.
+3. **Open the dashboard** — open `RetailSalesDashboard`. Within seconds the **Sales Count**, **Total Lines**, and **Sales over time** tiles begin populating.
+4. **Verify the medallion** — open the `RetailSales` KQL database query window and run:
+   ```kql
+   SalesRaw   | count;
+   SalesSilver| count;
+   SalesGold
+   ```
+   `SalesSilver` count grows faster than `SalesRaw` (one row per order line); `SalesGold` shows daily roll-ups updating in real time.
+5. **Stop the emulator** — interrupt the notebook cell when you are done so it stops consuming CU.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Replace the emulator with a real POS feed | Keep `RetailSalesStream`'s `CustomEndpoint-Source`; point your POS service at the same Event Hub-compatible connection string the notebook resolves with `sempy_labs.eventstream`. The `SalesRaw_mapping` already handles the JSON shape. |
+| Enable the Map tile | Create the `customer_ex` external table in the `RetailSales` KQL DB pointing at a customer reference dataset that exposes `CustomerKey`, `City`, `Country`, `Continent`, `Latitude`, `Longitude`. |
+| Add product enrichment | Add a second external table (e.g. `product_ex`) and extend `RetailSalesSilverTransformation()` to enrich each line with `ProductName`, `CategoryName`, `Brand` so the dashboard's `CategoryName` cross-filter on the timechart actually filters. |
+| Add fraud / anomaly alerts | Add an Activator (Reflex) on a KQL query against `SalesSilver` that fires when a single `OrderKey` exceeds a revenue threshold or when one `StoreKey` has zero orders for N minutes. |
+| Hourly / monthly Gold roll-ups | Add additional materialized views beside `SalesGold` — for example `SalesByStoreHourly` summarizing `sum(UnitPrice*Quantity) by StoreKey, bin(OrderDate, 1h)`. |
+| Lower retention to cut cost | The `SalesRaw` retention is the steady-state cost driver. Shorten it with `.alter table SalesRaw policy retention "{ \"SoftDeletePeriod\": \"1.00:00:00\" }"` once `SalesSilver` is your source of truth. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the main steady-state cost driver — it ingests events for every iteration of the emulator loop. For a demo, **stop the `RetailSalesEmulator` notebook session after you are done exploring**, or it will continue producing events 24/7 and slowly consume CU. The dashboard's 1-second auto-refresh is also chatty; close the dashboard tab when you are not actively watching it.
+
+</Callout>
+
+`SalesGold` is a materialized view, not a table — it incurs maintenance cost relative to `SalesSilver` ingest volume, but querying it is much cheaper than re-aggregating `SalesSilver` for every dashboard refresh.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventhouse + Real-Time Dashboard need it).
+- Permissions to create Notebook, Eventstream, Eventhouse, KQL Database, and KQL Dashboard items.
+- Outbound internet from the Spark cluster running `RetailSalesEmulator` — it pip-installs `azure-eventhub==5.11.5` and `semantic-link-labs` from PyPI.
+
+## Resources
+
+- [Source repository — ecotte/fabric-rti-demos @ v0.1.8](https://github.com/ecotte/fabric-rti-demos/tree/v0.1.8/retail-sales)
+- [Microsoft Fabric — Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Eventstream `CustomEndpoint` source](https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/add-source-custom-app)
+- [Update policies in Kusto / Eventhouse](https://learn.microsoft.com/kusto/management/update-policy)
+- [Materialized views in Kusto / Eventhouse](https://learn.microsoft.com/kusto/management/materialized-views/materialized-view-overview)
+- [Kusto Query Language (KQL) reference](https://learn.microsoft.com/kusto/query/)

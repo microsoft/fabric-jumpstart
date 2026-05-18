@@ -3,8 +3,9 @@ logical_id: fpm-fabric-inventory
 name: Fabric Platform Monitoring - Fabric Inventory
 description: >-
   Extract and catalog your entire Fabric tenant inventory in a semi-structured
-  format for comprehensive visibility. Track workspaces, items, and
-  configuration details with automated pipelines and real-time KQL dashboards.
+  format for comprehensive visibility. Three pipeline-scheduled notebooks pull
+  from the Fabric Admin REST API into an Eventhouse-backed KQL database fronted
+  by a real-time dashboard.
 date_added: 03/15/2026
 workload_tags:
 - Real-Time Intelligence
@@ -19,7 +20,6 @@ source:
 items_in_scope:
 - Notebook
 - Eventhouse
-- Eventstream
 - KQLDatabase
 - KQLDashboard
 - DataPipeline
@@ -35,9 +35,38 @@ difficulty: Beginner
 last_updated: "2026-02-03"
 mermaid_diagram: |
   graph LR
-    NB[fabric_inventory_setup]:::Notebook --> DP[inventory_pipeline]:::DataPipeline
-    DP --> ES[inventory_events]:::Eventstream
-    ES --> EH[monitoring_eventhouse]:::Eventhouse
-    EH --> KDB[inventory_kqldb]:::KQLDatabase
-    KDB --> DASH[inventory_dashboard]:::KQLDashboard
-    VL[config_variables]:::VariableLibrary -.-> DP
+
+    %% Monitoring backbone deployed in the Fabric workspace
+    subgraph Fabric:::Workspace
+      direction LR
+
+      NB_SETUP[Fabric Inventory Setup]:::Notebook
+      VL[Fabric Platform Monitoring]:::VariableLibrary
+
+      DP_INV[Refresh Inventory]:::DataPipeline --> NB_INV[Monitoring Extraction Inventory]:::Notebook
+      DP_SCN[Refresh Scanner API]:::DataPipeline --> NB_SCN[Monitoring Extraction Scanner]:::Notebook
+      DP_REF[Refresh Refreshables]:::DataPipeline --> NB_REF[Monitoring Extraction Refreshables]:::Notebook
+
+      EH[Fabric Platform Monitoring]:::Eventhouse
+      KDB[Platform Inventory]:::KQLDatabase
+      DASH[Platform Monitoring]:::KQLDashboard
+    end
+
+    %% Setup writes Kusto URIs + Key Vault refs into the variable library
+    NB_SETUP -.-> VL
+
+    %% Library variables parameterize every pipeline run
+    VL -.-> DP_INV
+    VL -.-> DP_SCN
+    VL -.-> DP_REF
+
+    %% Ingest → KQL DB via direct streaming/queued ingestion
+    NB_INV --> KDB
+    NB_SCN --> KDB
+    NB_REF --> KDB
+
+    %% Eventhouse hosts the KQL DB
+    EH --- KDB
+
+    %% Consumption — the real-time dashboard reads from the KQL DB
+    KDB --> DASH

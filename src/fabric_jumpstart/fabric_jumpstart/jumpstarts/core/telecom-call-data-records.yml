@@ -32,20 +32,32 @@ difficulty: Beginner
 last_updated: "2026-03-03"
 mermaid_diagram: |
   graph LR
-  
-    %% ON PREM
-    SRC[Call Records]:::U1F4DE
-  
-    %% FABRIC WORKSPACE
+
+    %% Synthetic CDR producer — the TelecomCallDataRecordsEmulator notebook
+    %% is itself a deployed Fabric item, but conceptually it plays the role
+    %% of the external mobile-network producer. Shown outside for clarity.
+    SRC[Mobile Network CDRs]:::U1F4F1
+
+    %% Fabric workspace items deployed by the jumpstart
     subgraph Fabric:::Workspace
-      ES[TelecomCallDataRecordsStream]:::Eventstream
-      EH[TelecomCallDataRecordsDatabase]:::KQLDatabase
-      KD[TelecomCallDataRecordsDashboard]:::KQLDashboard
-      EM[TelecomCallDataRecordsEmulator]:::Notebook
       direction LR
+
+      EM[TelecomCallDataRecordsEmulator]:::Notebook
+      ES[TelecomCallDataRecordsStream]:::Eventstream
+      EH[DemosEH]:::Eventhouse
+      KDB[TelecomCallDataRecords]:::KQLDatabase
+      KD[TelecomCallDataRecordsDashboard]:::KQLDashboard
     end
-  
-    %% FLOWS
-    SRC -.-> ES
-    ES -.-> EH
-    EH <-.- KD
+
+    %% Producer → emulator notebook (the notebook stands in for the network)
+    SRC -.-> EM
+
+    %% Emulator sends events to the Eventstream's CustomEndpoint-Source
+    EM --> ES
+
+    %% Eventstream lands rows in the cdr_raw table via DirectIngestion
+    ES --> EH
+    EH --> KDB
+
+    %% Dashboard queries the KQL database (cdr_raw)
+    KDB --> KD

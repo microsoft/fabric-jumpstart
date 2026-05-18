@@ -1,0 +1,142 @@
+---
+title: Fabric Platform Monitoring - Workspace Item Events
+toc: true
+---
+
+This jumpstart deploys a **tenant-wide audit feed for Fabric item lifecycle events** — every time a Fabric item is created, updated, or deleted (success or failure) anywhere in your tenant, a CloudEvent lands in a Kusto table within seconds. It installs a `FabricWorkspaceItemEvents` Eventstream subscribed at tenant scope, an Eventhouse, and a KQL database with a raw landing table, an update policy, and a parsed `WorkspaceItemsEvents` table ready for KQL.
+
+<Callout>
+
+🛰️ Native platform feed, no polling. The Eventstream subscribes directly to Fabric's `FabricWorkspaceItemEvents` source — no service principal, no Key Vault, no scheduled extractor notebook. Events arrive in Kusto in seconds.
+
+</Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to verify ingestion, query the parsed table, and (optionally) follow the upstream landing page at [aka.ms/fabric-platform-monitoring](https://aka.ms/fabric-platform-monitoring) for end-to-end guidance.
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `WorkspaceItemEventsStream` | Eventstream | Tenant-scoped `FabricWorkspaceItemEvents` source filtered to six CloudEvent types (`ItemCreate`/`ItemUpdate`/`ItemDelete` × `Succeeded`/`Failed`). Two destinations — the Eventhouse (DirectIngestion to `WorkspaceItemEventsRaw`) and a `CustomEndpoint` for ad-hoc downstream consumers. Stream-level properties: `eventThroughputLevel: Low`, `retentionTimeInDays: 1`, `schemaMode: None` (configured in `eventstreamProperties.json`). |
+| `Fabric Platform Monitoring` | Eventhouse | Container for the KQL database below. The Eventhouse itself ships with default properties (`EventhouseProperties.json` is `{}`) — actual aging is governed by the per-table retention policies on the KQL Database. |
+| `Workspace Items Events` | KQLDatabase | A child of the Eventhouse. ReadWrite database with 100-year OneLake caching/storage period. Holds the raw ingest table, the parsing function, and the parsed events table — see *How It Works* for the schema. |
+
+<Callout>
+
+📦 The upstream source under `workspace-item-events/src/` contains **only** these three Fabric items. There is no setup notebook, no DataPipeline, no Dashboard, no Semantic Model. The wider monitoring landing page at `aka.ms/fabric-platform-monitoring` describes a larger architecture (dashboards, Activator, Data Agent, OrgApp) — those are documented extensions, not part of this accelerator's deployment. See [Extending the Accelerator](#extending-the-accelerator) for guidance.
+
+</Callout>
+
+## How It Works
+
+### Ingestion source — Fabric platform events
+
+The Eventstream is configured with a single source of type `FabricWorkspaceItemEvents`, scope `Tenant`, and the following six `includedEventTypes`:
+
+- `Microsoft.Fabric.ItemCreateSucceeded`
+- `Microsoft.Fabric.ItemCreateFailed`
+- `Microsoft.Fabric.ItemUpdateSucceeded`
+- `Microsoft.Fabric.ItemUpdateFailed`
+- `Microsoft.Fabric.ItemDeleteSucceeded`
+- `Microsoft.Fabric.ItemDeleteFailed`
+
+This is a managed platform connector — no service principal, Key Vault reference, or polling logic is needed. Fabric publishes CloudEvents directly into the stream as items mutate anywhere in the tenant.
+
+### Landing table and update policy
+
+The KQL Database ships with a `DatabaseSchema.kql` script that creates two tables, a JSON ingestion mapping, a parser function, and table policies. The relevant declarations are:
+
+| Object | Purpose |
+|--------|---------|
+| `WorkspaceItemEventsRaw` | Raw landing table. Columns mirror the CloudEvents envelope: `id` (guid), `datacontenttype`, `specversion`, `source` (guid), `time` (datetime), `subject`, `dataschemaversion`, `type`, `data` (dynamic). Stored under folder `raw`. Soft-delete retention 15 days, hot cache 1 day. |
+| `WorkspaceItemEventsRaw_mapping` | JSON ingestion mapping wired into the Eventstream destination — projects each CloudEvent field into the corresponding column. |
+| `parse_workspaceItemEvents()` | KQL function that flattens the `data` dynamic column into typed scalars: `workspaceId`, `workspaceName`, `itemId`, `itemName`, `itemKind`, `executingPrincipalId`, `executingPrincipalType`. |
+| `WorkspaceItemsEvents` | Parsed table populated by an **update policy** that runs `parse_workspaceItemEvents()` over every batch ingested into `WorkspaceItemEventsRaw` (`IsTransactional: true`, `PropagateIngestionProperties: true`). Soft-delete retention 730 days, hot cache 15 days. |
+
+The split keeps raw evidence around for 15 days (useful for debugging or schema changes) while letting the typed table live for two years for analytics.
+
+### Eventstream → Eventhouse wiring
+
+`WorkspaceItemEventsStream` has two destinations:
+
+- **`Eventhouse` (DirectIngestion)** — writes into the `Workspace Items Events` KQL database, table `WorkspaceItemEventsRaw`, using the `WorkspaceItemEventsRaw_mapping` ingestion mapping. The connection is named `WorkspaceEvents`.
+- **`Customendpoint`** — a `CustomEndpoint` destination with an empty schema, so any external consumer (a Function, a Logic App, another stream) can subscribe to the same firehose without going through Kusto.
+
+`compatibilityLevel: 1.1` is set on the stream and there are no transform operators — events flow through unmodified.
+
+### Embedded queryset
+
+The KQL database ships an `EmbeddedRealTimeQueryset` (a single empty tab pinned to the database). It's a property of the KQL DB, not a separate Fabric item — use it as your starter notepad for KQL queries against the two tables.
+
+## Try It — A 5-Minute Walkthrough
+
+1. **Install** — `jumpstart.install("fpm-workspace-item-events")` and wait for the ~2-minute deploy.
+2. **Generate an event** — create or rename any Fabric item (a new Lakehouse, a renamed Notebook) anywhere in the tenant. Within seconds a row should land in `WorkspaceItemEventsRaw`.
+3. **Inspect the raw table** — open the `Workspace Items Events` KQL database and run:
+
+   ```kql
+   WorkspaceItemEventsRaw
+   | take 10
+   ```
+
+4. **Query the parsed table** — the update policy populates `WorkspaceItemsEvents` automatically. Try:
+
+   ```kql
+   WorkspaceItemsEvents
+   | where time > ago(1h)
+   | summarize events = count() by itemKind, type
+   | order by events desc
+   ```
+
+5. **Look at failures** — filter on the `*Failed` event types to find items that errored during create/update/delete operations:
+
+   ```kql
+   WorkspaceItemsEvents
+   | where type endswith "Failed"
+   | project time, type, workspaceName, itemName, itemKind, executingPrincipalType
+   | order by time desc
+   ```
+
+6. **Tap the firehose elsewhere (optional)** — connect any consumer to `WorkspaceItemEventsStream`'s `Customendpoint` destination to receive the same events outside Kusto.
+
+## Extending the Accelerator
+
+The upstream landing page at [aka.ms/fabric-platform-monitoring](https://aka.ms/fabric-platform-monitoring) sketches a fuller picture — dashboards, Activator alerts, a Data Agent, an OrgApp — that build on top of this minimal core. Common extensions:
+
+| Extension | How |
+|-----------|-----|
+| Add a real-time dashboard | Create a KQLDashboard against `WorkspaceItemsEvents` — tile ideas: events-per-hour by `itemKind`, failure rate by `type`, top noisiest workspaces, lifecycle activity per `executingPrincipalType`. |
+| Add a Semantic Model + Report | Build a Power BI model on top of the KQL database for ad-hoc slicing of item lifecycle activity by workspace, user, or item kind. |
+| Fire alerts on failures | Add an Activator (Reflex) on a KQL query that filters `WorkspaceItemsEvents` to events whose `type` ends with `Failed` — route to Teams, email, or a custom webhook when failures spike. |
+| Ground a Data Agent | Point a Fabric Data Agent at `Workspace Items Events` so analysts can ask "which workspaces had the most delete operations last week?" in natural language. |
+| Tenant-wide governance log | Combine with the sibling `fpm-activity-events` accelerator (user activity audit) and `fpm-capacity-events` (capacity throttling/scaling) to build a single Eventhouse covering platform, audit, and capacity signals. |
+| Narrow the scope | The current source is tenant-scope. Switch `eventScope` to `Workspace` and set a `workspaceId` to limit ingest to a single workspace. |
+| Add or remove event types | The `includedEventTypes` filter is a six-item allow-list of the CloudEvent types Fabric currently emits for item lifecycle. Trim it to only the events you care about. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the dominant cost — but ingest volume is proportional to **tenant-wide item lifecycle activity**, not to data volume in any one workspace. For most tenants this is a modest, bursty stream rather than a continuous firehose.
+
+</Callout>
+
+- `eventThroughputLevel: Low` is configured on the Eventstream, which is appropriate for item lifecycle traffic (one event per item mutation).
+- The KQL DB's table policies cache only the **last 15 days** of the parsed `WorkspaceItemsEvents` table (and only 1 day of raw events) in hot storage; older data drops to standard storage, then drops out of OneLake at the configured retention (730 days parsed / 15 days raw).
+- The `Customendpoint` destination is free until you wire something to it.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventstream + Eventhouse + KQL Database require it).
+- Tenant-level permissions sufficient to subscribe to `FabricWorkspaceItemEvents` at tenant scope — the deploying principal must be allowed to read platform events across the tenant. (If you only have access to a single workspace, change the source's `eventScope` to `Workspace` before deploying.)
+- Permissions to create Eventstream, Eventhouse, and KQL Database items in the target workspace.
+
+## Resources
+
+- [Source repository — ecotte/fabric-platform-monitoring @ v0.2.3 — workspace-item-events](https://github.com/ecotte/fabric-platform-monitoring/tree/v0.2.3/workspace-item-events/src/fabric-platform-monitoring)
+- [Fabric Platform Monitoring landing page](https://aka.ms/fabric-platform-monitoring)
+- [Eventstream — Fabric Workspace Item Events source](https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/add-source-fabric-workspace-item-events)
+- [Fabric workspace monitoring with CloudEvents](https://learn.microsoft.com/fabric/fundamentals/workspace-monitoring-overview)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Kusto Query Language (KQL) reference](https://learn.microsoft.com/kusto/query/)
+- [Update policies in Kusto](https://learn.microsoft.com/kusto/management/update-policy)

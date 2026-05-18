@@ -1,0 +1,143 @@
+---
+title: Fabric Platform Monitoring - Gateway Monitoring
+toc: true
+---
+
+This jumpstart deploys an end-to-end **On-Premises Data Gateway observability stack** into your Microsoft Fabric workspace — two Eventstreams that receive heartbeat and report telemetry from a PowerShell uploader running on the gateway host, an Eventhouse-backed `Gateway Monitoring` KQL database that durably stores every event, and a DirectQuery Power BI semantic model + report with six built-in pages (Jobs, Job Details, Queries, Running Jobs, Gateways, System Counters) for live operational insight.
+
+<Callout>
+
+📡 Stop flying blind on your on-prem gateway. This accelerator ships a setup notebook that generates the gateway-side config, two Eventstreams that ingest heartbeat + report streams into an Eventhouse, and a ready-made Power BI report — all installed with one call. You still install a small PowerShell uploader on the gateway machine itself.
+
+</Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes inside Fabric for the walkthrough — plus a separate one-time install of the PowerShell uploader on each On-Premises Data Gateway machine you want to monitor.
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `Gateway Monitoring Setup` | Notebook | The entry point. Installs `ms-fabric-cli`, looks up the two Eventstreams' `CustomEndpoint` source connection strings via the Fabric CLI, and writes `./builtin/config.json` — the configuration file the gateway-side PowerShell uploader consumes. Six user-editable variables seed the config: `HeartbeatEnable`, `HeartbeatInterval`, `ReportSendInterval`, `ReportRetention`, `TenatId`, `AppId`. |
+| `GatewayMonitoringHeartbeat` | Eventstream | `CustomEndpoint` source named `Heartbeat`. Single destination: the Eventhouse, writing to the `GatewaysHeartbeat` table via DirectIngestion with mapping `GatewaysHeartbeat_mapping`. |
+| `GatewayMonitoringReports` | Eventstream | `CustomEndpoint` source named `Reports`. Single destination: the Eventhouse, writing to the `GatewayReports-Raw` table via DirectIngestion with mapping `GatewayReports-Raw_mapping`. |
+| `Fabric Platform Monitoring` | Eventhouse | Container for the KQL database below. |
+| `Gateway Monitoring` | KQLDatabase | All telemetry lives here. `GatewaysHeartbeat` and `GatewayReports-Raw` are the ingest tables; downstream KQL functions and views (`GatewayNodeStatusWithInfo`, `QueryExecutionUnified`, `QueryConnections`, `SystemCounters`) are what the semantic model queries. |
+| `Gateway Monitoring` | SemanticModel | DirectQuery Power BI model over the KQL database. Six query-group parameters — `KustoURL`, `KustoDB`, `DaysBack`, `DateToSearch`, `SelectedGateways`, `SelectedClusters` — drive four DirectQuery tables (`Gateway Node Info`, `Query Execution`, `Query Connections`, `System Counters`) plus import tables for `Calendar`, `Period`, `Execution Measures`, and the counter measure parameter. `Execution Measures` contains 18 measures for jobs, queries, durations, and disk I/O. |
+| `Gateway Monitoring` | Report | Power BI report bound to the semantic model. Six pages: **Jobs**, **Job Details** (drillthrough), **Queries**, **Running Jobs**, **Gateways**, **System Counters**. Page refresh is enabled on Jobs, Queries, and System Counters at 5 minutes, Running Jobs at 10 seconds, and Gateways at 30 seconds. |
+
+## How It Works
+
+### Setup — generating the gateway config
+
+The **Setup notebook** is the entry point. It does five things:
+
+1. `%pip install ms-fabric-cli --quiet`.
+2. Grabs a `pbi` token from `notebookutils.credentials` and exports it as `FAB_TOKEN` / `FAB_TOKEN_ONELAKE` so the Fabric CLI (`fab`) inherits the caller's identity.
+3. Resolves the IDs of `GatewayMonitoringHeartbeat.Eventstream` and `GatewayMonitoringReports.Eventstream` in the current workspace.
+4. Calls the Fabric REST API (`/workspaces/{id}/eventstreams/{id}/topology` and `/sources/{sid}/connection`) for each stream to read each `CustomEndpoint` source's `primaryConnectionString` (an EventHub-compatible connection string).
+5. Writes `./builtin/config.json` — a `GatewayLogUploadConfig` document containing the two connection strings, your `HeartbeatEnable / HeartbeatInterval / ReportSendInterval / ReportRetention` choices, a service-principal block (`TennatId`, `AppId`, `SecretText`), and a hard-coded gateway log path (`C:\Windows\ServiceProfiles\PBIEgwService\AppData\Local\Microsoft\On-premises data gateway`).
+
+<Callout>
+
+🛡️ The setup notebook does **not** wire your gateway. You install the PowerShell uploader and `config.json` on the On-Premises Data Gateway machine yourself — see the in-notebook checklist for the steps and the service-principal permissions required.
+
+</Callout>
+
+### Service principal requirements
+
+The uploader authenticates to Fabric with a service principal that **must** satisfy all three conditions called out in the setup notebook:
+
+- Fabric **Admin API access** (tenant-level setting).
+- **Member of the Fabric workspace** that holds this accelerator.
+- **Administrator of the On-Premises Data Gateway** itself.
+
+`AppId` goes into `config.json`. `SecretText` is left empty in the generated file — you populate it on the gateway machine, never check it in.
+
+### Runtime — gateway uploader to Eventstreams
+
+The PowerShell uploader runs on the gateway host (under an identity that can read `C:\Windows\ServiceProfiles\PBIEgwService\AppData\Local\Microsoft\On-premises data gateway`). On each tick:
+
+- Every `HeartbeatInterval` seconds it pushes a heartbeat message to the `GatewayMonitoringHeartbeat` Eventstream's `Heartbeat` CustomEndpoint.
+- Every `ReportSendInterval` seconds it tails the gateway log files, batches reports, and pushes them to the `GatewayMonitoringReports` Eventstream's `Reports` CustomEndpoint.
+- Reports older than `ReportRetention` days are aged out locally.
+
+### Ingest — Eventstream to Eventhouse
+
+Each Eventstream has a single Eventhouse destination configured for `DirectIngestion`. Heartbeats land in `Fabric Platform Monitoring → Gateway Monitoring → GatewaysHeartbeat` within seconds; reports land in `GatewayReports-Raw`. Update policies and KQL functions inside the database derive the curated views the semantic model consumes (`GatewayNodeStatusWithInfo`, `QueryExecutionUnified`, `QueryConnections`, `SystemCounters`).
+
+### Consume — the Power BI semantic model and report
+
+The `Gateway Monitoring` semantic model uses **DirectQuery** against the KQL DB over the `KustoURL` parameter. Four DirectQuery tables map to KQL views / functions:
+
+<Callout>
+
+⚠️ The source semantic model ships with a default authoring `KustoURL` value. After deployment, verify that `KustoURL` points to the query URI for your deployed `Fabric Platform Monitoring` Eventhouse before relying on the report.
+
+</Callout>
+
+| Table | Source | What's in it |
+|-------|--------|--------------|
+| `Gateway Node Info` | View `GatewayNodeStatusWithInfo` | One row per gateway node — cluster, machine, OS, cores, memory, status, last-seen times. |
+| `Query Execution` | Function `QueryExecutionUnified(DateToSearch, DaysBack, ...)` | Per-activity execution detail — start/end, duration, success, query text, spooling I/O, data source. |
+| `Query Connections` | Function `QueryConnections(DateToSearch, DaysBack, ...)` | Per-connection metadata — data source path joined by `QueryTrackingId` to `Query Execution`. |
+| `System Counters` | Function `SystemCounters(DateToSearch, DaysBack, ...)` | Per-counter min/avg/max aggregations — including the divide-by-cores CPU correction in `Avg./Max/Min Counter Value` measures. |
+| `Calendar` | Static M-query | Standard date dimension for time-intelligence. |
+
+`Execution Measures` ships 18 measures: `# Activities`, `# Nodes`, `# Queries`, `# Queries (DirectQuery)`, `# Queries (Refresh)`, `# Queries (success)`, `# Queries (errors)`, `# Queries (running)`, `# Jobs`, `Job Success`, `Duration (s)`, `Perc. 0.9 Query Duration (s)`, `Max. Query Duration (s)`, `Query Avg. Execution - DirectQuery (ms)`, `Query Avg. Execution - Refresh (ms)`, `Disk Read Avg. (byte/sec)`, `Disk Write Avg. (byte/sec)`, `Workspace ID`.
+
+The **report** has six pages:
+
+- **Jobs** — landing page, auto-refresh every 5 minutes, slicer-driven day range.
+- **Job Details** — drillthrough target. Select a row in Jobs and click **Get Job Details** to navigate filtered by `RootActivityId`.
+- **Queries** — per-query detail across the chosen window.
+- **Running Jobs** — jobs whose success status is "R" (computed by the `Job Success` measure).
+- **Gateways** — node-level inventory from `Gateway Node Info`.
+- **System Counters** — counter trends; `gatewaycpupercent` is auto-divided by `Logical Cores` so values are normalized.
+
+## Try It — A 5-Minute Walkthrough
+
+1. **Install** — `jumpstart.install("fpm-gateway-monitoring")` and wait for the ~2-minute deploy.
+2. **Generate the config** — open `Gateway Monitoring Setup`, set `HeartbeatInterval`, `ReportSendInterval`, `ReportRetention`, `TenatId`, `AppId` in cell 2, then run all cells. The notebook writes `./builtin/config.json` with the two Eventstream connection strings embedded.
+3. **Install the uploader on the gateway** — copy `config.json` to the On-Premises Data Gateway machine, fill in `ServicePrincipal.SecretText`, and start the PowerShell uploader as documented in the setup notebook's checklist.
+4. **Watch ingestion** — back in Fabric, open the `Gateway Monitoring` KQL database and run `GatewaysHeartbeat | top 10 by ingestion_time() desc` and `['GatewayReports-Raw'] | count` to confirm rows are landing.
+5. **Open the report** — open the `Gateway Monitoring` Power BI report. The Jobs page auto-refreshes every 5 minutes. Use the **Days Back** slicer to widen the window if you've just started ingesting, and verify the semantic model's `KustoURL` parameter if the visuals do not show your newly ingested rows.
+6. **Drill through** — select any row in the Jobs visual and click **Get Job Details** for the per-`RootActivityId` view.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Monitor more than one gateway cluster | Install the PowerShell uploader on each gateway machine with the same `config.json` — `GatewayObjectId` discriminates nodes in the data. `Gateway Node Info` and the `SelectedGateways / SelectedClusters` slicers light up automatically. |
+| Tune ingestion cadence | Re-run `Gateway Monitoring Setup` with different `HeartbeatInterval` / `ReportSendInterval` values and redeploy `config.json` to the gateway host. The defaults are 1 s heartbeat / 5 s reports / 10-day retention. |
+| Alert on gateway health | Add an Activator (Reflex) on a KQL query that fires when `GatewaysHeartbeat` rows stop arriving for a node, or when `# Queries (errors)` crosses a threshold over the last hour. |
+| Build a custom dashboard | Clone the report or build a KQL Dashboard directly on `Gateway Monitoring` — `QueryExecutionUnified`, `GatewayNodeStatusWithInfo`, and `SystemCounters` are the three workhorse query functions. |
+| Ship telemetry elsewhere | Add a second destination to either Eventstream (Lakehouse, Custom Endpoint, Activator) without changing the gateway-side uploader. |
+| Stream verbose logs too | The generated `config.json` includes a `VerboseLogSendInterval: 600` knob and a `Lakehouse` block (`UploadReports`, `UploadLogs`, `WorkspaceName`, `LakehouseName`) — set them to also archive raw log files into a Lakehouse for forensic analysis. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the steady-state cost driver — it ingests at the cadence you set (`HeartbeatInterval`, `ReportSendInterval`) for as long as the gateway uploader is running. Defaults of 1 s heartbeat + 5 s reports are fine for a demo but generate non-trivial CU on busy gateways; raise the intervals for production and let `ReportRetention` (10 days by default) age out old rows on the gateway side.
+
+</Callout>
+
+The semantic model uses **DirectQuery**, so every report page render hits the Eventhouse. Several pages also have automatic refresh enabled: Jobs, Queries, and System Counters refresh every 5 minutes, Running Jobs refreshes every 10 seconds, and Gateways refreshes every 30 seconds. If many users will leave the report open, consider switching to a scheduled-refresh import model on the high-traffic pages.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventstream + Eventhouse + Real-Time Dashboard require it).
+- Permissions to create Notebook, Eventstream, Eventhouse, KQL Database, Semantic Model, and Report items.
+- A **service principal** with: Fabric **Admin API** access; **Member** of the deployment workspace; **Administrator** of the On-Premises Data Gateway being monitored.
+- Access to the **On-Premises Data Gateway machine** — to install the PowerShell uploader, drop `config.json` (and the SP `SecretText`) on disk, and run the uploader under an identity that can read `C:\Windows\ServiceProfiles\PBIEgwService\AppData\Local\Microsoft\On-premises data gateway`.
+- Network egress from the gateway host to the EventHub-compatible endpoint URIs surfaced by each Eventstream's CustomEndpoint.
+
+## Resources
+
+- [Source folder — ecotte/fabric-platform-monitoring @ v0.2.3 (gateway-monitoring)](https://github.com/ecotte/fabric-platform-monitoring/tree/v0.2.3/gateway-monitoring/src/fabric-platform-monitoring)
+- [Fabric Platform Monitoring landing page](https://aka.ms/fabric-platform-monitoring)
+- [On-premises data gateway — overview](https://learn.microsoft.com/data-integration/gateway/service-gateway-onprem)
+- [On-premises data gateway — service principal admin](https://learn.microsoft.com/data-integration/gateway/service-gateway-service-principal)
+- [Fabric Eventstream — CustomEndpoint source](https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/add-source-custom-app)
+- [Eventhouse — Direct Ingestion from Eventstream](https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/add-destination-eventhouse)
+- [On-premises data gateway monitoring — CPU counters (referenced by the System Counters measure)](https://medium.com/microsoftazure/on-premises-data-gateway-monitoring-series-part-2-cpu-counters-99631a0a5b17)

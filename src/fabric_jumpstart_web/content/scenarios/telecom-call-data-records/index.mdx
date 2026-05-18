@@ -11,29 +11,7 @@ This jumpstart deploys an end-to-end **real-time Call Data Record (CDR) pipeline
 
 </Callout>
 
-## Install
-
-```python
-import fabric_jumpstart as jumpstart
-
-# Browse the catalog
-jumpstart.list()
-
-# Deploy this demo into your current workspace
-jumpstart.install("telecom-call-data-records")
-```
-
-Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
-
-```python
-jumpstart.install("telecom-call-data-records", workspace_id="<workspace_guid>")
-```
-
-<Callout>
-
 ⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to run the emulator and tour the dashboard.
-
-</Callout>
 
 ## What Gets Deployed
 

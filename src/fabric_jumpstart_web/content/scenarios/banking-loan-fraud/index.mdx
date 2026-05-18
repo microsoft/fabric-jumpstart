@@ -5,35 +5,7 @@ toc: true
 
 This jumpstart deploys a minimal **Real-Time Intelligence** stack into your Microsoft Fabric workspace for detecting suspicious loan-application activity as it happens. A synthetic event generator notebook posts banking loan clickstream events into an Eventstream's CustomEndpoint, the Eventstream lands them in an Eventhouse-backed KQL database, and a real-time KQL dashboard surfaces fraud rate, transaction volume, country/device/browser breakdowns, and status distribution — all updating live.
 
-<Callout>
-
 🏦 A 2-minute deploy and a 5-minute walkthrough: install, start the emulator, and watch the fraud-rate tile light up red as the generator injects suspicious transactions into the stream.
-
-</Callout>
-
-## Install
-
-```python
-import fabric_jumpstart as jumpstart
-
-# Renders the catalog so you can browse other Jumpstarts too
-jumpstart.list()
-
-# Deploy this accelerator into your current workspace
-jumpstart.install("banking-loan-fraud")
-```
-
-Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
-
-```python
-jumpstart.install("banking-loan-fraud", workspace_id="<workspace_guid>")
-```
-
-<Callout>
-
-⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to start the emulator notebook and explore the dashboard.
-
-</Callout>
 
 ## What Gets Deployed
 
@@ -132,7 +104,7 @@ The Fraud Percentage card has three colour rules: **green** ≤20%, **yellow** �
 
 <Callout>
 
-💰 The Eventhouse is the main cost driver. The emulator notebook **runs in an infinite loop** — leave it running and it streams ~1 event/second into the Eventhouse 24/7. Stop the notebook cell after exploring the demo, or capacity consumption will grow unbounded.
+💰 The Eventhouse is the main cost driver. The emulator notebook **runs in an infinite loop** for the duration of the notebook session — leave it running and it streams ~1 event/second into the Eventhouse 24/7. Stop the notebook cell after exploring the demo.
 
 </Callout>
 

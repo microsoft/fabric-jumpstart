@@ -68,7 +68,7 @@ All three extraction notebooks use `sempy_labs` as the API client. Inside a `lab
 
 ### Storage — the History/Current pattern
 
-Every entity is stored as a pair: a `*History` raw table (retention 730 days, hot cache 730 days) and a deduped current-state table. The Inventory notebook ingests rows via the **streaming** client (`KustoStreamingIngestClient`) and then runs a `.set-or-replace <Current> <| <History> | where scanTime > … | summarize arg_max(scanTime, *) by <key>` command to keep the current table in sync.
+Every entity is stored as a pair: a `*History` raw table (retention 730 days, hot cache 730 days) and a deduped current-state table. The Inventory notebook ingests rows via the **streaming** client (`KustoStreamingIngestClient`) and then runs a `.set-or-replace [Current] <| [History] | where scanTime > … | summarize arg_max(scanTime, *) by <key>` command to keep the current table in sync.
 
 The Scanner notebook does the same but with `.update table … delete delete_table append append_table with(distributed=true)` for `Workspaces`, `WorkspacesUsers`, `Items`, `SemanticModelDetails`, and `DatasourceInstance` (each in its own distributed transaction). `ItemsUsers` is handled separately via a paired `.delete table ItemsUsers records` + `.set-or-append ItemsUsers` pattern. A `cleanup_kql` cell then deletes records older than 7 days for any workspace whose state is `Deleted`.
 
@@ -119,7 +119,7 @@ Three pages, auto-refresh every 30 s:
 |-----------|-----|
 | Add the activity-events feed | Point the dashboard's `Activity Events` data source at your own Kusto DB of Fabric activity events, or install the companion `fpm-capacity-events` jumpstart and re-bind the source. |
 | Schedule the pipelines | Add Fabric pipeline schedules to `Refresh Inventory`, `Refresh Scanner API`, and `Refresh Refreshables`. The pipelines are decoupled so you can run Scanner hourly and Inventory daily, for example. |
-| Add your own tables | Drop new entities into the Inventory notebook following the existing `*_process(connection_info)` pattern: ingest into `<Entity>History`, then `.set-or-replace` into `<Entity>`. Apply 730-day retention to match the rest of the schema. |
+| Add your own tables | Drop new entities into the Inventory notebook following the existing `*_process(connection_info)` pattern: ingest into `[Entity]History`, then `.set-or-replace` into `[Entity]`. Apply 730-day retention to match the rest of the schema. |
 | Build custom reports | Connect Power BI in DirectQuery to the `Platform Inventory` KQL DB and start with the bundled `SemanticModel()` and `Dataflows()` functions for canonical projections. The bundled `Reports()` function joins to `ItemsLastView` from the companion `Activity Events` database (deployed by `fpm-activity-events`), so it returns nothing on a standalone install — deploy that jumpstart or replace the lookup before relying on `Reports()`. |
 | Detect drift | Add an Activator (Reflex) on a KQL query like `TenantSettings | where scanTime > ago(1d) and Enabled != prev(Enabled)` to alert on tenant-setting changes. |
 | Track sprawl | Use `Items | summarize Count=count() by itemType, scanTime | render timechart` to see item-type growth over time. |

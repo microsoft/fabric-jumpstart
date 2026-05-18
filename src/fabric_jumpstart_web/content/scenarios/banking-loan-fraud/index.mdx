@@ -1,0 +1,155 @@
+---
+title: Real-Time Banking Loan Fraud Detection
+toc: true
+---
+
+This jumpstart deploys a minimal **Real-Time Intelligence** stack into your Microsoft Fabric workspace for detecting suspicious loan-application activity as it happens. A synthetic event generator notebook posts banking loan clickstream events into an Eventstream's CustomEndpoint, the Eventstream lands them in an Eventhouse-backed KQL database, and a real-time KQL dashboard surfaces fraud rate, transaction volume, country/device/browser breakdowns, and status distribution — all updating live.
+
+<Callout>
+
+🏦 A 2-minute deploy and a 5-minute walkthrough: install, start the emulator, and watch the fraud-rate tile light up red as the generator injects suspicious transactions into the stream.
+
+</Callout>
+
+## Install
+
+```python
+import fabric_jumpstart as jumpstart
+
+# Renders the catalog so you can browse other Jumpstarts too
+jumpstart.list()
+
+# Deploy this accelerator into your current workspace
+jumpstart.install("banking-loan-fraud")
+```
+
+Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
+
+```python
+jumpstart.install("banking-loan-fraud", workspace_id="<workspace_guid>")
+```
+
+<Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to start the emulator notebook and explore the dashboard.
+
+</Callout>
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `BankingLoanFraudEmulator` | Notebook | Synthetic data generator. Pip-installs `azure-eventhub==5.11.5` and `semantic-link-labs`, uses `sempy_labs.eventstream` to look up the Eventstream's CustomEndpoint connection string, then continuously sends batches of JSON loan events (with a ~15% forced-fraud rate) into the stream via `EventHubProducerClient`. |
+| `BankingLoanFraudStream` | Eventstream | Source: a `CustomEndpoint` named `CustomEndpoint-Source`. Destination: the `DemosEH` Eventhouse, writing to the `bronze_banking` table via DirectIngestion using the `bronze_banking_mapping_1` JSON mapping. |
+| `DemosEH` | Eventhouse | Container for the KQL database below. Provisioned with `retentionTimeInDays: 1` and `eventThroughputLevel: Low` (see `EventhouseProperties.json`). |
+| `BankingLoanFraud` | KQLDatabase | ReadWrite database holding the single `bronze_banking` table. Schema: `customer_id`, `transaction_id`, `loan_amount`, `status`, `credit_score`, `timestamp`, `country`, `device_type`, `ip_address`, `browser`, `is_fraud_suspected`, `fraud_reasons` (dynamic array). Two ingestion mappings are created: `bronze_banking_mapping` and `bronze_banking_mapping_1` (the Eventstream uses the latter). |
+| `BankingLoanFraudDashboard` | KQLDashboard | Real-time dashboard with 8 tiles bound to a 1-hour duration parameter — Total Transactions card, Fraud Transactions count card, Fraud Percentage card with conditional color rules (green ≤20%, yellow ≤50%, red >50%), Transactions Over Time line chart, Status heatmap, and pie charts for Country/Device/Browser. |
+
+## How It Works
+
+### Generate — the emulator notebook
+
+`BankingLoanFraudEmulator` is the entry point. It runs five setup cells (pip install, imports, Eventstream connection lookup, fraud constants, generator class), then an infinite send loop:
+
+1. Installs `azure-eventhub==5.11.5` and `semantic-link-labs` in the session.
+2. Calls `sempy_labs.eventstream.get_eventstream_topology("BankingLoanFraudStream")`, finds the `CustomEndpoint-Source`, and pulls its EventHub name and primary connection string with `get_eventstream_source_connection(...)`.
+3. Instantiates `EventHubProducerClient.from_connection_string(...)` against that endpoint.
+4. Loops forever: generates one synthetic event per second (`force_fraud=True` with 15% probability), serialises to JSON, accumulates a batch, and calls `producer.send_batch(...)` every 10 events. Press Stop/Interrupt to end.
+
+The generator's `BankingLoanDataGenerator` class chooses from realistic ranges (`credit_score` 300–800, `loan_amount` $10k–$300k normal vs. $450k–$1M fraudulent), random country/device/browser/IP, and the workflow status sequence `Document verification → Eligibility check → Confirmed`. It tags `is_fraud_suspected = true` and appends to `fraud_reasons` for any of:
+
+| Reason | Trigger |
+|--------|---------|
+| `VeryLowCreditScore` | `credit_score < 500` |
+| `SuspiciousScoreLoanMismatch` | `400 ≤ credit_score ≤ 550` and `loan_amount > $100k` |
+| `ExcessivelyHighLoanAmount` | `loan_amount > $500k` |
+| `InvalidStatusSequence` | Workflow status moves backwards for the same `customer_id` |
+| `RapidTransactions` | Two events for the same `customer_id` within 2 seconds |
+
+### Ingest — Eventstream to Eventhouse
+
+`BankingLoanFraudStream` is wired as a simple pipe: a single `CustomEndpoint` source named `CustomEndpoint-Source` feeds the `BankingLoanFraudStream-stream` default stream, which routes to the `Eventhouse` destination in DirectIngestion mode. Each JSON event lands in the `bronze_banking` table within seconds via the `bronze_banking_mapping_1` JSON mapping (which maps each top-level JSON field to the matching column).
+
+### Store — the KQL database
+
+`BankingLoanFraud` is a ReadWrite KQL database hosted inside the shared `DemosEH` Eventhouse. The schema is defined in `DatabaseSchema.kql`:
+
+```kusto
+.create-merge table bronze_banking (
+    customer_id:string, transaction_id:guid, loan_amount:int,
+    status:string, credit_score:int, timestamp:datetime,
+    country:string, device_type:string, ip_address:string,
+    browser:string, is_fraud_suspected:bool, fraud_reasons:dynamic
+)
+```
+
+The Eventhouse uses default `oneLakeCachingPeriod: P36500D` and `oneLakeStandardStoragePeriod: P36500D` — effectively unbounded retention for the demo, with the Eventhouse-level cap of 1 day on the operational side.
+
+### Consume — the real-time dashboard
+
+`BankingLoanFraudDashboard` has one page with eight tiles, all reading the `bronze_banking` table directly. A `Time range` duration parameter (default: last 1 hour) is wired in by reference — but the shipped tile queries don't yet filter on `_startTime`/`_endTime`, so they currently scan all retained data. The shipped queries are:
+
+| Tile | Visual | KQL |
+|------|--------|-----|
+| Total Transactions | card | `bronze_banking \| count` |
+| Fraud Transactions (count) | card | `bronze_banking \| where is_fraud_suspected == true \| count` |
+| Fraud Transactions (% with color rules) | card | `let totaltransactions = toscalar(bronze_banking \| count); let fraudtransactions = toreal(toscalar(bronze_banking \| where is_fraud_suspected == true \| count)); print FraudPercentage = round((fraudtransactions/totaltransactions)*100, 2)` |
+| Transactions Over Time | line | `bronze_banking \| summarize count() by bin(timestamp, 5m)` |
+| Status count | heatmap | `bronze_banking \| summarize count() by status` |
+| Transactions by Country | pie | `bronze_banking \| summarize count() by country` |
+| Transactions by Device | pie | `bronze_banking \| summarize count() by device_type` |
+| Transactions by Browser | pie | `bronze_banking \| summarize count() by browser` |
+
+The Fraud Percentage card has three colour rules: **green** ≤20%, **yellow** ≤50%, **red** >50%. With the emulator's 15% forced-fraud rate plus any organic flag hits, expect the tile to sit in yellow/red territory during a run.
+
+<Callout>
+
+📊 An `EmbeddedRealTimeQueryset` ships inside the KQL database with a starter tab — `take 10`, the four summarisations, and `.show ingestion failures` for quick ingest health checks. Use it to write your own queries alongside the dashboard.
+
+</Callout>
+
+## Try It
+
+1. **Install** — `jumpstart.install("banking-loan-fraud")` and wait for the ~2-minute deploy.
+2. **Start the stream** — open `BankingLoanFraudEmulator` and run all cells. The first three cells install dependencies, import libraries, and resolve the Eventstream connection string; the last cell starts the infinite send loop. You'll see `✓ Sent N events | Last batch: K/10 fraud suspected` printed every batch.
+3. **Open the dashboard** — open `BankingLoanFraudDashboard`. Within ~30 seconds the `Total Transactions` and `Fraud Transactions` cards begin counting up and the line chart starts drawing.
+4. **Watch the colour change** — once enough events have accumulated, the Fraud Percentage card switches from green to yellow (and likely red, since the emulator forces fraud ~15% of the time and the organic detection rules will flag additional rapid-transaction and status-sequence violations).
+5. **Inspect the data directly** — open the `EmbeddedRealTimeQueryset` inside the `BankingLoanFraud` KQL database and run `bronze_banking | where is_fraud_suspected | take 50` to see the actual `fraud_reasons` arrays.
+6. **Stop the emulator** — interrupt the notebook cell when you're done. Otherwise it keeps streaming (and accruing Eventhouse cost).
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Add a real source | Replace the emulator with your own producer pointing at the same `CustomEndpoint-Source` connection string — any service that can POST JSON to an Event Hub will work. |
+| Tune the fraud rate | Edit the `force_fraud=(random.random() < 0.15)` call in the last cell of `BankingLoanFraudEmulator`, or change the `FRAUD_INDICATORS` thresholds at the top to make detection more/less sensitive. |
+| Filter by time range | The dashboard ships with a `Time range` parameter but its tile queries don't reference it. Edit each query to filter `where timestamp between (_startTime .. _endTime)` so the parameter actually scopes the visuals. |
+| Add a fraud-reason breakdown | The `fraud_reasons` column is a `dynamic` array. Add a tile with `bronze_banking \| mv-expand fraud_reasons \| summarize count() by tostring(fraud_reasons)` to see which rule fires most. |
+| Send alerts | Add an Activator (Reflex) on a KQL query that fires when fraud percentage exceeds a threshold over the last N minutes, or when a single customer triggers multiple `fraud_reasons` in a short window. |
+| Layer a silver model | Add a downstream KQL update policy or materialised view that aggregates `bronze_banking` into a per-customer fraud score and joins to your existing customer master. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the main cost driver. The emulator notebook **runs in an infinite loop** — leave it running and it streams ~1 event/second into the Eventhouse 24/7. Stop the notebook cell after exploring the demo, or capacity consumption will grow unbounded.
+
+</Callout>
+
+The Eventhouse `eventThroughputLevel` is set to `Low` and operational `retentionTimeInDays` to 1, which keeps idle costs modest. The dashboard refresh cost scales with how often you open it — KQL queries are scoped to the (currently all-data) tile queries above.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventhouse + Real-Time Dashboard need it).
+- Permissions to create Eventstream, Eventhouse, KQL Database, KQL Dashboard, and Notebook items.
+- Outbound internet from the Spark session running `BankingLoanFraudEmulator` — the first cell installs `azure-eventhub==5.11.5` and `semantic-link-labs` from PyPI on every run.
+
+## Resources
+
+- [Source repository — ecotte/fabric-rti-demos @ v0.1.8 (banking-loan-fraud)](https://github.com/ecotte/fabric-rti-demos/tree/v0.1.8/banking-loan-fraud)
+- [Microsoft Fabric — Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Eventstream documentation](https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/overview)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Real-Time Dashboards](https://learn.microsoft.com/fabric/real-time-intelligence/dashboard-real-time-create)
+- [Kusto Query Language (KQL) reference](https://learn.microsoft.com/kusto/query/)
+- [azure-eventhub Python client](https://learn.microsoft.com/python/api/overview/azure/eventhub-readme)

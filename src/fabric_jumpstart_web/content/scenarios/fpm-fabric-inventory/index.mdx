@@ -1,0 +1,177 @@
+---
+title: Fabric Platform Monitoring - Fabric Inventory
+toc: true
+---
+
+This jumpstart deploys a **tenant-wide Fabric inventory stack** into your workspace — a one-time setup notebook that records your Kusto endpoints and Key Vault references into a Variable Library, three extraction notebooks that call the Microsoft Fabric Admin REST API (via `sempy_labs` — mostly `sempy_labs.admin`, with gateways and connections going through the top-level `labs.list_gateways()` / `labs.list_connections()`) to pull capacities, apps, domains, tenant settings, gateways, connections, Git connections, workspaces, items, users, semantic-model details, and refresh history, three Data Pipelines that wrap each notebook so you can schedule them independently, an Eventhouse-backed KQL Database with 30+ tables (raw `*History` plus deduped current-state pairs) and a materialized view for refresh telemetry, and a three-page real-time KQL Dashboard for fleet-wide visibility — all installed with one call.
+
+<Callout>
+
+⚡ Stop reverse-engineering your tenant from Power BI screenshots. This accelerator pulls every workspace, item, user, capacity, gateway, connection, tenant setting, and dataset refresh from the Fabric Admin API into a queryable Eventhouse — installed in about two minutes.
+
+</Callout>
+
+## Install
+
+```python
+import fabric_jumpstart as jumpstart
+
+# Renders the catalog so you can browse other Jumpstarts too
+jumpstart.list()
+
+# Deploy this accelerator into your current workspace
+jumpstart.install("fpm-fabric-inventory")
+```
+
+Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
+
+```python
+jumpstart.install("fpm-fabric-inventory", workspace_id="<workspace_guid>")
+```
+
+<Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to fill in the Key Vault details, run the setup notebook, and trigger the three pipelines to see data land in the dashboard.
+
+</Callout>
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `Fabric Inventory Setup` | Notebook | One-time bootstrap. Pip-installs `semantic-link-labs==0.13.2`, then uses `sempy_labs` to look up the deployed `Platform Inventory` KQL database and write its query and ingest URIs — plus the four Key Vault references you provide (`key_vault_uri`, `key_vault_tenant_id`, `key_vault_client_id`, `key_vault_client_secret`) — into the `Fabric Platform Monitoring` Variable Library. |
+| `Fabric Platform Monitoring` | VariableLibrary | Six string variables: `kusto_query_uri`, `kusto_ingest_uri`, `key_vault_uri`, `key_vault_tenant_id`, `key_vault_client_id`, `key_vault_client_secret`. Every pipeline reads these via `@pipeline().libraryVariables.*` so credentials and endpoints stay out of notebook code. |
+| `Monitoring Extraction Inventory` | Notebook | Pulls **Capacities, Apps, Domains, Tenant Settings, Workspace/Capacity/Domain Delegated Settings, Gateways, Gateway Members, Connections, and Git Connections** from the Fabric Admin API and streams them into Kusto via `KustoStreamingIngestClient`. Each section calls a paired `.set-or-replace` KQL command to refresh the deduped current-state table from its `*History` raw table. |
+| `Monitoring Extraction Scanner` | Notebook | Calls `labs.admin.list_modified_workspaces()` for the delta since the last scan, then fans out parallel `labs.admin.scan_workspaces(...)` calls (chunks of 100 workspaces, up to 15 parallel threads) with `data_source_details`, `dataset_schema`, `dataset_expressions`, `lineage`, and `artifact_users` all enabled. Writes to `WorkspacesHistory`, `WorkspacesUsersHistory`, `ItemsHistory`, `ItemsUsersHistory`, `SemanticModelDetailsHistory`, and `DatasourceInstancesHistory`, then runs a batch of `.update table … delete … append …` commands to keep the deduped tables current and a `cleanup_kql` step to purge workspaces deleted more than 7 days ago. |
+| `Monitoring Extraction Refreshables` | Notebook | Calls `admin.get_refreshables(expand="capacity,group", filter=…)` and queue-ingests the result into `RefreshablesRaw`. A Kusto **update policy** on `RefreshablesRaw` automatically populates the `ItemRefreshes` events table via the `parse_ItemRefreshes()` function. |
+| `Refresh Inventory` | DataPipeline | Single `TridentNotebook` activity (name `Inventory`) that runs `Monitoring Extraction Inventory`. Library variables map to the notebook's seven parameters; `kusto_db` defaults to `Platform Inventory`. |
+| `Refresh Scanner API` | DataPipeline | Single `TridentNotebook` activity (name `Scanner API`) that runs `Monitoring Extraction Scanner` with the same parameter wiring. |
+| `Refresh Refreshables` | DataPipeline | Single `TridentNotebook` activity (name `Refreshables`) that runs `Monitoring Extraction Refreshables` with the same parameter wiring. |
+| `Fabric Platform Monitoring` | Eventhouse | Container for the KQL database below. Same display name as the Variable Library — they're distinct items in different folders. |
+| `Platform Inventory` | KQLDatabase | All inventory telemetry lives here. 36 tables across the `Inventory` and `History/Inventory` folders, plus an `Events` folder for `ItemRefreshes`. Includes `SemanticModel()`, `Reports()`, `Dataflows()`, `ExpandSemanticModelObjectExpressions()`, `parse_ItemRefreshes()`, `Calendar()`, `CapacityRegions()`, and `SemanticModelContentTypes()` functions, plus the `Refreshables` materialized view. |
+| `Platform Monitoring` | KQLDashboard | Three pages — `Platform Summary` (workspace/item counts, distribution donut, item views over time, user-access breakdowns), `Activities Overview` (top activities and time series), and `Tenant Settings Overview` (tenant/capacity/domain/workspace delegated settings). Auto-refreshes every 30 s. |
+
+## How It Works
+
+### Setup — recording credentials and endpoints
+
+`Fabric Inventory Setup` is the entry point. You fill in four blank cells with your **Azure Key Vault URI** and the **secret names** that hold the service principal's tenant ID, client ID, and client secret. The notebook then:
+
+1. Installs `semantic-link-labs==0.13.2`.
+2. Locates the deployed `Platform Inventory` KQL Database with `labs.kql_database.list_kql_databases()` and pulls its `Query Service URI` and `Ingestion Service URI`.
+3. Calls `labs.variable_library.update_variable(...)` six times to write the two Kusto URIs plus the four Key Vault references into the `Fabric Platform Monitoring` Variable Library.
+
+After that, every pipeline knows where the KQL DB lives and how to fetch the SP secret at run time — no hard-coded credentials in notebook code.
+
+<Callout>
+
+🛡️ The notebooks **never** see the SP secret in code. They call `notebookutils.credentials.getSecret(key_vault_uri, key_vault_client_secret)` at run time, then pass the resolved value into `labs.service_principal_authentication(...)` and `KustoConnectionStringBuilder.with_aad_application_key_authentication(...)`. Only the Key Vault references are stored in the Variable Library.
+
+</Callout>
+
+### Producers — the Fabric Admin REST API
+
+All three extraction notebooks use `sempy_labs` as the API client. Inside a `labs.service_principal_authentication(...)` context, they call:
+
+| Call | Notebook | Lands in |
+|------|----------|----------|
+| `labs.admin.list_capacities()` | Inventory | `CapacitiesHistory` → `Capacities` |
+| `labs.admin.list_apps()` (paged by 5000) | Inventory | `AppsHistory` → `Apps` |
+| `labs.admin.list_domains()` | Inventory | `DomainsHistory` → `Domains` |
+| `labs.admin.list_tenant_settings()` | Inventory | `TenantSettingsHistory` → `TenantSettings` |
+| `labs.admin.list_workspaces_tenant_settings_overrides()` | Inventory | `WorkspaceDelegatedSettingsHistory` → `WorkspaceDelegatedSettings` |
+| `labs.admin.list_capacity_tenant_settings_overrides()` | Inventory | `CapacityDelegatedSettingsHistory` → `CapacityDelegatedSettings` |
+| `labs.admin.list_domain_tenant_settings_overrides()` | Inventory | `DomainDelegatedSettingsHistory` → `DomainDelegatedSettings` |
+| `labs.list_gateways()` + `labs.list_gateway_members(gId)` per gateway | Inventory | `GatewaysHistory` + `GatewayMembersHistory` |
+| `labs.list_connections()` | Inventory | `ConnectionsHistory` → `Connections` |
+| `labs.admin.list_git_connections()` | Inventory | `GitConnectionsHistory` → `GitConnections` |
+| `labs.admin.list_modified_workspaces(modified_since=...)` + `labs.admin.scan_workspaces(...)` (parallel chunks of 100) | Scanner | `WorkspacesHistory`, `WorkspacesUsersHistory`, `ItemsHistory`, `ItemsUsersHistory`, `SemanticModelDetailsHistory`, `DatasourceInstancesHistory` |
+| `admin.get_refreshables(expand="capacity,group", filter=…)` | Refreshables | `RefreshablesRaw` (update policy → `ItemRefreshes`) |
+
+### Storage — the History/Current pattern
+
+Every entity is stored as a pair: a `*History` raw table (retention 730 days, hot cache 730 days) and a deduped current-state table. The Inventory notebook ingests rows via the **streaming** client (`KustoStreamingIngestClient`) and then runs a `.set-or-replace <Current> <| <History> | where scanTime > … | summarize arg_max(scanTime, *) by <key>` command to keep the current table in sync.
+
+The Scanner notebook does the same but with `.update table … delete delete_table append append_table with(distributed=true)` for `Workspaces`, `WorkspacesUsers`, `Items`, `SemanticModelDetails`, and `DatasourceInstance` (each in its own distributed transaction). `ItemsUsers` is handled separately via a paired `.delete table ItemsUsers records` + `.set-or-append ItemsUsers` pattern. A `cleanup_kql` cell then deletes records older than 7 days for any workspace whose state is `Deleted`.
+
+The Refreshables notebook uses the **queued** client (`QueuedIngestClient`) into `RefreshablesRaw`. `RefreshablesRaw` has a 1-second retention and an update policy that runs the `parse_ItemRefreshes()` function on every batch — the parsed, durable refresh events land in `ItemRefreshes` (retention 750 days).
+
+### Schema — what's in the KQL Database
+
+The `Platform Inventory` database ships with these table families:
+
+| Family | Tables |
+|--------|--------|
+| Capacities | `CapacitiesHistory`, `Capacities` |
+| Workspaces | `WorkspacesHistory`, `Workspaces`, `WorkspacesUsersHistory`, `WorkspacesUsers`, `WorkspaceDelegatedSettingsHistory`, `WorkspaceDelegatedSettings` |
+| Items | `ItemsHistory`, `Items`, `ItemsUsersHistory`, `ItemsUsers`, `SemanticModelDetailsHistory`, `SemanticModelDetails` |
+| Tenant config | `TenantSettingsHistory`, `TenantSettings`, `CapacityDelegatedSettingsHistory`, `CapacityDelegatedSettings`, `DomainDelegatedSettingsHistory`, `DomainDelegatedSettings`, `DomainsHistory`, `Domains` |
+| Apps | `AppsHistory`, `Apps` |
+| Gateways & connections | `GatewaysHistory`, `Gateways`, `GatewayMembersHistory`, `GatewayMembers`, `ConnectionsHistory`, `Connections`, `DatasourceInstancesHistory`, `DatasourceInstance`, `GitConnectionsHistory`, `GitConnections` |
+| Refresh telemetry | `RefreshablesRaw` (1-second retention), `ItemRefreshes` (update-policy events table), `Refreshables` (materialized view) |
+
+Bundled functions: `SemanticModel()`, `Reports()`, `Dataflows()`, `ExpandSemanticModelObjectExpressions(p_itemIds)`, `parse_ItemRefreshes()`, `Calendar(DaysBack, Precision)`, `CapacityRegions()`, `SemanticModelContentTypes()`.
+
+### Consume — the Platform Monitoring dashboard
+
+Three pages, auto-refresh every 30 s:
+
+- **Platform Summary** — Workspace and item totals, items distribution donut, items views area chart, workspace and item user breakdown by access right, workspace distribution by type/capacity, top 1000 workspaces by item count, and an `Events by Location` tile that calls `geo_info_from_ip_address(tostring(details.ClientIP))` against the external `Activity Events` database.
+- **Activities Overview** — Top 10 activities and top 20 activities by time, sourced from a **second data source** named `Activity Events` in a different workspace (see the callout below).
+- **Tenant Settings Overview** — Tenant settings status, workspace/capacity/domain delegated settings, and tenant-settings history.
+
+<Callout>
+
+🔌 The dashboard's `Activity Events` data source points at a Kusto database in workspace `785bfd72-6bbe-42cd-abaa-c5f4333dca33` — it is **not** deployed by this jumpstart. The Activities Overview page and the `Items Views` + `Events by Location` tiles on Platform Summary stay empty until you point that data source at your own activity-events database (typically the companion `fpm-activity-events` jumpstart or a custom activity log). Everything else on the dashboard works out of the box once the three pipelines have run.
+
+</Callout>
+
+## Try It — A 5-Minute Walkthrough
+
+1. **Install** — `jumpstart.install("fpm-fabric-inventory")` and wait for the ~2-minute deploy.
+2. **Provision the service principal** — register an Entra ID app, grant it Fabric admin rights via the tenant admin portal, add it as a Member of the target workspace, and store its tenant/client/secret in an Azure Key Vault.
+3. **Wire the Variable Library** — open `Fabric Inventory Setup`, fill in `key_vault_uri` plus the three secret names, and run all cells. The notebook records the Kusto URIs and Key Vault references into the `Fabric Platform Monitoring` Variable Library.
+4. **Run the pipelines** — trigger `Refresh Inventory`, `Refresh Scanner API`, and `Refresh Refreshables` once each (Scanner takes the longest on a large tenant — 100-workspace chunks, 15 parallel threads).
+5. **Enable schedules** — once you're happy with the data, set a recurring schedule on each pipeline. Inventory and Refreshables are cheap and can run hourly; Scanner should run on whatever cadence matches your tolerance for stale workspace/item data.
+6. **Open the dashboard** — launch `Platform Monitoring`. Workspaces, items, distribution, and user-access tiles populate immediately; tenant-settings and capacity tiles populate after the Inventory pipeline finishes.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Add the activity-events feed | Point the dashboard's `Activity Events` data source at your own Kusto DB of Fabric activity events, or install the companion `fpm-capacity-events` jumpstart and re-bind the source. |
+| Schedule the pipelines | Add Fabric pipeline schedules to `Refresh Inventory`, `Refresh Scanner API`, and `Refresh Refreshables`. The pipelines are decoupled so you can run Scanner hourly and Inventory daily, for example. |
+| Add your own tables | Drop new entities into the Inventory notebook following the existing `*_process(connection_info)` pattern: ingest into `<Entity>History`, then `.set-or-replace` into `<Entity>`. Apply 730-day retention to match the rest of the schema. |
+| Build custom reports | Connect Power BI in DirectQuery to the `Platform Inventory` KQL DB and start with the bundled `SemanticModel()` and `Dataflows()` functions for canonical projections. The bundled `Reports()` function joins to `ItemsLastView` from the companion `Activity Events` database (deployed by `fpm-activity-events`), so it returns nothing on a standalone install — deploy that jumpstart or replace the lookup before relying on `Reports()`. |
+| Detect drift | Add an Activator (Reflex) on a KQL query like `TenantSettings | where scanTime > ago(1d) and Enabled != prev(Enabled)` to alert on tenant-setting changes. |
+| Track sprawl | Use `Items | summarize Count=count() by itemType, scanTime | render timechart` to see item-type growth over time. |
+| Tune Scanner throughput | Edit the `chunk_size=100` and `max_parallel=15` constants in `Monitoring Extraction Scanner` if you hit Fabric Admin API throttling or want to scan a very large tenant faster. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the steady-state cost driver, and `*History` tables are configured for **730-day** soft-delete and hot-cache by default. For a low-volume demo that's fine; for a production tenant with thousands of workspaces, review and tighten the `.alter table <X>History policy retention` and `policy caching` commands in `DatabaseSchema.kql` before enabling schedules.
+
+</Callout>
+
+The Scanner pipeline is the most expensive run — it issues `scan_workspaces` calls in parallel chunks of 100 and ingests workspace-scoped JSON that can be megabytes per workspace. Inventory and Refreshables are lightweight in comparison. The dashboard is consumption-priced per query, so leaving it open with 30-second auto-refresh on a small fleet is cheap.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventhouse + Real-Time Dashboard need it).
+- A **Microsoft Entra ID service principal** with **Fabric admin rights** granted in the tenant admin portal, with service principals allowed in the relevant Fabric admin settings, added as a **Member** of the target workspace.
+- An **Azure Key Vault** holding three secrets: the SP tenant ID, the SP client (application) ID, and the SP client secret. The user or identity that runs the pipelines needs **Key Vault Secrets User** (or equivalent) to fetch them at run time.
+- Permissions to create Notebook, DataPipeline, VariableLibrary, Eventhouse, KQL Database, and KQL Dashboard items in the workspace.
+- Outbound internet from the notebook Spark sessions — they pip-install `semantic-link-labs`, `azure-kusto-data==4.6.3`, and `azure-kusto-ingest==4.6.3` on every run.
+
+## Resources
+
+- [Source repository — ecotte/fabric-platform-monitoring @ v0.2.3 (fabric-inventory)](https://github.com/ecotte/fabric-platform-monitoring/tree/v0.2.3/fabric-inventory/src/fabric-platform-monitoring)
+- [`semantic-link-labs` documentation](https://semantic-link-labs.readthedocs.io/)
+- [Microsoft Fabric Admin REST API reference](https://learn.microsoft.com/rest/api/fabric/admin/)
+- [Power BI Admin Scanner API](https://learn.microsoft.com/power-bi/enterprise/service-admin-metadata-scanning)
+- [Microsoft Fabric — Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Kusto Query Language (KQL) reference](https://learn.microsoft.com/kusto/query/)
+- [Fabric Variable Libraries](https://learn.microsoft.com/fabric/cicd/variable-library/variable-library-overview)

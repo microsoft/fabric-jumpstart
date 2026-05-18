@@ -33,20 +33,29 @@ difficulty: Beginner
 last_updated: "2026-02-13"
 mermaid_diagram: |
   graph LR
-  
-    %% ON PREM
-    BLE[Bank Loan Events]:::U1F3E6
-  
-    %% FABRIC WORKSPACE
+
+    %% External producer — the emulator notebook runs in the workspace but
+    %% acts as a synthetic data source, posting JSON events to the
+    %% Eventstream's CustomEndpoint over the Event Hub protocol. We show it
+    %% outside the workspace box to mirror how producers are drawn elsewhere.
+    EMU[BankingLoanFraudEmulator]:::U1F3E6
+
+    %% Fabric workspace — the deployed RTI stack
     subgraph Fabric:::Workspace
-      ES[BankingLoanFraudStream]:::Eventstream
-      EH[BankingLoanFraud]:::KQLDatabase
-      KD[BankingLoanFraudDashboard]:::KQLDashboard
-      EXP[BankingLoanFraudEmulator]:::Notebook
       direction LR
+
+      ES[BankingLoanFraudStream]:::Eventstream
+      EH[DemosEH]:::Eventhouse
+      KDB[BankingLoanFraud]:::KQLDatabase
+      DASH[BankingLoanFraudDashboard]:::KQLDashboard
     end
-  
-    %% FLOWS
-    BLE -.-> ES
-    ES -.-> EH
-    EH <-.- KD
+
+    %% Producer → Eventstream CustomEndpoint
+    EMU -.-> ES
+
+    %% Eventstream lands events in the KQL DB hosted by the Eventhouse
+    ES --> EH
+    EH --> KDB
+
+    %% Dashboard reads from the KQL database
+    KDB --> DASH

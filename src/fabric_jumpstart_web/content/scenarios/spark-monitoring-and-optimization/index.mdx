@@ -1,0 +1,178 @@
+---
+title: Spark Monitoring and Optimization
+toc: true
+---
+
+This jumpstart deploys an end-to-end **Spark observability stack** into your Microsoft Fabric workspace — an Eventstream that captures Spark events from any environment you opt in, an Eventhouse-backed KQL database for durable telemetry, a real-time dashboard for live visualization, a Python analyzer that writes SparkLens and Fabric recommendations, and a Fabric Data Agent grounded on the analyzer's output so you can ask "why was this job slow?" in plain English.
+
+<Callout>
+
+⚡ Stop guessing why your Spark jobs are slow. This accelerator captures live Spark events, analyzes them with a Sparklens-style recommender, and surfaces the findings through a real-time dashboard and a Fabric Data Agent — all installed with one call.
+
+</Callout>
+
+## Install
+
+```python
+import fabric_jumpstart as jumpstart
+
+# Renders the catalog so you can browse other Jumpstarts too
+jumpstart.list()
+
+# Deploy this accelerator into your current workspace
+jumpstart.install("spark-monitoring-and-optimization")
+```
+
+Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
+
+```python
+jumpstart.install("spark-monitoring-and-optimization", workspace_id="<workspace_guid>")
+```
+
+<Callout>
+
+⏱️ **Deploy time: ~3 minutes.** Plan another ~20 minutes to walk through the dashboard, run the simulator, and exercise the Spark Advisor.
+
+</Callout>
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `Fabric Spark Monitoring Setup` | Notebook | One-time bootstrap. Installs `fabric-deployment-tool` + `semantic-link-labs`, finds the deployed `vasa-spark-simulator` environment, appends it to any user-provided environment list, then calls `fab_update_environments_spark_monitor()` so Spark workloads using those environments stream events into the Eventstream's `IngestionEndpoint`. |
+| `Vasa Spark Simulator Pipeline` | DataPipeline | Runs the simulator notebook in a sequential `ForEach` over job numbers 1–30 (`@range(1, 30)`), then runs both Clinical Trial notebooks. |
+| `Vasa Spark Simulator` | Notebook | Pip-installs the `vasa_spark_simulator-0.1.0` wheel and runs one synthetic Spark job for the pipeline-provided `actual_job` value. The notebook hard-codes its own `NUM_ROWS = 1_000_000` and `DURATION_MINUTES = 2`, so the pipeline's `num_rows` / `duration_minutes` parameters are passed but ignored. |
+| ` Clinical Trial Results Orginial` | Notebook | Sample Spark workload deliberately written with classic pitfalls — Python UDFs, repeated recomputation without caching, excessive repartitioning, `groupByKey`, and a driver `collect()`. The upstream display name includes a leading space and the typo "Orginial"; the docs preserve it because that is what users see after deployment. |
+| `Clinical Trial Results Optimized` | Notebook | Same workload after applying tuning recommendations — a paired before/after comparison. |
+| `vasa-spark-simulator` | Environment | Pinned Spark/Python environment used by the simulator notebooks. |
+| `SparkMonitoringStream` | Eventstream | Source: a `CustomEndpoint` named `IngestionEndpoint`. Destination: the Eventhouse, writing to the `RawLogs` table via DirectIngestion. |
+| `Fabric Platform Monitoring` | Eventhouse | Container for the KQL database below. |
+| `Spark Monitoring` | KQLDatabase | All telemetry lives here. `RawLogs` is the raw ingest table; update policies derive `SparkDriverLogs`, `SparkExecutorLogs`, `SparkSQLExecutionEvents`, `SparkDerivedTaskMetrics`, `SparkMetrics`, and `SparkEventLogs`; the analyzer writes to the pre-created `sparklens_*` and `fabric_recommedations` tables. |
+| `EmbeddedRealTimeQueryset` | (embedded in the KQL DB) | A KQL queryset JSON embedded in the database definition. In the upstream source it contains authoring data-source IDs and maintenance snippets for clearing SparkLens tables, so treat it as optional rather than the primary user surface. |
+| `Spark Monitoring Dashboard` | KQLDashboard | Real-time tiles for active jobs, executor health, stage durations, shuffle volume, failed-task counts. |
+| `Fabric Spark Advisor` | DataAgent | LLM agent grounded on selected KQL tables, including `SparkSQLExecutionEvents`, `sparklens_metadata`, `sparklens_summary`, `sparklens_metrics`, `sparklens_predictions`, `sparklens_recommedations`, and `fabric_recommedations`. |
+| `Spark Monitoring Recommedations` | Notebook | The analyzer driver. Pip-installs `spark_monitoring_analyzer-0.2.0` from `anumicrosoftlab/fabric-spark-monitoring`, calls `run(kusto_uri=kustoUri, database=database, chunk_size=30)`, reads `RawLogs`, and writes results back to the `sparklens_*` and `fabric_recommedations` tables. |
+| `Spark Recommender Pipeline` | DataPipeline | Runs the analyzer notebook with `KustoURIfqdn` and `KQLDatabase` parameters. `parameter.yml` rewrites `KustoURIfqdn` to the deployed Eventhouse query URI. |
+
+## How It Works
+
+### Wiring — getting Spark events into the Eventstream
+
+The **Setup notebook** is the entry point. It does three things:
+
+1. Installs `fabric-deployment-tool` and `semantic-link-labs` in the current session.
+2. Finds the deployed `vasa-spark-simulator` environment and appends it to any environments you list manually. The notebook will raise an `IndexError` if `vasa-spark-simulator` is not present in the current workspace — it does not gracefully skip a missing simulator environment.
+3. Calls `fab_update_environments_spark_monitor(environments, ..., "SparkMonitoringStream", "IngestionEndpoint")` — this updates Spark configs on those **Environments** so workloads using them emit Spark events to the Eventstream's `CustomEndpoint` source.
+
+<Callout>
+
+🛡️ The setup notebook does **not** configure the Eventhouse or write any KQL — that wiring is part of the deployed Eventstream and KQL Database items themselves. Setup is purely about getting Spark events flowing into the Eventstream.
+
+</Callout>
+
+### Ingest — Eventstream to Eventhouse
+
+`SparkMonitoringStream` has a single destination: `Fabric Platform Monitoring` (Eventhouse), table `RawLogs`, mode DirectIngestion. Every Spark event from every opted-in environment lands in `RawLogs` within seconds, durably stored and KQL-queryable from the `Spark Monitoring` database.
+
+### Generate workload — the simulator
+
+`Vasa Spark Simulator Pipeline` runs a sequential `ForEach` over `@range(1, 30)` (30 jobs), invoking `Vasa Spark Simulator` each time with the `actual_job` parameter. The pipeline also passes `num_rows` and `duration_minutes` parameters, but the notebook hard-codes its own values (`NUM_ROWS = 1_000_000`, `DURATION_MINUTES = 2`) and ignores those parameters. After the loop the pipeline also runs the clinical-trial workload pair: the upstream ` Clinical Trial Results Orginial` notebook and `Clinical Trial Results Optimized`. Trigger the pipeline once and you get a representative mix of telemetry for the dashboard and recommender. Or run each notebook individually if you want to control the comparison timing yourself.
+
+| Notebook | Purpose |
+|----------|---------|
+| `Vasa Spark Simulator` | Synthetic, realistic-looking Spark event stream — keeps the dashboard alive without waiting for real workloads. |
+| ` Clinical Trial Results Orginial` | Deliberately slow Spark workload — Python UDFs, no caching, excessive repartitioning, `groupByKey`, and driver collection. |
+| `Clinical Trial Results Optimized` | Same workload tuned — built-in expressions, early column pruning, one cache, one repartition, DataFrame aggregation, and no driver collection. |
+
+### Analyze — the Sparklens-style recommender
+
+`Spark Monitoring Recommedations` is a one-cell notebook driven by `Spark Recommender Pipeline`. Each run:
+
+1. Pip-installs `spark_monitoring_analyzer-0.2.0` (open-source wheel from `anumicrosoftlab/fabric-spark-monitoring`).
+2. Calls `run(kusto_uri=..., database=..., chunk_size=30)`.
+3. Reads `RawLogs` in chunks, parses Spark events per application.
+4. Computes per-app metrics — CPU efficiency, parallelism saturation, GC overhead, task-skew ratio, driver vs. executor wall-clock split.
+5. Writes free-text SparkLens recommendations and Fabric/Delta best-practice checks.
+6. Writes executor-scaling estimates for multiple executor counts / multipliers.
+7. Writes back into Kusto:
+
+| Table | What's in it |
+|-------|--------------|
+| `sparklens_metadata` | One row per application — application name, artifact metadata, capacity/workspace IDs, executor min/max, environment and Livy IDs, Spark native setting. |
+| `sparklens_summary` | Stage-level task and shuffle statistics per application — task counts, failed tasks, duration percentiles, input/output/shuffle volumes, executor counts. |
+| `sparklens_metrics` | `(applicationId, metric, value)` triples — efficiency, parallelism, GC, skew, durations. |
+| `sparklens_predictions` | One row per scaling scenario per app — `Executor Count`, `Executor Multiplier`, `Estimated Executor WallClock`, `Estimated Total Duration`. |
+| `sparklens_recommedations` | Free-text SparkLens recommendations keyed by `app_id`. |
+| `fabric_recommedations` | Free-text Fabric/Delta best-practice recommendations keyed by `app_id`. |
+
+<Callout>
+
+📦 **Tune for your database size.** The executable cell hard-codes `chunk_size=30`. The notebook comments suggest calculating chunk size from database size and recommend `chunk_size=20` for an unknown database up to ~100 GB on a Medium node.
+
+</Callout>
+
+### Consume — Dashboard, Queryset, and the Spark Advisor
+
+Three consumption surfaces sit on top of the KQL database:
+
+- **`Spark Monitoring Dashboard`** — a real-time KQL dashboard with curated tiles for job throughput, stage skew, executor utilization, shuffle volume, and failed-task counts. Open it the moment the install completes.
+- **`EmbeddedRealTimeQueryset`** — an embedded queryset JSON inside the KQL database. The source version is mostly maintenance snippets and authoring data-source metadata, so the dashboard and Data Agent are the primary consumption surfaces.
+- **`Fabric Spark Advisor`** — the Data Agent. Grounded on selected KQL tables, especially `sparklens_*`, `fabric_recommedations`, and `SparkSQLExecutionEvents`, it answers natural-language questions about job performance. The agent's instructions tell it to query the right table for each question class — recommendations vs. predictions vs. metrics — and to back every claim with a value from the data.
+
+<QuoteBlock author="Sample advisor prompts">
+"Which job in the last hour had the worst stage skew, and what's the most likely cause?"
+
+"For application_1772578035460_0001, which executor count has the lowest estimated total duration?"
+
+"Show me the top SparkLens recommendations across the last 24 hours, grouped by application."
+</QuoteBlock>
+
+The agent and the dashboard are **independent** consumers of the same Kusto database. The recommendations notebook is not called by the agent — `Spark Recommender Pipeline` runs it and refreshes the agent's grounding tables.
+
+## Try It — A 20-Minute Walkthrough
+
+1. **Install** — `jumpstart.install("spark-monitoring-and-optimization")` and wait for the ~3-minute deploy.
+2. **Bootstrap** — open `Fabric Spark Monitoring Setup`, add any extra environment IDs you want to monitor, and run all cells. The notebook automatically includes the deployed `vasa-spark-simulator` environment and wires the selected environments to emit events to `SparkMonitoringStream`.
+3. **Start the simulator** — trigger `Vasa Spark Simulator Pipeline` once. It runs 30 simulator jobs and the clinical-trial before/after notebooks. Open `Spark Monitoring Dashboard`; tiles populate as events arrive.
+4. **Run the analyzer** — trigger `Spark Recommender Pipeline` (or run `Spark Monitoring Recommedations` manually). This pip-installs the analyzer, processes the events that just landed in `RawLogs`, and populates the `sparklens_*` + `fabric_recommedations` tables.
+5. **Ask the advisor** — open `Fabric Spark Advisor` and try one of the sample prompts above. The agent queries the freshly-written analyzer tables and answers in natural language.
+6. **Inspect the data directly** — open the `Spark Monitoring` KQL database and run `sparklens_summary | top 10 by max_duration_sec desc` to see the slowest stages the analyzer found.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Monitor your own workloads | Add your production Spark Environment IDs to the `environments` list in `Fabric Spark Monitoring Setup`, then rerun the notebook. Jobs using those environments are captured automatically. |
+| Add your own dashboards | Clone tiles from `Spark Monitoring Dashboard` and edit the KQL — the analyzer tables (`sparklens_*`, `fabric_recommedations`) are defined in the `Spark Monitoring` KQL database schema. |
+| Persist recommendations elsewhere | Modify `Spark Monitoring Recommedations` after the `run(...)` call to read `sparklens_recommedations` and write to a Lakehouse Delta table, Teams channel, or work-item system. |
+| Send alerts | Add an Activator (Reflex) on a KQL query that fires when failed-task rate exceeds a threshold, when `sparklens_summary.max_duration_sec` crosses a limit, or when new rows appear in `sparklens_recommedations`. |
+| Add custom Spark Advisor skills | The Data Agent is grounded on the KQL database; extend its system instructions with new natural-language → KQL examples directly in the agent's configuration. |
+| Tune analyzer throughput | Edit the `chunk_size` argument in `Spark Monitoring Recommedations` — the executable cell defaults to 30, while the notebook comments suggest 20 for unknown database sizes up to ~100 GB. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the main steady-state cost driver — it ingests Spark events for every workload attached to a monitored environment. For a demo, avoid repeatedly running `Vasa Spark Simulator Pipeline` after you're done exploring; each run emits 30 simulator jobs plus the clinical-trial workloads.
+
+</Callout>
+
+The analyzer notebook is a periodic batch — its cost scales with how often `Spark Recommender Pipeline` runs and the size of the `RawLogs` table. The Data Agent uses Fabric AI capacity per prompt, not per minute, so it's cheap to leave deployed.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventhouse + Real-Time Dashboard need it).
+- Permissions to create Eventstream, Eventhouse, KQL Database, KQL Dashboard, Data Agent, Notebook, Data Pipeline, and Environment items.
+- A Spark **Custom Pool** for the monitored environment. The setup notebook notes that the Diagnostic Emitter extension is not supported on the Starter Pool.
+- Fabric AI capacity enabled in the tenant for the Data Agent.
+- Outbound internet from the Spark cluster running `Spark Monitoring Recommedations` — it pip-installs the analyzer wheel from GitHub on every run.
+
+## Resources
+
+- [Source repository — ecotte/fabric-platform-monitoring @ v0.2.5](https://github.com/ecotte/fabric-platform-monitoring/tree/v0.2.5/spark-monitoring/src)
+- [`spark_monitoring_analyzer` wheel source — anumicrosoftlab/fabric-spark-monitoring](https://github.com/anumicrosoftlab/fabric-spark-monitoring)
+- [Microsoft Fabric — Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Kusto Query Language (KQL) reference](https://learn.microsoft.com/kusto/query/)
+- [Fabric Data Agents overview](https://learn.microsoft.com/fabric/data-science/data-agent-overview)
+- [Spark performance tuning in Fabric](https://learn.microsoft.com/fabric/data-engineering/spark-performance-tuning)

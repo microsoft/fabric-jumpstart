@@ -1,0 +1,169 @@
+---
+title: Real-Time Telecom Call Data Records
+toc: true
+---
+
+This jumpstart deploys an end-to-end **real-time Call Data Record (CDR) pipeline** into your Microsoft Fabric workspace — a PySpark emulator notebook that publishes synthetic CDRs to an Eventstream's Event Hub-compatible endpoint, an Eventstream that lands every record into an Eventhouse-backed KQL table, and a live KQL dashboard with status, call-type, geo-clustered tower coverage, and per-second throughput tiles.
+
+<Callout>
+
+📞 Get a working telecom streaming demo in under five minutes. Run the emulator notebook, open the dashboard, and watch live calls light up a South-Africa-centred map while pie charts track Completed / Failed / Dropped status in real time.
+
+</Callout>
+
+## Install
+
+```python
+import fabric_jumpstart as jumpstart
+
+# Browse the catalog
+jumpstart.list()
+
+# Deploy this demo into your current workspace
+jumpstart.install("telecom-call-data-records")
+```
+
+Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
+
+```python
+jumpstart.install("telecom-call-data-records", workspace_id="<workspace_guid>")
+```
+
+<Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to run the emulator and tour the dashboard.
+
+</Callout>
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `TelecomCallDataRecordsEmulator` | Notebook | Synthetic CDR producer. Uses `semantic-link-labs` to discover the Eventstream's `CustomEndpoint-Source` connection string, then publishes JSON CDRs via `azure-eventhub`'s `EventHubProducerClient` at 5 records/second for 1000 seconds. |
+| `TelecomCallDataRecordsStream` | Eventstream | Single `CustomEndpoint` source named `CustomEndpoint-Source`. Single destination: the `DemosEH` Eventhouse, writing to the `cdr_raw` table via `DirectIngestion` using the `cdr_raw_mapping` JSON mapping. |
+| `DemosEH` | Eventhouse | Shared Eventhouse container that hosts the `TelecomCallDataRecords` KQL database. |
+| `TelecomCallDataRecords` | KQLDatabase | Holds the `cdr_raw` table and its ingestion mapping. Also ships an `EmbeddedRealTimeQueryset` with a starter set of KQL queries. |
+| `TelecomCallDataRecordsDashboard` | KQLDashboard | Real-time dashboard (auto-refresh every 1 second) with 7 tiles, defaulting to a 1-hour time range. |
+
+<Callout>
+
+📁 The Eventstream folder in the upstream repo is named `TelcomCallDataRecords.Eventstream` (typo — "Telcom" missing the second "e"), but the deployed item's display name is `TelecomCallDataRecordsStream`. We preserve the upstream folder name so the install matches the repo exactly.
+
+</Callout>
+
+## How It Works
+
+### Producer — the CDR emulator notebook
+
+`TelecomCallDataRecordsEmulator` is a stand-alone PySpark notebook. On first run it:
+
+1. Pip-installs `azure-eventhub==5.11.5` and `semantic-link-labs`.
+2. Calls `sempy_labs.eventstream.get_eventstream_topology("TelecomCallDataRecordsStream")` to look up the `CustomEndpoint-Source` source, then `get_eventstream_source_connection(...)` to retrieve its **Event Hub name** and **primary connection string**.
+3. Builds an `EventHubProducerClient` from that connection string.
+
+`generate_cdr()` emits one JSON record per call with these fields:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `call_id` | guid | `uuid.uuid4()` |
+| `subscriber_id` | string | `SUB-<six-digit-int>` |
+| `call_start_time` / `call_end_time` | ISO-8601 UTC | `Z`-suffixed |
+| `duration_seconds` | int | 5 – 3600 (forced to 0 for `Failed`, truncated for `Dropped`) |
+| `call_type` | string | `Voice`, `Video`, or `Data` (uniform) |
+| `status` | string | Weighted — 85% `Completed`, 8% `Failed`, 7% `Dropped` |
+| `tower_latitude` / `tower_longitude` | real | Uniform within South Africa bounds: lat `-35 → -22`, lon `16 → 33` |
+| `call_quality` | int | 1 – 10 (1 – 5 for `Dropped`, 1 – 3 for `Failed`) |
+
+The final cell calls `stream_cdrs_to_eventhub_with_send(records_per_second=5, duration_seconds=1000, producer=producer_events)` — a tight `while` loop that batches one event at a time and sleeps `1.0 / records_per_second` between sends.
+
+### Ingest — Eventstream to Eventhouse
+
+`TelecomCallDataRecordsStream` is the simplest possible topology — one `CustomEndpoint-Source` flowing through a `DefaultStream` directly into the `DemosEH` Eventhouse. The destination is configured as:
+
+- **Mode:** `DirectIngestion`
+- **Table:** `cdr_raw`
+- **Mapping:** `cdr_raw_mapping` (one-to-one JSON path → column)
+- **Retention / throughput:** `retentionTimeInDays = 1`, `eventThroughputLevel = Low`, `schemaMode = None`
+
+Every event the emulator sends shows up in `cdr_raw` within seconds.
+
+### Storage — the cdr_raw table
+
+`DatabaseSchema.kql` is the schema bootstrap that ships with the KQL database:
+
+```kql
+.create-merge table cdr_raw (
+    call_id:guid, subscriber_id:string,
+    call_start_time:datetime, call_end_time:datetime,
+    duration_seconds:int, call_type:string, status:string,
+    tower_latitude:real, tower_longitude:real, call_quality:int
+)
+.create-or-alter table cdr_raw ingestion json mapping 'cdr_raw_mapping'
+```
+
+The mapping has one entry per column with paths like `$['call_id']`. The KQL database also includes an `EmbeddedRealTimeQueryset` with starter queries (`cdr_raw | take 1`, `summarize count() by status`, `summarize count() by call_type`, and a timechart on `duration_seconds`).
+
+### Visualize — the real-time dashboard
+
+`TelecomCallDataRecordsDashboard` auto-refreshes every **1 second** and exposes a single `Time range` parameter (default: last 1 hour). All tiles query the inline `TelecomCallDataRecords` KQL data source:
+
+| Tile | Visual | KQL |
+|------|--------|-----|
+| `Total Calls` | card | `cdr_raw \| count` |
+| `Dropped calls` | card | `cdr_raw \| where status == "Dropped" \| summarize count()` |
+| `Call drops %` | card | `let droppedcalls = todouble(toscalar(cdr_raw \| where status == "Dropped" \| count)); let totalcalls = toscalar(cdr_raw \| count); print DroppedPercentage = round(toreal(droppedcalls/totalcalls),5)*100` |
+| `Call Types` | pie | `cdr_raw \| summarize count() by call_type` |
+| `Status` | pie | `cdr_raw \| summarize count() by status` |
+| `Calls over time` | area | `cdr_raw \| summarize count() by bin(call_start_time, 10s), status` |
+| `Calls in Area` | map | `cdr_raw \| project tower_longitude, tower_latitude \| summarize count() by hash=geo_point_to_s2cell(tower_longitude, tower_latitude, 4) \| project geo_s2cell_to_central_point(hash), count_` |
+
+The map tile is the most interesting query — it buckets tower coordinates into S2 cells at resolution 4 and plots the centroid of each cell sized by call count, producing a heat-map of activity across South Africa.
+
+## Try It
+
+1. **Install** — `jumpstart.install("telecom-call-data-records")` and wait for the ~2-minute deploy.
+2. **Run the emulator** — open `TelecomCallDataRecordsEmulator` and run all cells. The last cell streams CDRs for 1000 seconds (~17 minutes) at 5 records/second. You should see per-record `print(...)` output as soon as the producer is connected.
+3. **Open the dashboard** — open `TelecomCallDataRecordsDashboard`. Within a few seconds, `Total Calls`, the `Status` and `Call Types` pies, and the `Calls over time` area chart should start incrementing live (1-second auto-refresh).
+4. **Watch the map fill in** — the `Calls in Area` tile clusters tower locations into S2 cells; after a minute of streaming you'll see clusters spread across South Africa with proportional point sizes.
+5. **Explore the queryset** — open the `TelecomCallDataRecords` KQL database, find the embedded queryset, and run the starter queries (`take 1`, `summarize count() by status`, `summarize count() by call_type`, the `duration_seconds` timechart).
+6. **Stop the emulator** — either let it finish its 1000-second run or interrupt the notebook cell. Either way, the Eventstream stops receiving events and the dashboard counters stabilise.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Increase load | Bump the emulator's `records_per_second` in the final cell (`stream_cdrs_to_eventhub_with_send(records_per_second=5, ...)`). The Event Hub source can comfortably handle hundreds per second. |
+| Run longer | Change `duration_seconds=1000` or pass `total_records=N` instead. Set both to `None` for unlimited streaming until interrupted. |
+| Switch geography | Edit the `SA_LAT_MIN / SA_LAT_MAX / SA_LON_MIN / SA_LON_MAX` constants in `generate_cdr()` to anywhere on Earth — the S2-cell map tile renders the new region automatically. |
+| Add fields | Extend the `cdr` dict in `generate_cdr()`, add matching columns to `cdr_raw` via `.alter-merge table`, and add a JSON mapping entry — events with the new fields will start landing immediately. |
+| Add alerts | Create an Activator on a KQL query like `cdr_raw | where ingestion_time() > ago(1m) | summarize drops = countif(status == "Dropped"), total = count() | where drops * 100.0 / total > 15`. |
+| Persist to a Lakehouse | Add a second destination on `TelecomCallDataRecordsStream` pointing at a Lakehouse Delta table for batch analytics alongside the hot-path KQL data. |
+| Per-tower analytics | Materialised view: `.create materialized-view CallsPerTower on table cdr_raw { cdr_raw | summarize count(), avg(call_quality) by tower_latitude, tower_longitude, bin(call_start_time, 1h) }`. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse and the 1-second-refresh dashboard are the steady-state cost drivers. For a demo, **let the emulator's 1000-second run finish (or stop it manually)** rather than restarting it in a loop — leaving it streaming continuously will accumulate ingestion and CU charges. The `cdr_raw` table retention is configured at 1 day at the Eventstream level, so storage stays bounded automatically.
+
+</Callout>
+
+The emulator notebook itself is the cheapest piece — it's a single Python session running for ~17 minutes per invocation. The KQL dashboard refreshes every second whenever it's open in a browser tab; close the tab when you're done to stop the query traffic.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventhouse + Real-Time Dashboard need it).
+- Permissions to create Notebook, Eventstream, Eventhouse, KQL Database, and KQL Dashboard items.
+- Outbound internet from the Spark cluster running `TelecomCallDataRecordsEmulator` — the first cell pip-installs `azure-eventhub==5.11.5` and `semantic-link-labs`.
+- The emulator authenticates to the Eventstream's Event Hub-compatible endpoint via a connection string fetched at runtime through `semantic-link-labs`; no manual secret wiring is required.
+
+## Resources
+
+- [Source repository — ecotte/fabric-rti-demos @ v0.1.8 (telecom-call-data-records)](https://github.com/ecotte/fabric-rti-demos/tree/v0.1.8/telecom-call-data-records)
+- [Microsoft Fabric — Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Eventstream custom endpoint source](https://learn.microsoft.com/fabric/real-time-intelligence/event-streams/add-source-custom-app)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Kusto Query Language (KQL) reference](https://learn.microsoft.com/kusto/query/)
+- [`geo_point_to_s2cell` KQL function](https://learn.microsoft.com/kusto/query/geo-point-to-s2cell-function)
+- [`azure-eventhub` Python SDK](https://learn.microsoft.com/python/api/overview/azure/eventhub-readme)
+- [`semantic-link-labs` on GitHub](https://github.com/microsoft/semantic-link-labs)

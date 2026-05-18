@@ -38,11 +38,30 @@ difficulty: Intermediate
 last_updated: "2026-03-03"
 mermaid_diagram: |
   graph LR
-    NB[spark_monitoring_setup]:::Notebook --> DP[spark_pipeline]:::DataPipeline
-    DP --> ES[spark_events]:::Eventstream
-    ES --> EH[spark_eventhouse]:::Eventhouse
-    EH --> KDB[spark_kqldb]:::KQLDatabase
-    KDB --> DASH[spark_dashboard]:::KQLDashboard
-    KDB --> KQL[spark_queryset]:::KQLQueryset
-    KDB --> DA[spark_agent]:::DataAgent
-    ENV[spark_env]:::Environment -.-> NB
+
+    %% Spark workloads and simulator notebooks emit events after their
+    %% Environment is configured by the setup notebook.
+    SPARK[Spark Workloads and Simulator]:::U1F9EA
+
+    subgraph Fabric:::Workspace
+      direction LR
+
+      ES[SparkMonitoringStream]:::Eventstream
+      EH[Fabric Platform Monitoring]:::Eventhouse
+      KDB[Spark Monitoring]:::KQLDatabase
+
+      DASH[Spark Monitoring Dashboard]:::KQLDashboard
+      DA[Fabric Spark Advisor]:::DataAgent
+
+      DP_REC[Spark Recommender Pipeline]:::DataPipeline --> NB_REC[Spark Monitoring Recommedations]:::Notebook
+    end
+
+    %% Spark workloads emit events to the stream after the setup notebook
+    %% has wired their Spark Environments to the Eventstream's IngestionEndpoint.
+    SPARK -.-> ES
+    ES --> EH
+    EH --> KDB
+    KDB --> NB_REC
+    NB_REC --> KDB
+    KDB --> DASH
+    KDB --> DA

@@ -17,16 +17,10 @@ source:
   repo_url: https://github.com/ecotte/fabric-platform-monitoring.git
   repo_ref: v0.2.3
   workspace_path: workspace-item-events/src/
-items_in_scope: 
-  - Notebook
-  - Eventhouse
+items_in_scope:
   - Eventstream
+  - Eventhouse
   - KQLDatabase
-  - KQLDashboard
-  - DataPipeline
-  - VariableLibrary
-  - SemanticModel
-  - Report
 jumpstart_docs_uri: ''
 entry_point: https://aka.ms/fabric-platform-monitoring
 test_suite: ''
@@ -38,11 +32,26 @@ difficulty: Intermediate
 last_updated: "2026-02-03"
 mermaid_diagram: |
   graph LR
-    NB[workspace_events_setup]:::Notebook --> DP[workspace_pipeline]:::DataPipeline
-    DP --> ES[workspace_item_events]:::Eventstream
-    ES --> EH[monitoring_eventhouse]:::Eventhouse
-    EH --> KDB[workspace_kqldb]:::KQLDatabase
-    KDB --> DASH[workspace_dashboard]:::KQLDashboard
-    KDB --> SM[workspace_model]:::SemanticModel
-    SM --> RPT[workspace_report]:::Report
-    VL[config_variables]:::VariableLibrary -.-> DP
+
+    %% External producer — the FabricWorkspaceItemEvents source on the
+    %% Eventstream subscribes tenant-wide to Fabric platform CloudEvents
+    %% (ItemCreate/Update/Delete x Succeeded/Failed). No credentials or
+    %% polling code — it's a managed Fabric platform connector.
+    API[Fabric Platform Events — Tenant scope]:::U1F310
+
+    subgraph Fabric:::Workspace
+      direction LR
+
+      ES[WorkspaceItemEventsStream]:::Eventstream
+      EH[Fabric Platform Monitoring]:::Eventhouse
+      KDB[Workspace Items Events]:::KQLDatabase
+    end
+
+    %% Tenant-wide platform events flow into the Eventstream
+    API -.-> ES
+
+    %% Eventstream lands raw CloudEvents in WorkspaceItemEventsRaw via DirectIngestion
+    ES --> KDB
+
+    %% KQL Database is hosted by the Eventhouse
+    EH --- KDB

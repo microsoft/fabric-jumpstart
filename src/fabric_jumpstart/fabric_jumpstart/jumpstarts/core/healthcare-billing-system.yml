@@ -33,20 +33,35 @@ difficulty: Beginner
 last_updated: "2026-02-03"
 mermaid_diagram: |
   graph LR
-  
-    %% ON PREM
-    SRC[Billing Events]:::U1F3E5
-  
-    %% FABRIC WORKSPACE
+
+    %% Simulated billing event producer — the HealthcareBillingDataEmulator notebook
+    %% IS a deployed Fabric notebook, but we render it as an external simulator
+    %% node (test-tube emoji) to match the spark-monitoring pattern and keep the
+    %% in-workspace boundary focused on the RTI backbone. The underlying notebook
+    %% is listed in items_in_scope and documented in the MDX.
+    SIM[HealthcareBillingDataEmulator]:::U1F9EA
+
+    %% Fabric workspace — items deployed by this jumpstart
     subgraph Fabric:::Workspace
-      ES[HealthcareBillingDataStream]:::Eventstream
-      EH[HealthcareBillingSystem]:::KQLDatabase
-      KD[HealthcareBillingReport]:::KQLDashboard
-      EM[HealthcareBillingDataEmulator]:::Notebook
       direction LR
+
+      ES[HealthcareBillingDataStream]:::Eventstream
+
+      %% DemosEH is a SHARED Eventhouse used across multiple fabric-rti-demos
+      %% jumpstarts. The HealthcareBillingSystem KQL database lives inside it
+      %% and holds the bronze_contoso_health and silver_contoso_health tables.
+      EH[DemosEH — shared Eventhouse]:::Eventhouse
+      KDB[HealthcareBillingSystem]:::KQLDatabase
+
+      DASH[HealthcareBillingReport]:::KQLDashboard
     end
-  
-    %% FLOWS
-    SRC -.-> ES
-    ES -.-> EH
-    EH <-.- KD
+
+    %% Producer sends events to the Eventstream's CustomEndpoint-Source
+    SIM -.-> ES
+
+    %% Eventstream DirectIngestion writes to bronze_contoso_health
+    ES --> EH
+    EH --> KDB
+
+    %% Dashboard queries the KQL database (silver_contoso_health view)
+    KDB --> DASH

@@ -3,9 +3,8 @@ logical_id: fpm-activity-events
 name: Fabric Platform Monitoring - Activity Events
 description: >-
   Extract and store semi-structured platform activity events in an Eventhouse
-  for near real-time analysis and data-driven actions. Monitor Fabric platform
-  activities with live dashboards powered by KQL queries and automated data
-  pipelines.
+  for near real-time analysis. Monitor Fabric platform activities with a KQL
+  dashboard and a Data Pipeline that can be scheduled for recurring pulls.
 date_added: 03/15/2026
 workload_tags:
 - Real-Time Intelligence
@@ -20,7 +19,6 @@ source:
 items_in_scope:
 - Notebook
 - Eventhouse
-- Eventstream
 - KQLDatabase
 - KQLDashboard
 - DataPipeline
@@ -36,9 +34,30 @@ difficulty: Beginner
 last_updated: "2026-02-03"
 mermaid_diagram: |
   graph LR
-    NB[activity_events_setup]:::Notebook --> DP[activity_pipeline]:::DataPipeline
-    DP --> ES[activity_events]:::Eventstream
-    ES --> EH[monitoring_eventhouse]:::Eventhouse
-    EH --> KDB[activity_kqldb]:::KQLDatabase
-    KDB --> DASH[activity_dashboard]:::KQLDashboard
-    VL[config_variables]:::VariableLibrary -.-> DP
+
+    subgraph Fabric:::Workspace
+      direction LR
+
+      NB_SETUP[Activity Events Setup]:::Notebook
+      VL[Fabric Platform Monitoring]:::VariableLibrary
+
+      DP[Refresh Activity Events]:::DataPipeline --> NB_EXTRACT[Monitoring Activity Events]:::Notebook
+
+      EH[Fabric Platform Monitoring]:::Eventhouse
+      KDB[Activity Events]:::KQLDatabase
+
+      DASH[Platform Activities]:::KQLDashboard
+    end
+
+    %% Setup writes Kusto URIs and Key Vault references to the VariableLibrary.
+    NB_SETUP -.-> VL
+
+    %% Pipeline reads VariableLibrary values and forwards notebook parameters.
+    VL -.-> DP
+
+    %% Extractor queues ingestion into ActivityEventsRaw; update policy parses it.
+    NB_EXTRACT --> KDB
+    EH --- KDB
+
+    %% Dashboard reads ActivityEvents plus functions and materialized views.
+    KDB --> DASH

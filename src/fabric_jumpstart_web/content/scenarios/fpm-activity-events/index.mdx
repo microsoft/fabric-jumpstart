@@ -1,0 +1,187 @@
+---
+title: Fabric Platform Monitoring - Activity Events
+toc: true
+---
+
+This jumpstart deploys a **Fabric tenant audit pipeline** into your workspace. A Data Pipeline that you can schedule drives a notebook that calls the Microsoft Fabric Admin REST API (`Get Activity Events`), pulls every user/service-principal action across the tenant for the requested window, and queues-ingests the raw JSON into an Eventhouse-backed KQL database. An update policy parses the raw payload into a typed `ActivityEvents` table, KQL functions surface higher-level shapes (`ItemsViews`, `ItemsCreation`, `ItemsDeletion`, `WorkspaceCreation`), and a real-time KQL dashboard renders the headline tiles.
+
+<Callout>
+
+🛰️ This is **not** a streaming pipeline — there is no Eventstream. The Fabric Admin Activity Events API is a polled REST endpoint, so the deployed pattern is "manual or scheduled pipeline → notebook → queued Kusto ingest", not push-based.
+
+</Callout>
+
+## Install
+
+```python
+import fabric_jumpstart as jumpstart
+
+# Renders the catalog so you can browse other Jumpstarts too
+jumpstart.list()
+
+# Deploy this accelerator into your current workspace
+jumpstart.install("fpm-activity-events")
+```
+
+Run the install cell inside a Fabric notebook and `workspace_id` is auto-detected. To target a different workspace, pass it explicitly:
+
+```python
+jumpstart.install("fpm-activity-events", workspace_id="<workspace_guid>")
+```
+
+<Callout>
+
+⏱️ **Deploy time: ~2 minutes.** Plan another ~5 minutes to register a service principal, drop its credentials into a Key Vault, run the setup notebook, and enable the pipeline schedule.
+
+</Callout>
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `Activity Events Setup` | Notebook | One-time bootstrap. Installs `semantic-link-labs==0.13.2`, then calls `labs.variable_library.update_variable(...)` six times against the `Fabric Platform Monitoring` VariableLibrary to populate `kusto_query_uri`, `kusto_ingest_uri`, `key_vault_uri`, `key_vault_tenant_id`, `key_vault_client_id`, and `key_vault_client_secret`. You edit the configuration cell to point at your Key Vault and secret names before running. |
+| `Monitoring Activity Events` | Notebook | The extractor. Installs `semantic-link-labs`, `azure-kusto-data==4.6.3`, `azure-kusto-ingest==4.6.3`. Reads SP credentials from Key Vault via `notebookutils.credentials.getSecret(...)`, authenticates to the Fabric Admin REST API via `labs.admin.list_activity_events(start_time, end_time, return_dataframe=False)`, wraps every returned `activityEventEntities` row as a single-column CSV (column `ActivityEvents`), and queues it into the `ActivityEventsRaw` table via `QueuedIngestClient`. Supports two modes — incremental hourly (`DAILY=False`) and full-day backfill (`DAILY=True` with optional `specific_date`). |
+| `Refresh Activity Events` | DataPipeline | Parameterises the extractor and can be scheduled after setup. Single `TridentNotebook` activity named `Activity Events` wired to `Monitoring Activity Events`, passing the six VariableLibrary values (via `@pipeline().libraryVariables.FabricPlatformMonitoring_*`) plus pipeline parameters `DAILY` (default `false`), `specific_date`, and `kusto_db` (default `"Activity Events"`, forwarded to the notebook as `database_name`). The source ships a `.schedules` file with one **disabled** 5-minute UTC cron schedule (starts `2025-07-05T01:00:00`); enable it in Fabric — or replace with your preferred cadence — after deployment. |
+| `Fabric Platform Monitoring` | VariableLibrary | Six variables: `kusto_query_uri`, `kusto_ingest_uri`, `key_vault_uri`, `key_vault_tenant_id`, `key_vault_client_id`, `key_vault_client_secret`. The setup notebook populates the Kusto URIs by inspecting the deployed KQL database; you supply the Key Vault values. |
+| `Fabric Platform Monitoring` | Eventhouse | Container for the KQL database below. |
+| `Activity Events` | KQLDatabase | All telemetry lands here. Holds the `ActivityEventsRaw` ingestion landing table, the typed `ActivityEvents` table, an update-policy function `parse_AcitivityEvents()`, helper functions (`ItemsViews`, `ItemsDeletion`, `ItemsCreation`, `WorkspaceCreation`), and two materialized views (`ItemsLastView`, `ActivitiesByWorkspaceUserDay`). |
+| `Platform Activities` | KQLDashboard | Real-time dashboard (auto-refresh 30s). Single page **Activities Overview** with four tiles: Top 10 Activities (donut), Top 20 Activities by Time (line), Items Views (area), Events by Location (bubble map driven by `geo_info_from_ip_address(details.ClientIP)`). Time-range and Activity parameters drive the page queries. |
+
+## How It Works
+
+### Bootstrap — Setup notebook wires the VariableLibrary
+
+`Activity Events Setup` is the entry point. Before running, edit cell 2 to set:
+
+```python
+key_vault_uri          = "https://<your-vault>.vault.azure.net/"
+key_vault_tenant_id    = "<secret-name-holding-tenant-id>"
+key_vault_client_id    = "<secret-name-holding-sp-client-id>"
+key_vault_client_secret = "<secret-name-holding-sp-client-secret>"
+```
+
+Then the next cell calls `labs.kql_database.list_kql_databases()`, filters for the `Activity Events` KQL DB, and writes its **Query Service URI** + **Ingestion Service URI** into the `Fabric Platform Monitoring` VariableLibrary alongside the four Key Vault references. The pipeline and the extractor notebook never read Key Vault names directly — they consume them through the VariableLibrary, so secret rotation is a single setup-rerun away.
+
+<Callout>
+
+🔐 The notebooks themselves contain **no credentials** — only Key Vault references. The Fabric Admin API requires a service principal with **Fabric admin rights**, granted explicitly in the Fabric admin portal. That SP must also be a Member of the workspace where this jumpstart is deployed.
+
+</Callout>
+
+### Extract — Monitoring Activity Events notebook
+
+`Refresh Activity Events` invokes `Monitoring Activity Events` with nine parameters: the six VariableLibrary values, `DAILY`, `specific_date`, and `database_name` from the pipeline's `kusto_db` parameter. The notebook:
+
+1. Pulls the SP credentials from Key Vault via `notebookutils.credentials.getSecret(...)`.
+2. Computes one or more `(start_date, end_date)` windows depending on mode:
+   - `DAILY=False`, no `specific_date` — a single rolling window of `now - 1 hour` to `now` (split across day boundaries if needed).
+   - `DAILY=True`, no `specific_date` — yesterday, 00:00:00 to 23:59:59.
+   - `DAILY=True` + `specific_date` — that exact day, 00:00:00 to 23:59:59.
+   - `DAILY=False` + `specific_date` — that day, broken into 24 hourly windows (used for backfills).
+3. For each window, calls `labs.admin.list_activity_events(start_time, end_time, return_dataframe=False)` under a `labs.service_principal_authentication(...)` context, then turns each `activityEventEntities` row into a JSON string and stuffs it into a one-column `ActivityEvents` DataFrame.
+4. Queues that DataFrame into the `ActivityEventsRaw` table via `QueuedIngestClient` with `DataFormat.CSV` and `ReportLevel.FailuresAndSuccesses`.
+
+<Callout>
+
+The upstream `v0.2.3` notebook calls `time.sleep(WAIT_TIME)` after a queued ingest but does not import `time`. If the run ingests rows and then ends with `NameError: name 'time' is not defined`, add `import time` in the **Load Libraries** cell before rerunning.
+
+</Callout>
+
+### Land — `ActivityEventsRaw` to `ActivityEvents` via update policy
+
+The raw landing table is intentionally minimal — one `dynamic` column — and configured to disable recovery and streaming ingestion (`SoftDeletePeriod=0`, hot cache off). The interesting transformation happens in the **update policy** on `ActivityEvents`:
+
+```kusto
+.alter table ActivityEvents policy update
+  "[{\"IsEnabled\":true,\"Source\":\"ActivityEventsRaw\",\"Query\":\"parse_AcitivityEvents()\",\"IsTransactional\":true,...}]"
+```
+
+`parse_AcitivityEvents()` casts the well-known columns (`Id`, `Workload`, `RecordType`, `RequestId`, `RefreshEnforcementPolicy`, `CreationTime`, `Activity`, `Operation`, `OrganizationId`, `UserId`, `UserKey`, `UserType`), strips them from the dynamic blob, and keeps the rest under a `details` column. It also `leftanti`-joins against existing rows so the policy is idempotent for retried ingestions. `ActivityEvents` retains 730 days with 90 days of hot cache — long enough for tenant-level audit reporting.
+
+<Callout>
+
+✍️ `parse_AcitivityEvents()` is the literal upstream function name, including the typo. The tables are spelled `ActivityEventsRaw` and `ActivityEvents`. The jumpstart preserves the function name as-is so the deployed artefact matches the source repository.
+
+</Callout>
+
+### Surface — helper functions and materialized views
+
+The schema ships five higher-level shapes on top of `ActivityEvents`:
+
+| Function / View | What it returns |
+|-----------------|-----------------|
+| `ItemsViews(daysToFilter)` | `ViewDashboard / ViewDataflow / ViewDatamart / ViewReport / ViewWarehouse / ViewArtifact / ReadArtifact` events projected into `(Id, CreationTime, Operation, UserId, WorkspaceId, WorkspaceName, ItemType, ItemId, ItemName, details)`. |
+| `ItemsCreation(daysToFilter)` | `CreateDataset / CreateReport / CreateDataflow / CreateArtifact / CreateDashboard / CreateWarehouse`, deduped via `arg_max(CreationTime, *) by ItemId`. |
+| `ItemsDeletion(daysToFilter)` | `Delete*` events, deduped by (workspace, item, user). |
+| `WorkspaceCreation(daysToFilter)` | `CreateFolder` activities augmented with `geo_info_from_ip_address(details.ClientIP)` location. |
+| `ItemsLastView` (materialized view) | `arg_max(CreationTime, Id, UserId) by ItemId` over `ItemsViews()` — quick "last seen" lookup per item. |
+| `ActivitiesByWorkspaceUserDay` (materialized view) | Per-day, per-workspace, per-user event counts bucketed by `Year-Month` for cheap dashboard rollups. |
+
+### Visualize — Platform Activities dashboard
+
+`Platform Activities` is a single-page KQL dashboard (page **Activities Overview**) auto-refreshing every 30 seconds. Its base query `_activities` is defined as:
+
+```kusto
+ActivityEvents
+| where CreationTime between (_startTime .. _endTime)
+| where Activity in (_activity)
+```
+
+driven by the `Time range` and `Activity` parameters at the top. The four tiles are:
+
+| Tile | Visual | Query |
+|------|--------|-------|
+| Top 10 Activities | donut | `_activities | summarize Activities=count() by Activity | top 10 by Activities` |
+| Top 20 Activities by Time | line / `make-series` | `_activities | make-series Acitivities=count() on CreationTime step _timespan by Activity | top 20 by array_length(Acitivities)` |
+| Items Views | area | `ItemsViews(_endTime - _startTime) | summarize Views=count() by ItemType, bin(CreationTime, _timespan)` |
+| Events by Location | bubble map | `ItemsViews(_endTime - _startTime) | project IPLocation=geo_info_from_ip_address(...) | summarize Events=count() by latitude, longitude, ItemType` |
+
+The dashboard also carries three additional base queries (`_capacityBase`, `_workspaceQuery`, `_tenantSettingBase`) for `Capacities`, `Workspaces`, `Items`, and `TenantSettings`. In the source JSON those queries point at a legacy/missing data-source id and no deployed tile depends on them. Treat them as placeholders for the broader Fabric Platform Monitoring product unless you wire those tables yourself.
+
+## Try It — A 5-Minute Walkthrough
+
+1. **Prerequisites** — register an Entra service principal, grant it **Fabric Admin API** access in the Fabric admin portal, add it as a Member of your target workspace, and store its **tenant id**, **client id**, and **client secret** as three secrets in an Azure Key Vault you control. Make sure your own identity has `Key Vault Secrets User` on that vault.
+2. **Install** — `jumpstart.install("fpm-activity-events")` and wait for the ~2-minute deploy.
+3. **Bootstrap** — open `Activity Events Setup`, edit cell 2 with your Key Vault URI and the three secret names, then **Run all**. The notebook writes the Kusto URIs plus the four Key Vault references into the `Fabric Platform Monitoring` VariableLibrary.
+4. **Backfill (optional)** — manually trigger `Refresh Activity Events` with `DAILY=true` and `specific_date="<yyyy-mm-dd>"` to pull that day's activity events into `ActivityEventsRaw`. The update policy materialises rows into `ActivityEvents` automatically.
+5. **Enable the schedule** — create or enable a schedule on `Refresh Activity Events`. With defaults (`DAILY=false`, no `specific_date`), it pulls the last hour of activity events on every run.
+6. **Explore** — open `Platform Activities`, set the **Time range** parameter to the window you backfilled, and the four tiles populate. For ad-hoc analysis, run KQL against `Activity Events` directly — try `ItemsViews(7d) | summarize Views=count() by ItemType, UserId | top 20 by Views`.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Backfill historical activity | The commented-out cell at the bottom of `Monitoring Activity Events` shows the pattern — loop a range of dates and call `audit_process(daily=True, ..., specific_date=date)` for each. Or trigger the pipeline once per day with `DAILY=true` + `specific_date`. |
+| Surface new event shapes | Add a KQL function alongside `ItemsViews` / `ItemsCreation` / `ItemsDeletion` and reference it from a new dashboard tile. |
+| Send alerts on suspicious activity | Add an Activator (Reflex) on a KQL query — e.g. fire when `ActivityEvents | where Activity == "DeleteWorkspace"` returns rows in the last hour, or when `WorkspaceCreation` shows logins from unexpected geographies. |
+| Reduce ingestion cost | Switch the pipeline to `DAILY=true` and run it once a day instead of hourly, or tighten the 730-day retention policy on `ActivityEvents` to match your audit requirement. |
+| Pair with the rest of FPM | This jumpstart populates only `ActivityEvents`. The broader Fabric Platform Monitoring solution adds `Capacities`, `Workspaces`, `TenantSettings`, and `Items` extractors — referenced (but inert) in this dashboard. Deploy those extractors to light up the additional base queries. |
+| Add a Data Agent | Ground a Fabric Data Agent on the `Activity Events` KQL DB and ask "which user deleted the most reports last week?" or "what new workspaces were created from outside the US in the last 24 hours?" |
+
+## Cost Notes
+
+<Callout>
+
+💰 The Eventhouse is the steady-state cost driver. `ActivityEvents` keeps 730 days of data with 90 days of hot cache — fine for a tenant audit store, but the hot cache footprint grows with tenant activity. If you create an hourly schedule with the default pipeline parameters, each run pulls the last hour; on a quiet tenant that's a few KB per run, on a busy one it can be tens of MB. Disable the pipeline schedule when you're just demoing, and consider switching to `DAILY=true` (once-per-day backfill of the previous day) for steady-state operation.
+
+</Callout>
+
+The Fabric Admin API itself is free, but every notebook run consumes CU minutes — keep the cadence aligned with how fresh you actually need the data.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **at least F2 capacity** (Eventhouse + Real-Time Dashboard need it).
+- Permissions to create Notebook, Data Pipeline, Eventhouse, KQL Database, KQL Dashboard, and Variable Library items in the workspace.
+- An Entra **service principal** with **Fabric Admin API** access (granted via the Fabric admin portal's service-principal tenant setting) and **Member** access to the deployment workspace.
+- An **Azure Key Vault** holding three secrets — tenant id, SP client id, SP client secret — and `Key Vault Secrets User` (or equivalent) for the identity running the pipeline.
+- Outbound internet from the Fabric notebook runtime — it pip-installs `semantic-link-labs`, `azure-kusto-data`, and `azure-kusto-ingest` on every run.
+
+## Resources
+
+- [Source repository — ecotte/fabric-platform-monitoring @ v0.2.3](https://github.com/ecotte/fabric-platform-monitoring/tree/v0.2.3/activity-events/src/fabric-platform-monitoring)
+- [Microsoft Fabric — Get Activity Events Admin REST API](https://learn.microsoft.com/rest/api/fabric/admin/users/get-activity-events)
+- [Microsoft Fabric — Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Eventhouse documentation](https://learn.microsoft.com/fabric/real-time-intelligence/eventhouse)
+- [Kusto update policies](https://learn.microsoft.com/kusto/management/update-policy)
+- [`semantic-link-labs` (`sempy_labs`) on PyPI](https://pypi.org/project/semantic-link-labs/)
+- [Fabric Variable Libraries](https://learn.microsoft.com/fabric/cicd/variable-library/variable-library-overview)

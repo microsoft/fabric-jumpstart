@@ -34,8 +34,39 @@ difficulty: Beginner
 last_updated: "2026-02-03"
 mermaid_diagram: |
   graph LR
-    NB[capacity_events_setup]:::Notebook --> DP[capacity_pipeline]:::DataPipeline
-    DP --> ES[capacity_events]:::Eventstream
-    ES --> EH[monitoring_eventhouse]:::Eventhouse
-    EH --> KDB[capacity_kqldb]:::KQLDatabase
-    KDB --> DASH[capacity_dashboard]:::KQLDashboard
+
+    %% External producer — the Microsoft Fabric Capacity Events service.
+    %% Fabric emits Microsoft.Fabric.Capacity.* CloudEvents for every capacity
+    %% the user administers; they land on the Eventstream's "Capacity"
+    %% CustomEndpoint after the setup notebook subscribes them.
+    FCE[Fabric Capacity Events Service]:::U2601
+
+    %% Capacity monitoring backbone deployed in the Fabric workspace
+    subgraph Fabric:::Workspace
+      direction LR
+
+      NB_SETUP[Capacity Events Update Eventstream]:::Notebook
+      DP_SETUP[Capacity Events Update Eventstream]:::DataPipeline
+
+      ES[CapacityEvents]:::Eventstream
+      EH[Fabric Platform Monitoring]:::Eventhouse
+      KDB[Capacity Utilization]:::KQLDatabase
+
+      DASH[Capacity Monitoring]:::KQLDashboard
+    end
+
+    %% Pipeline schedules the notebook so the capacity subscription stays fresh
+    DP_SETUP -.-> NB_SETUP
+
+    %% Setup notebook subscribes the user-administered capacities to the Eventstream
+    NB_SETUP -.-> ES
+
+    %% Producer → Eventstream (crossing into the workspace)
+    FCE -.-> ES
+
+    %% Ingest → storage: CapacityEvents writes raw events to CapacityEventsRaw
+    ES --> EH
+    EH --> KDB
+
+    %% Consumption — KQL Dashboard queries the parsed tables
+    KDB --> DASH

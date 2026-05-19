@@ -5,6 +5,7 @@ description: >-
   Monitor manufacturing operations in real-time, combine data from quality test benches and IoT senors with masterdata from your SAP ERP system.
   Ask an AI agent questions on the data and do advanced analytics with Power BI reports on the history of data.  
 date_added: 05/19/2026
+include_in_listing: false
 workload_tags:
   - Real-Time Intelligence
   - Power BI

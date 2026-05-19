@@ -5,7 +5,7 @@ description: >-
   Extract and store semi-structured platform activity events in an Eventhouse
   for near real-time analysis. Monitor Fabric platform activities with a KQL
   dashboard and a Data Pipeline that can be scheduled for recurring pulls.
-date_added: 03/15/2026
+date_added: 05/19/2026
 workload_tags:
 - Real-Time Intelligence
 - Data Factory

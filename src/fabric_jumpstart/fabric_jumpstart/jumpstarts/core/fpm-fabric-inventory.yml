@@ -6,7 +6,7 @@ description: >-
   format for comprehensive visibility. Three pipeline-scheduled notebooks pull
   from the Fabric Admin REST API into an Eventhouse-backed KQL database fronted
   by a real-time dashboard.
-date_added: 03/15/2026
+date_added: 05/19/2026
 workload_tags:
 - Real-Time Intelligence
 - Data Factory

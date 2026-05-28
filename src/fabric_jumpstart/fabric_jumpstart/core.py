@@ -3,7 +3,7 @@
 import logging
 import traceback
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import List, Optional
 
 from .installer import JumpstartInstaller
 from .logger import log_capture_context
@@ -479,7 +479,7 @@ class jumpstart:
         repo_url: str,
         repo_ref: str,
         entry_point: str,
-        items_in_scope: list,
+        items_in_scope: List[str],
         workspace_path: Optional[str] = None,
         name: str = '',
         files_source_path: Optional[str] = None,

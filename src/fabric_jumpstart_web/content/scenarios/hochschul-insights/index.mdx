@@ -7,7 +7,7 @@ This jumpstart deploys an **end-to-end German higher-education analytics stack**
 
 <Callout>
 
-🎓 Vom öffentlichen DESTATIS-Datensatz zum Live-Power-BI-Insight — in unter 5 Minuten. Designed as a DACH EDU / public-sector reference for Direct Lake, IBCS reporting standards, and the Fabric Data Agent on a realistic real-world model.
+🎓 From the public DESTATIS dataset to live, Power BI insights, in under 5 Minuten. Designed as a DACH EDU / public-sector reference for Direct Lake, IBCS reporting standards, and the Fabric Data Agent on a realistic real-world data model.
 
 </Callout>
 
@@ -28,46 +28,6 @@ This jumpstart deploys an **end-to-end German higher-education analytics stack**
 | `hochschul_stats_agent` | DataAgent | Natural-language Q&A over the semantic model. Ask questions like *"Welche Universität hatte 2023 die meisten Drittmittel?"* and get a grounded answer. |
 
 All items land in a workspace folder named `hochschul-insights`.
-
-## Architecture
-
-```mermaid
-graph LR
-
-  %% EXTERNAL SOURCES
-  SNAP[bundled snapshot CSVs]:::U1F4BE
-  GENESIS[DESTATIS GENESIS API]:::U2601
-  WIKI[Wikidata SPARQL]:::U2601
-
-  %% FABRIC WORKSPACE
-  subgraph Fabric [Fabric Workspace]
-    direction LR
-    START[00_start_here]:::Notebook
-    LOADER[hochschul_insights_genesis_loader]:::Notebook
-    DIMS[hochschul_insights_genesis_dimensions]:::Notebook
-    SNAPSHOT[hochschul_insights_load_snapshot]:::Notebook
-    PIPELINE[hochschul_insights_pipeline]:::DataPipeline
-    LH[hochschul_insights_lh]:::Lakehouse
-    SM[HochschulInsights]:::SemanticModel
-    RPT[HochschulInsights]:::Report
-    AGT[hochschul_stats_agent]:::DataAgent
-  end
-
-  SNAP -.-> LH
-  GENESIS -.-> LOADER
-  WIKI -.-> DIMS
-  START --> LOADER
-  START --> DIMS
-  START --> SNAPSHOT
-  LOADER --> LH
-  DIMS --> LH
-  SNAPSHOT --> LH
-  PIPELINE --> LOADER
-  PIPELINE --> DIMS
-  LH --> SM
-  SM --> RPT
-  SM --> AGT
-```
 
 ## How It Works
 

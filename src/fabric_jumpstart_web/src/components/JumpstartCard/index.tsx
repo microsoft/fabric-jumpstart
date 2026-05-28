@@ -68,7 +68,7 @@ function CardHeader({
     .map((t) => ({ tag: t, color: workloadColors[t] }))
     .filter((c): c is { tag: string; color: WorkloadColor } => !!c.color?.icon);
 
-  const isNew = new Date(scenario.lastUpdated) > new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+  const isNew = scenario.isNew;
   const [imgLoaded, setImgLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const src = `/images/diagrams/${scenario.slug}_${isDark ? 'dark' : 'light'}.svg`;

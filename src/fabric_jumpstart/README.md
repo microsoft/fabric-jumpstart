@@ -70,6 +70,46 @@ The prefixing strategy:
 - Uses word-boundary matching to avoid double-prefixing if you re-run the same install
 - Reuses existing prefixes from previous attempts to prevent `js3_sss__js3_sss__` patterns
 
+## Testing a Jumpstart Before Registration
+
+Use `_install_from_github()` to test a jumpstart directly from a GitHub repo before adding it to the registry. This method builds a synthetic config from the arguments you provide and runs the same install pipeline as `install()`.
+
+```python
+import fabric_jumpstart as jumpstart
+
+jumpstart._install_from_github(
+    logical_id="my-jumpstart", # sets name of root folder that items are deployed to
+    repo_url="https://github.com/my-org/my-repo",
+    repo_ref="v1.0.0",                           # tag or commit SHA — not a branch
+    workspace_path="my-jumpstart/",              # defaults to "{logical_id}/"
+    entry_point="GettingStarted.Notebook",
+    items_in_scope=["Lakehouse", "Notebook"],
+    workspace_id="<guid>",                       # target workspace (auto-resolves to the current ws in Fabric)
+)
+```
+
+Common optional parameters:
+
+```python
+jumpstart._install_from_github(
+    logical_id="my-jumpstart",
+    repo_url="https://github.com/my-org/my-repo",
+    repo_ref="abc1234",
+    entry_point="GettingStarted.Notebook",
+    items_in_scope=["Lakehouse", "Notebook", "SQLEndpoint"],
+    workspace_path="my-jumpstart/",              # defaults to "{logical_id}/"
+    name="My Jumpstart",                         # display name (defaults to logical_id)
+    workspace_id="<guid>",                       # target workspace (auto-detected in Fabric)
+    files_source_path="my-jumpstart/data/",      # upload binary/data files after deploy
+    files_destination_lakehouse="MyLakehouse",   # target Lakehouse for file upload
+    files_destination_path="raw/",               # destination path in Lakehouse Files
+    item_prefix="test_",                         # prefix all deployed item names
+    unattended=True,                             # console output instead of HTML
+)
+```
+
+Once the jumpstart installs successfully, add a YAML file to `fabric_jumpstart/jumpstarts/` and switch to the standard `jumpstart.install()` flow.
+
 ## Contributing
 
 See the [root contributing guide](../../CONTRIBUTING.md) for shared guidelines (commit conventions, issue workflow, PR process), then follow the [Python library contributing guide](CONTRIBUTING.md) for development setup, quality checks, and the new jumpstart workflow.

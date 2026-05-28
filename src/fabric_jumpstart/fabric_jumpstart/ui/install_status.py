@@ -179,6 +179,18 @@ def render_install_status_html(*, status: str, jumpstart_name: str, type: str, w
                 '</div>',
                 '</div>',
             ])
+        else:
+            # No time estimate — show an indeterminate animated bar
+            elapsed_m = int(elapsed_seconds) // 60
+            elapsed_s = int(elapsed_seconds) % 60
+            progress_block = ''.join([
+                '<div class="install-progress-wrap">',
+                '<div class="install-progress-track"><div class="install-progress-fill indeterminate"></div></div>',
+                '<div class="install-progress-label">',
+                f'<span>{elapsed_m}:{elapsed_s:02d} elapsed</span>',
+                '</div>',
+                '</div>',
+            ])
 
     # Hide entry/output sections on success; CTA already handled in hero
     outcome_block = error_block if error_message else ''

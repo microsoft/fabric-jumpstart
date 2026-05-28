@@ -17,17 +17,22 @@ class WorkspaceManager:
     Handles item enumeration, comparison, and deployment operations.
     """
     
-    def __init__(self, workspace_id: str, workspace_path: Path, items_in_scope: List[str]):
+    def __init__(self, workspace_id: str, workspace_path: Path, items_in_scope: List[str], repository_directory: Optional[Path] = None):
         """Initialize workspace manager.
         
         Args:
             workspace_id: Target workspace GUID
-            workspace_path: Local path containing items to deploy
+            workspace_path: Local path containing items to deploy (used for conflict scanning)
             items_in_scope: List of item types to include (e.g., ['Notebook', 'Lakehouse'])
+            repository_directory: Root directory passed to fabric_cicd as repository_directory.
+                When set to the *parent* of workspace_path, fabric_cicd will deploy items
+                into a named Fabric workspace folder matching workspace_path.name.
+                Defaults to workspace_path (items deploy to the Fabric workspace root).
         """
         self.workspace_id = workspace_id
         self.workspace_path = workspace_path
         self.items_in_scope = items_in_scope
+        self.repository_directory = repository_directory if repository_directory is not None else workspace_path
         self._fabric_workspace: Optional[FabricWorkspace] = None
     
     def get_fabric_workspace(self) -> FabricWorkspace:
@@ -40,7 +45,7 @@ class WorkspaceManager:
             credential = resolve_token_credential()
             self._fabric_workspace = FabricWorkspace(
                 workspace_id=self.workspace_id,
-                repository_directory=str(self.workspace_path),
+                repository_directory=str(self.repository_directory),
                 item_type_in_scope=self.items_in_scope,
                 token_credential=credential,
             )

@@ -40,6 +40,7 @@ class JumpstartSource(BaseModel):
             raise ValueError(
                 "files_source_path and files_destination_lakehouse must both be provided or both be omitted"
             )
+        return self
 
 class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""

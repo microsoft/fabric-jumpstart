@@ -56,6 +56,7 @@ class JumpstartInstaller:
         self.log_buffer: List[Dict] = []
         self.working_repo_path: Optional[Path] = None
         self.temp_workspace_path: Optional[Path] = None
+        self.repository_directory: Optional[Path] = None
         self.workspace_manager: Optional[WorkspaceManager] = None
         self.had_conflicts = False
         self.resolved_prefix: Optional[str] = None
@@ -133,7 +134,25 @@ class JumpstartInstaller:
             )
             logger.info(f"Cloned local repo_path {repo_path} to temp {self.working_repo_path}")
         
-        self.temp_workspace_path = self.working_repo_path / workspace_path.lstrip('/\\')
+        candidate = self.working_repo_path / workspace_path.lstrip('/\\')
+        # If the declared workspace_path doesn't exist in the repo, fall back to the
+        # repo root rather than creating an artificial folder named after workspace_path.
+        self.temp_workspace_path = candidate if candidate.exists() else self.working_repo_path
+
+        # Ensure a logical_id subfolder exists within temp_workspace_path so that
+        # fabric_cicd deploys items into a named Fabric workspace folder.
+        logical_id_folder = self.temp_workspace_path / logical_id
+        if not logical_id_folder.exists():
+            logger.info(
+                f"No '{logical_id}' folder found in workspace root; "
+                f"creating it and moving Fabric items inside."
+            )
+            logical_id_folder.mkdir(parents=True, exist_ok=True)
+            for item in list(self.temp_workspace_path.iterdir()):
+                if item.is_dir() and item != logical_id_folder:
+                    item.rename(logical_id_folder / item.name)
+
+        self.repository_directory = self.temp_workspace_path
         logger.info(f"Workspace path {self.temp_workspace_path}")
         return self.temp_workspace_path
     
@@ -155,7 +174,8 @@ class JumpstartInstaller:
         self.workspace_manager = WorkspaceManager(
             workspace_id=self.workspace_id,
             workspace_path=self.temp_workspace_path,
-            items_in_scope=items_in_scope
+            items_in_scope=items_in_scope,
+            repository_directory=self.repository_directory,
         )
         return self.workspace_manager
     

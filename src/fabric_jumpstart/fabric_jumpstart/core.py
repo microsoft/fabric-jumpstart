@@ -137,6 +137,7 @@ class jumpstart:
                     r'(\w+)\.list\s*\(',
                     r'(\w+)\._get_instance_name\s*\(',
                     r'(\w+)\.install\s*\(',
+                    r'(\w+)\._install_from_github\s*\(',
                 ]
 
                 for pattern in patterns:
@@ -187,7 +188,23 @@ class jumpstart:
         if not config:
             error_msg = f"Unknown jumpstart '{name}'. Use fabric_jumpstart.list() to list available jumpstarts."
             raise ValueError(error_msg)
+        return self._install_with_config(config, workspace_id, **kwargs)
 
+    def _install_with_config(self, config: dict, workspace_id: Optional[str] = None, non_registered_install: bool = False, **kwargs):
+        """
+        Core install orchestration. Runs all installation phases for a given config dict.
+
+        Both `install()` (registry-based) and `_install_from_github()` (direct source)
+        call this method, guaranteeing identical behaviour regardless of how the config
+        was obtained.
+
+        Args:
+            config: Full jumpstart configuration dictionary (same shape as registry entries)
+            workspace_id: Target workspace GUID (optional)
+            non_registered_install: True when called via _install_from_github (not from registry)
+            **kwargs: Forwarded to JumpstartInstaller
+        """
+        logical_id = config.get('logical_id', '')
         instance_name = self._get_instance_name()
         installer = JumpstartInstaller(config, workspace_id, instance_name, **kwargs)
         
@@ -209,7 +226,7 @@ class jumpstart:
             elapsed = time.monotonic() - _install_start_time if _install_start_time else 0.0
             html = render_install_status_html(
                 status=status_label,
-                jumpstart_name=config.get('name', name),
+                jumpstart_name=config.get('name', logical_id),
                 type=config.get('type', '').lower(),
                 workspace_id=installer.workspace_id,
                 entry_point=entry,
@@ -287,7 +304,7 @@ class jumpstart:
                     conflict_html = ConflictUI.render_conflict_html(
                         remaining_conflicts,
                         instance_name,
-                        name,
+                        logical_id,
                         installer.workspace_id
                     )
                     
@@ -312,7 +329,7 @@ class jumpstart:
                 # Phase 5: Deploy
                 logger.info(f"Deploying items from {installer.temp_workspace_path} to workspace '{installer.workspace_id}'")
                 target_ws = installer.deploy()
-                logger.info(f"Successfully installed '{name}'")
+                logger.info(f"Successfully installed '{logical_id}'")
                 
                 # Phase 6: Upload files to lakehouse (if configured)
                 installer.upload_files(target_ws, resolved_prefix)
@@ -324,12 +341,13 @@ class jumpstart:
                 install_mode = "update" if had_conflicts and installer.update_existing else "new"
 
                 track_install(
-                    jumpstart_id=name,
+                    jumpstart_id=logical_id,
                     jumpstart_numeric_id=config.get("id", 0),
                     jumpstart_type=config.get("type", ""),
                     status="success",
                     duration_seconds=round(_time.monotonic() - _telemetry_start_time, 1),
                     install_mode=install_mode,
+                    non_registered_install=non_registered_install,
                 )
                 
                 # Render success — animate progress bar to 100% first
@@ -348,7 +366,7 @@ class jumpstart:
                         base_elapsed = _t.monotonic() - _install_start_time
                         html = render_install_status_html(
                             status='installing',
-                            jumpstart_name=config.get('name', name),
+                            jumpstart_name=config.get('name', logical_id),
                             type=config.get('type', '').lower(),
                             workspace_id=installer.workspace_id,
                             entry_point=None,
@@ -367,7 +385,7 @@ class jumpstart:
 
                 status_html = render_install_status_html(
                     status='success',
-                    jumpstart_name=config.get('name', name),
+                    jumpstart_name=config.get('name', logical_id),
                     type=config.get('type', '').lower(),
                     workspace_id=installer.workspace_id,
                     entry_point=entry_url,
@@ -380,7 +398,7 @@ class jumpstart:
                 _update_live(status_label='success', entry=entry_url)
                 
                 if unattended:
-                    print(f"Installed '{name}' to workspace '{installer.workspace_id}'")
+                    print(f"Installed '{logical_id}' to workspace '{installer.workspace_id}'")
                     return None
                 
                 if live_rendering:
@@ -398,14 +416,15 @@ class jumpstart:
                     fail_install_mode = "update" if installer.had_conflicts and installer.update_existing else "new"
 
                     track_install(
-                        jumpstart_id=name,
+                        jumpstart_id=logical_id,
                         jumpstart_numeric_id=config.get("id", 0),
                         jumpstart_type=config.get("type", ""),
                         status="failure",
                         duration_seconds=round(_time.monotonic() - _telemetry_start_time, 1),
                         install_mode=fail_install_mode,
+                        non_registered_install=non_registered_install,
                     )
-                logger.exception(f"Failed to install jumpstart '{name}'")
+                logger.exception(f"Failed to install jumpstart '{logical_id}'")
                 error_text = str(e).strip() or e.__class__.__name__
                 
                 # Don't update_existing conflict UI if it's already been rendered
@@ -426,12 +445,12 @@ class jumpstart:
                     pass
                 
                 if unattended:
-                    print(f"Failed to install '{name}': {error_text}")
+                    print(f"Failed to install '{logical_id}': {error_text}")
                     raise
                 
                 status_html = render_install_status_html(
                     status='error',
-                    jumpstart_name=config.get('name', name),
+                    jumpstart_name=config.get('name', logical_id),
                     type=config.get('type', '').lower(),
                     workspace_id=installer.workspace_id,
                     entry_point=config.get('entry_point'),
@@ -453,3 +472,85 @@ class jumpstart:
                     pass
                 
                 raise RuntimeError(error_text)
+
+    def _install_from_github(
+        self,
+        logical_id: str,
+        repo_url: str,
+        repo_ref: str,
+        entry_point: str,
+        items_in_scope: list,
+        workspace_path: Optional[str] = None,
+        name: str = '',
+        files_source_path: Optional[str] = None,
+        files_destination_lakehouse: Optional[str] = None,
+        files_destination_path: str = '',
+        workspace_id: Optional[str] = None,
+        **kwargs,
+    ):
+        """
+        Install a jumpstart directly from a GitHub source without registry registration.
+
+        Use this method to test a jumpstart before it has been officially added to the
+        registry. All required source fields are provided as arguments.
+
+        By convention, Fabric workspace items live in a sub-folder of the repo whose name
+        matches ``logical_id``.  ``workspace_path`` defaults to ``"{logical_id}/"`` so
+        that parameter can usually be omitted.
+
+        Args:
+            logical_id: Kebab-case identifier for this jumpstart (e.g. "my-jumpstart").
+                        Used as the default workspace sub-folder name and as the item
+                        prefix key.
+            repo_url: Public GitHub repository URL.
+            repo_ref: Specific tag or commit SHA (not a branch).
+            entry_point: First item a user should open (e.g. "GettingStarted.Notebook").
+            items_in_scope: List of Fabric item type names included in this jumpstart.
+            workspace_path: Path within the repo containing the Fabric workspace items.
+                            Defaults to ``"{logical_id}/"`` when not provided.
+            name: Human-readable display name (optional; defaults to ``logical_id``).
+            files_source_path: Path within the repo to a folder of binary/data files to
+                                upload to the destination Lakehouse after deployment.
+                                Omit when no binary data upload is needed.
+            files_destination_lakehouse: Name of the Lakehouse item that receives the
+                                         uploaded files.  Required when
+                                         ``files_source_path`` is provided.
+            files_destination_path: Destination path inside the Lakehouse Files section.
+                                    Defaults to the root (``""``).
+            workspace_id: Target Fabric workspace GUID (optional; auto-detected inside
+                          a Fabric runtime).
+            **kwargs: Additional options forwarded to the installer
+                (unattended, item_prefix, update_existing, auto_prefix_on_conflict,
+                debug, repo_ref override, etc.).
+        """
+        effective_workspace_path = workspace_path if workspace_path is not None else f"{logical_id}/"
+
+        source_config: dict = {
+            'repo_url': repo_url,
+            'repo_ref': repo_ref,
+            'workspace_path': effective_workspace_path,
+        }
+        if files_source_path and files_destination_lakehouse:
+            source_config['files_source_path'] = files_source_path
+            source_config['files_destination_lakehouse'] = files_destination_lakehouse
+            source_config['files_destination_path'] = files_destination_path
+
+        synthetic_config = {
+            'id': 0,
+            'logical_id': logical_id,
+            'name': name or logical_id,
+            'description': '',
+            'date_added': '01/01/2025',
+            'workload_tags': [],
+            'scenario_tags': [],
+            'type': 'Tutorial',
+            'source': source_config,
+            'items_in_scope': items_in_scope,
+            'jumpstart_docs_uri': '',
+            'entry_point': entry_point,
+            'owner_email': '',
+            'minutes_to_deploy': 0,
+            'minutes_to_complete_jumpstart': 0,
+        }
+
+        return self._install_with_config(synthetic_config, workspace_id, non_registered_install=True, **kwargs)

@@ -19,7 +19,7 @@ scenario_tags:
 type: Demo
 source:
   repo_url: https://github.com/KornAlexander/hochschul-insights.git
-  repo_ref: v1.0.0
+  repo_ref: v1.0.1
   workspace_path: workspace/hochschul-insights/
   files_source_path: data/snapshot/
   files_destination_lakehouse: hochschul_insights_lh
@@ -38,7 +38,7 @@ minutes_to_deploy: 3
 minutes_to_complete_jumpstart: 10
 video_url: ""
 difficulty: "Beginner"
-last_updated: "2026-05-26"
+last_updated: "2026-06-02"
 mermaid_diagram: |
   graph LR
 

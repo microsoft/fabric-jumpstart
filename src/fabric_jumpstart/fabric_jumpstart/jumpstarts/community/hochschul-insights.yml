@@ -1,0 +1,78 @@
+id: 26
+logical_id: hochschul-insights
+name: Hochschul-Insights (German Higher Education)
+description: >-
+  End-to-end analytics on German higher-education data from DESTATIS GENESIS:
+  students, staff, third-party funding — 10 fact + 6 dimension tables, Direct
+  Lake semantic model, 8-page IBCS Power BI report with an Azure Map of all
+  422 Hochschulen, plus a Data Agent. Bundled snapshot; live refresh optional
+  via a free DESTATIS token.
+date_added: 05/26/2026
+workload_tags:
+  - Data Engineering
+  - Data Factory
+  - Data Science
+  - Power BI
+scenario_tags:
+  - Batch Processing
+  - Modeling
+type: Demo
+source:
+  repo_url: https://github.com/KornAlexander/hochschul-insights.git
+  repo_ref: v1.0.1
+  workspace_path: workspace/hochschul-insights/
+  files_source_path: data/snapshot/
+  files_destination_lakehouse: hochschul_insights_lh
+  files_destination_path: snapshot/
+items_in_scope:
+  - Lakehouse
+  - Notebook
+  - DataPipeline
+  - SemanticModel
+  - Report
+  - DataAgent
+entry_point: 00_start_here.Notebook
+test_suite: ""
+owner_email: alkorn@microsoft.com
+minutes_to_deploy: 3
+minutes_to_complete_jumpstart: 10
+video_url: ""
+difficulty: "Beginner"
+last_updated: "2026-06-02"
+mermaid_diagram: |
+  graph LR
+
+    %% EXTERNAL SOURCES
+    SNAP[bundled snapshot CSVs]:::U1F4BE
+    GENESIS[DESTATIS GENESIS API]:::U2601
+    WIKI[Wikidata SPARQL]:::U2601
+
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      direction LR
+      START[00_start_here]:::Notebook
+      LOADER[hochschul_insights_genesis_loader]:::Notebook
+      DIMS[hochschul_insights_genesis_dimensions]:::Notebook
+      SNAPSHOT[hochschul_insights_load_snapshot]:::Notebook
+      PIPELINE[hochschul_insights_pipeline]:::DataPipeline
+      LH[hochschul_insights_lh]:::Lakehouse
+      SM[HochschulInsights]:::SemanticModel
+      RPT[HochschulInsights]:::Report
+      AGT[hochschul_stats_agent]:::DataAgent
+    end
+
+    %% FLOWS
+    SNAP -.-> LH
+    GENESIS -.-> LOADER
+    WIKI -.-> DIMS
+    START --> LOADER
+    START --> DIMS
+    START --> SNAPSHOT
+    LOADER --> LH
+    DIMS --> LH
+    SNAPSHOT --> LH
+    PIPELINE --> LOADER
+    PIPELINE --> DIMS
+    LH --> SM
+    SM --> RPT
+    SM --> AGT

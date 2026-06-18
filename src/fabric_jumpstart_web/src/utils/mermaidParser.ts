@@ -38,6 +38,7 @@ export const FABRIC_ITEM_ICON_MAP: Record<string, string> = {
   MLExperiment: 'experiments_32_item.svg',
   UserDataFunction: 'user_data_function_32_item.svg',
   GraphQLApi: 'generic_placeholder_32_item.svg', //graph_ql_32_item.svg is not in the NPM module
+  Ontology: 'generic_placeholder_32_item.svg', //ontology_32_item.svg is not in the NPM module
 };
 
 export const ITEM_WORKLOAD_MAP: Record<string, string> = {
@@ -68,6 +69,7 @@ export const ITEM_WORKLOAD_MAP: Record<string, string> = {
   DataAgent: 'Data Science',
   UserDataFunction: 'Data Engineering',
   GraphQLApi: 'Real-Time Intelligence',
+  Ontology: 'Ontology',
 };
 
 export interface WorkloadFlow {

@@ -56,7 +56,8 @@ WORKLOAD_ICON_MAP = {
     "Data Factory": "data-factory.svg",
     "SQL Database": "sql-database.svg",
     "Power BI": "power-bi.svg",
-    "Data Science": "data-science.svg"
+    "Data Science": "data-science.svg",
+    "Ontology": "ontology.svg",
 }
 
 DEFAULT_WORKLOAD_ICON = WORKLOAD_ICON_MAP.get("Data Engineering")

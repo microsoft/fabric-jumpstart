@@ -26,5 +26,6 @@
   "DataAgent": "Data Agent",
   "UserDataFunction": "User Data Function",
   "GraphQLApi": "GraphQL API",
+  "Ontology": "Ontology",
   "Workspace": "Workspace"
 }

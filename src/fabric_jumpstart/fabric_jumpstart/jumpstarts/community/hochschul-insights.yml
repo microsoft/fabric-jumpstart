@@ -8,6 +8,7 @@ description: >-
   422 Hochschulen, plus a Data Agent. Bundled snapshot; live refresh optional
   via a free DESTATIS token.
 date_added: 05/26/2026
+include_in_listing: false
 workload_tags:
   - Data Engineering
   - Data Factory

@@ -1,0 +1,130 @@
+---
+title: Payer/Provider Healthcare Demo
+toc: true
+---
+
+This jumpstart deploys an **end-to-end healthcare payer/provider analytics stack** into your Microsoft Fabric workspace — a single launcher notebook builds a medallion lakehouse, runs Bronze→Silver→Gold ETL on synthetic claims, encounters, prescriptions, and SDOH data, publishes a Direct Lake Power BI report and a star-schema semantic model, grounds an HLS Data Agent on that model, and (opt-in) stands up a Real-Time Intelligence stack for fraud, care-gap, and high-cost-member scoring.
+
+<Callout>
+
+🏥 One notebook, one click, ~15 minutes. The launcher generates ~10K patients / 100K encounters / 100K claims of **100% synthetic** data, runs the full ETL, and lands a curated gold layer that powers a Power BI dashboard, a natural-language Data Agent, and an optional real-time scoring pipeline — no Python install, no `.env` files, no manual wiring.
+
+</Callout>
+
+⏱️ **Deploy time: ~10 minutes** for the install, then run **Run All** in `Healthcare_Launcher` and plan ~15–20 minutes for data generation and the ETL pipeline to finish. Real-Time Intelligence is opt-in via a single `DEPLOY_STREAMING = True` flag.
+
+<Callout>
+
+🔒 All data is **100% synthetic** — generated with realistic distributions but entirely fictional names and records. No real patient information (PHI) is used. This is an educational demo of Fabric capabilities; production healthcare solutions require additional HIPAA/HITECH security, compliance, and governance controls.
+
+</Callout>
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `lh_bronze_raw`, `lh_silver_stage`, `lh_silver_ods`, `lh_gold_curated` | Lakehouse | Medallion storage. Raw CSV lands in bronze; silver stages and enriches; gold holds the curated star schema (SCD2 dimensions, fact tables, aggregates, care gaps, HEDIS measures). |
+| `Healthcare_Launcher` | Notebook | The post-deploy orchestrator. **Run All** uploads knowledge docs, generates synthetic data, triggers the master pipeline, builds the semantic model, binds the report, deploys the ontology, and patches the Data Agent. |
+| ETL notebooks (`01_Bronze_Ingest_CSV`, `02_Silver_Stage_Clean`, `03_Silver_ODS_Enrich`, `06_Gold_Transform_Load`, `NB_Generate_Sample_Data`) | Notebook | Spark-based medallion processing plus the synthetic data generator (~10K patients, 100K encounters/claims, ~250K prescriptions, ~200K diagnoses, ~560 SDOH zip codes). |
+| `PL_Healthcare_Master`, `PL_Healthcare_Full_Load` | DataPipeline | Orchestration of the Bronze→Silver→Gold load with full and incremental modes. |
+| `HealthcareDemoHLS` | SemanticModel | Direct Lake star schema (facts + dimensions) over the gold lakehouse for Power BI. |
+| `HealthcareAnalyticsDashboard` | Report | Power BI report — multiple pages of denial-risk, readmission, adherence, SDOH, and payer-contract analytics. |
+| `HealthcareHLSAgent` | DataAgent | Copilot Data Agent grounded on the gold lakehouse + semantic model, answering natural-language questions over the curated data. |
+| `Healthcare_RTI_Eventhouse` ⚡ | Eventhouse | Real-Time Intelligence compute engine (only when `DEPLOY_STREAMING = True`). |
+| `Healthcare_RTI_DB` ⚡ | KQLDatabase | KQL database with streaming tables and update policies feeding the scoring notebooks (only when `DEPLOY_STREAMING = True`). |
+
+<Callout>
+
+⚡ The Eventhouse, KQL database, Eventstream, RTI scoring notebooks, and RTI dashboard are **opt-in**. They deploy only when you set `DEPLOY_STREAMING = True` in the launcher's CONFIG cell, so the default install stays lean and the real-time stack is there when you want to demo it.
+
+</Callout>
+
+## How It Works
+
+The solution is a **dual-path design**: an authoritative **batch ETL** path that runs the medallion load on demand, and an operational **Real-Time Intelligence** path that scores live events sub-minute. The batch path feeds streaming — the gold dimension tables are the enrichment layer real-time scoring joins against.
+
+### Deploy — the launcher notebook
+
+`Healthcare_Launcher` is the entry point. The Fabric Jumpstart installer creates the workspace items from the repo ahead of time; **Run All** then executes the runtime steps that bring the workspace to life:
+
+1. Upload clinical knowledge docs from the repo into `lh_gold_curated/Files/healthcare_knowledge/`.
+2. Run `NB_Generate_Sample_Data` to emit ~10K patients, 100K encounters, claims, prescriptions, diagnoses, SDOH, and HEDIS measures.
+3. Trigger `PL_Healthcare_Master` with `load_mode=full` — the Bronze→Silver→Gold ETL (~8–15 min).
+4. Create and refresh the `HealthcareDemoHLS` Direct Lake semantic model, then bind the `HealthcareAnalyticsDashboard` Power BI report to it.
+5. Deploy the healthcare ontology and patch `HealthcareHLSAgent` datasources with the real lakehouse / semantic model IDs.
+
+Everything runs unattended; the CONFIG cell lets you point at your own fork, toggle knowledge-doc / data / pipeline stages, and enable streaming.
+
+### Batch path — medallion ETL
+
+The four lakehouses implement a classic medallion architecture:
+
+- **Bronze** (`lh_bronze_raw`) — raw synthetic CSVs landed as-is.
+- **Silver** (`lh_silver_stage` → `lh_silver_ods`) — cleansed, conformed, and enriched operational data.
+- **Gold** (`lh_gold_curated`) — the curated star schema: SCD2 dimensions (`dim_patient`, `dim_provider`, `dim_payer`, `dim_diagnosis`, `dim_medication`, `dim_sdoh`), fact tables (`fact_encounter`, `fact_claim`, `fact_prescription`, `fact_diagnosis`), aggregates (readmission, medication adherence), and `care_gaps` / `hedis_measures`.
+
+### Consume — semantic model, report, and Data Agent
+
+The gold layer powers three consumption surfaces:
+
+- **`HealthcareDemoHLS`** — a Direct Lake semantic model exposing the star schema to Power BI.
+- **`HealthcareAnalyticsDashboard`** — a Power BI report covering denial-risk, readmissions, medication adherence (PDC), SDOH stratification, and payer-contract analytics.
+- **`HealthcareHLSAgent`** — a Fabric Data Agent grounded on the gold lakehouse and semantic model. Ask, for example, *"Show me medication adherence for Betty Brown age 83 by drug class"* and it returns per-class PDC, gap days, and adherence category.
+
+### Real-Time path — three payer/provider use cases (opt-in)
+
+With `DEPLOY_STREAMING = True`, an Eventstream lands live events into the `Healthcare_RTI_DB` KQL database, and three scoring notebooks join those events against the gold dimensions:
+
+| Use case | Reads | Joins | Writes |
+|----------|-------|-------|--------|
+| **Claims Fraud Detection** | `claims_events` | `dim_provider`, historical `fact_claim` | `fraud_scores` |
+| **Care Gap Closure** | `adt_events` | `care_gaps`, `hedis_measures`, `dim_patient` | `care_gap_alerts` |
+| **High-Cost Member Trajectory** | `claims_events` + `adt_events` | `dim_patient` | `highcost_alerts` |
+
+A 4-page KQL Real-Time Dashboard (30s auto-refresh) surfaces the fraud heatmap, live care-gap closure, and high-cost trend, and a Data Activator / Reflex can push the alert into Microsoft Teams the moment an event fires.
+
+## Try It — A Quick Walkthrough
+
+1. **Install** — in a setup notebook run `jumpstart.install("payer-provider-healthcare", update_existing=True)` and wait for the ~10-minute deploy.
+2. **Run the launcher** — open `Healthcare_Launcher`, optionally edit the CONFIG cell (set `DEPLOY_STREAMING = True` for the full RTI stack), and **Run All**. Wait ~15–20 minutes for data generation and the ETL.
+3. **Explore the report** — open `HealthcareAnalyticsDashboard` and walk the denial-risk, readmission, adherence, and SDOH pages.
+4. **Ask the Data Agent** — open `HealthcareHLSAgent` and ask *"Which payer had the highest denial rate last quarter?"* or *"List non-adherent CHF patients with a readmission risk score above 0.7."*
+5. **Inspect the gold layer** — open `lh_gold_curated` and query the star-schema dimensions, facts, `care_gaps`, and `hedis_measures` tables directly.
+6. **(Optional) Demo real-time** — if you enabled streaming, open the RTI Dashboard to watch fraud, care-gap, and high-cost scores update live, and wire a Data Activator alert into Teams.
+
+## Extending the Accelerator
+
+| Extension | How |
+|-----------|-----|
+| Replace synthetic data with real feeds | Point your EHR / claims clearinghouse / pharmacy PBM at the same Bronze ingestion or the RTI Eventstream `CustomEndpoint` — the medallion and scoring logic are schema-driven. |
+| Add payers, departments, or measures | Extend the generator config in `NB_Generate_Sample_Data` and the dimension build in the gold notebook — no downstream schema changes needed for the existing tables. |
+| Add an Activator alert | Add a Fabric Data Activator on a KQL query against `fraud_scores`, `care_gap_alerts`, or `highcost_alerts` to push Teams / email / Power Automate actions when a threshold trips. |
+| Ground a Foundry agent | Layer an Azure AI Foundry orchestrator agent on the clinical knowledge docs in `lh_gold_curated/Files/healthcare_knowledge/` for cited care-plan reasoning on top of the structured data. |
+| Tune data volumes | Adjust the row counts in the CONFIG / generator cells to scale patients, encounters, and claims up or down for performance or cost testing. |
+
+## Cost Notes
+
+<Callout>
+
+💰 The default (batch-only) install has **no steady-state streaming cost** — once the ETL finishes, the lakehouses, semantic model, report, and Data Agent sit idle until queried. The Real-Time Intelligence stack (Eventhouse + KQL database + dashboard) is the main steady-state cost driver, which is exactly why it is gated behind `DEPLOY_STREAMING = True`. Leave it off unless you are actively demoing real-time scoring.
+
+</Callout>
+
+The ETL pipeline is the largest one-time spend (Spark compute for ~10K patients / 100K encounters). Lower the generated row counts in the CONFIG cell if you want a faster, cheaper deploy.
+
+## Requirements
+
+- A Microsoft Fabric workspace with **F64+ capacity recommended** (F2 works for batch-only; the Direct Lake semantic model and RTI stack benefit from more capacity).
+- Permissions to create Lakehouse, Notebook, Data Pipeline, Semantic Model, Report, and Data Agent items (plus Eventhouse / KQL Database / Eventstream for streaming).
+- Outbound internet from the Fabric Spark session running the launcher — it pulls the repo and clinical knowledge docs on first run.
+- Copilot / Fabric AI enabled in the tenant for the `HealthcareHLSAgent` Data Agent.
+
+## Resources
+
+- [Source repository — rasgiza/Fabric-Payer-Provider-HealthCare-Demo-Jumpstart @ v1.0.1](https://github.com/rasgiza/Fabric-Payer-Provider-HealthCare-Demo-Jumpstart)
+- [Microsoft Fabric documentation](https://learn.microsoft.com/fabric/)
+- [Medallion architecture in Fabric Lakehouse](https://learn.microsoft.com/fabric/onelake/onelake-medallion-lakehouse-architecture)
+- [Direct Lake semantic models](https://learn.microsoft.com/fabric/fundamentals/direct-lake-overview)
+- [Fabric Data Agents](https://learn.microsoft.com/fabric/data-science/concept-data-agent)
+- [Real-Time Intelligence overview](https://learn.microsoft.com/fabric/real-time-intelligence/overview)
+- [Data Activator overview](https://learn.microsoft.com/fabric/data-activator/data-activator-introduction)

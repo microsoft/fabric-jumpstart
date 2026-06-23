@@ -8,7 +8,7 @@ description: >-
   and an opt-in Real-Time Intelligence stack (Eventhouse + KQL DB) for
   fraud, care-gap, and high-cost-member scoring on synthetic data.
 date_added: 06/15/2026
-include_in_listing: true
+include_in_listing: false
 workload_tags:
 - Power BI
 - Data Engineering
@@ -33,7 +33,7 @@ items_in_scope:
 - DataAgent
 - Eventhouse
 - KQLDatabase
-jumpstart_docs_uri: 'https://github.com/rasgiza/Fabric-Payer-Provider-HealthCare-Demo-Jumpstart/blob/main/README.md'
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/payer-provider-healthcare
 entry_point: Healthcare_Launcher.Notebook
 test_suite: ''
 owner_email: kwamesefah@microsoft.com

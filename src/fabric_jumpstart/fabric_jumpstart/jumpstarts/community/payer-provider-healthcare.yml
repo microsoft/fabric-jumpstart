@@ -1,4 +1,4 @@
-id: 26  # Next available after highest existing id (25); maintainers may reassign during PR review
+id: 27
 logical_id: payer-provider-healthcare
 name: Payer/Provider Healthcare Demo
 description: >-
@@ -41,73 +41,3 @@ minutes_to_deploy: 10
 minutes_to_complete_jumpstart: 30
 difficulty: "Intermediate"
 last_updated: "2026-06-15"
-mermaid_diagram: |
-  graph LR
-
-      %% SOURCES
-      subgraph Sources
-          direction LR
-          SD[Synthetic Generator]:::U1F3AD
-          KB[Clinical Knowledge Docs]:::U1F4DA
-      end
-
-      %% FABRIC WORKSPACE
-      subgraph Fabric:::Workspace
-          direction LR
-
-          LAUNCH[Healthcare_Launcher]:::Notebook
-
-          %% Medallion lakehouses
-          LB[lh_bronze_raw]:::Lakehouse
-          LSS[lh_silver_stage]:::Lakehouse
-          LSO[lh_silver_ods]:::Lakehouse
-          LG[lh_gold_curated]:::Lakehouse
-
-          %% Pipelines
-          PLM[PL_Healthcare_Master]:::DataPipeline
-          PLF[PL_Healthcare_Full_Load]:::DataPipeline
-          PLR[PL_Healthcare_RTI]:::DataPipeline
-
-          %% Notebooks (key)
-          NB1[01_Bronze_Ingest_CSV]:::Notebook
-          NB2[02_Silver_Stage_Clean]:::Notebook
-          NB3[03_Silver_ODS_Enrich]:::Notebook
-          NB4[06_Gold_Transform_Load]:::Notebook
-          NBG[NB_Generate_Sample_Data]:::Notebook
-
-          %% Analytics
-          SM[HealthcareDemoHLS]:::SemanticModel
-          RPT[HealthcareAnalyticsDashboard]:::Report
-          DA[HealthcareHLSAgent]:::DataAgent
-
-          %% Real-Time Intelligence (opt-in)
-          EH[Healthcare_RTI_Eventhouse]:::Eventhouse
-          KDB[Healthcare_RTI_DB]:::KQLDatabase
-          NBR[NB_RTI_Fraud_Detection<br/>NB_RTI_Care_Gap_Alerts<br/>NB_RTI_HighCost_Trajectory]:::Notebook
-      end
-
-      %% FLOWS
-      LAUNCH -.-> NBG
-      LAUNCH -.-> PLM
-      SD -.-> NBG
-      KB -.-> LG
-      NBG -.-> LB
-      PLM -.-> NB1
-      NB1 -.-> LB
-      LB -.-> NB2
-      NB2 -.-> LSS
-      LSS -.-> NB3
-      NB3 -.-> LSO
-      LSO -.-> NB4
-      NB4 -.-> LG
-      PLF -.-> PLM
-      LG -.-> SM
-      SM -.-> RPT
-      SM -.-> DA
-      LG -.-> DA
-      LAUNCH -.-> PLR
-      PLR -.-> EH
-      PLR -.-> KDB
-      EH -.-> KDB
-      LB -.-> NBR
-      NBR -.-> LG

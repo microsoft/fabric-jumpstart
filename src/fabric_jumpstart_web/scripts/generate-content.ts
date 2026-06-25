@@ -339,6 +339,12 @@ async function fetchInstallCounts(): Promise<Record<string, number>> {
     '| summarize install_count = count() by jumpstart_id',
   ].join('\n');
 
+  // Without an explicit timespan the Application Insights API defaults to a
+  // short rolling window (~24h–30 days depending on the query), which causes
+  // historical events to silently drop out of the totals over time. Send an
+  // explicit ISO-8601 timespan so the query honors the full data retention.
+  const timespan = process.env.APPINSIGHTS_TIMESPAN?.trim() || 'P365D';
+
   const url = `https://api.applicationinsights.io/v1/apps/${appId}/query`;
 
   try {
@@ -348,7 +354,7 @@ async function fetchInstallCounts(): Promise<Record<string, number>> {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
       },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ query, timespan }),
       signal: AbortSignal.timeout(15_000),
     });
 

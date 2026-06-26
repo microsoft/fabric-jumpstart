@@ -22,7 +22,7 @@ scenario_tags:
 type: Demo
 source:
   repo_url: https://github.com/rasgiza/Fabric-Payer-Provider-HealthCare-Demo-Jumpstart.git
-  repo_ref: v1.0.6
+  repo_ref: v1.0.7
   workspace_path: payer-provider-healthcare/
   files_source_path: healthcare_knowledge/
   files_destination_lakehouse: lh_gold_curated

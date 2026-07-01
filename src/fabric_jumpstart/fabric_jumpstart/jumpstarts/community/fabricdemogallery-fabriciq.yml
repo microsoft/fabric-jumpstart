@@ -1,0 +1,44 @@
+id: 27
+logical_id: fabricdemogallery-fabriciq
+name: FabricIQ Ontology and Data Agent
+description: >-
+  Build a semantic ontology over a Lakehouse (business entities) and an
+  Eventhouse (time-series), bind it to real tables, and expose it through a
+  Fabric Data Agent for natural-language, context-aware analytics.
+date_added: 07/01/2026
+workload_tags:
+  - Ontology
+  - Real-Time Intelligence
+  - Data Science
+scenario_tags:
+  - Modeling
+type: Demo
+source:
+  repo_url: https://github.com/omerizm47/fabric-jumpstart-fabriciq-ontology.git
+  repo_ref: v0.1.15
+  workspace_path: fabricdemogallery-fabriciq/
+# fabric-cicd deploys the Lakehouse, Eventhouse (with its KQL database), and the
+# Notebooks. The Ontology item and the two Data Agents are created at runtime by
+# GettingStarted.Notebook (which orchestrates 01 then 02), so items_in_scope
+# lists deployed types only.
+items_in_scope:
+  - Lakehouse
+  - Eventhouse
+  - KQLDatabase
+  - Notebook
+entry_point: GettingStarted.Notebook
+owner_email: omerguzel@microsoft.com
+difficulty: Advanced
+minutes_to_deploy: 5
+minutes_to_complete_jumpstart: 25
+mermaid_diagram: |
+  graph LR
+    DATA[Industry data]:::U1F4E6 --> NB1[01_generate_ontology_data]:::Notebook
+    NB1 --> LH[fabriciq_lakehouse]:::Lakehouse
+    NB1 --> EH[fabriciq_eventhouse]:::Eventhouse
+    LH --> NB2[02_create_ontology]:::Notebook
+    EH --> NB2
+    NB2 --> ONT[FabricIqOntology]:::Ontology
+    ONT --> OAG[Ontology Data Agent]:::DataAgent
+    LH -.-> DAG[Direct Data Agent]:::DataAgent
+    EH -.-> DAG

@@ -33,12 +33,25 @@ minutes_to_deploy: 5
 minutes_to_complete_jumpstart: 25
 mermaid_diagram: |
   graph LR
-    DATA[Industry data]:::U1F4E6 --> NB1[01_generate_ontology_data]:::Notebook
-    NB1 --> LH[fabriciq_lakehouse]:::Lakehouse
-    NB1 --> EH[fabriciq_eventhouse]:::Eventhouse
-    LH --> NB2[02_create_ontology]:::Notebook
+    DATA[Industry data]:::U1F4E6
+
+    subgraph Fabric:::Workspace
+      NB1[01_generate_ontology_data]:::Notebook
+      NB2[02_create_ontology]:::Notebook
+      LH[fabriciq_lakehouse]:::Lakehouse
+      EH[fabriciq_eventhouse]:::Eventhouse
+      ONT[FabricIqOntology]:::Ontology
+      OAG[Ontology Data Agent]:::DataAgent
+      DAG[Direct Data Agent]:::DataAgent
+      direction LR
+    end
+
+    DATA --> NB1
+    NB1 --> LH
+    NB1 --> EH
+    LH --> NB2
     EH --> NB2
-    NB2 --> ONT[FabricIqOntology]:::Ontology
-    ONT --> OAG[Ontology Data Agent]:::DataAgent
-    LH -.-> DAG[Direct Data Agent]:::DataAgent
+    NB2 --> ONT
+    ONT --> OAG
+    LH -.-> DAG
     EH -.-> DAG

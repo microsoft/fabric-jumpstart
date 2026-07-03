@@ -92,6 +92,12 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
      - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
      - `install_options` _(optional)_: List of kebab-case install variants (e.g., industries). Each option must have its own subfolder under `workspace_path` containing that variant's Fabric items (e.g., `my-jumpstart/healthcare/`). Users then select a variant at install time — `jumpstart.install('<logical-id>', install_option='healthcare')` — and only that option's folder is deployed. The website renders a dropdown for the options and updates the install snippet accordingly.
      - `install_options_label` _(optional)_: Display label for the option dropdown on the website (e.g., `Industry choice`). Defaults to "Install option". Requires `install_options`.
+     - `data_load` _(optional)_: Declarative sample-data load executed by the installer after deployment — entirely via REST APIs, with no notebook execution and no code from the content repository ever running. Use this instead of a "run this notebook first" step so the install is a single command. Fields:
+       - `source`: Repo-relative path to a folder or `.zip` archive of CSV files. Supports the `{install_option}` token (e.g., `my-jumpstart/data/{install_option}_package.zip`).
+       - `shift_timestamps_to_now` _(optional)_: When `true`, all timestamp-like columns are shifted by a single global day-offset so the newest event lands ~yesterday (keeps demo data "fresh"; idempotent).
+       - `lakehouse_tables` _(optional)_: `{lakehouse: <name>, archive_path: <prefix>}` — each CSV under the prefix becomes a Delta table (Load Table API; falls back to a short-lived Livy session for schema-enabled lakehouses).
+       - `kusto_tables` _(optional)_: `{database: <name>, archive_path: <prefix>}` — each CSV under the prefix becomes a KQL table (schema inferred, inline ingestion).
+       - `refresh_definitions` _(optional)_: List of `<Name>.<ItemType>` items to re-save after the load (e.g., an Ontology, so its graph ingests the loaded data).
      - `entry_point`: Either a URL or `<name>.<item_type>` format
      - `owner_email`: Valid email address
 1. Run `fabric_jumpstart.install('<logical-id>', workspace_id='<workspace_guid>')` to validate the Jumpstart deploys correctly (see [dev_example.ipynb](../../dev/dev_example.ipynb) for a quick way to test).

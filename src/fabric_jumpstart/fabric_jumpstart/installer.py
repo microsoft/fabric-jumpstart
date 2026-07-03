@@ -405,6 +405,38 @@ class JumpstartInstaller:
         logger.info("Uploaded %d file(s) to lakehouse '%s'", count, lakehouse_name)
         return count
     
+    def load_data(self, prefix: Optional[str]) -> dict:
+        """Execute the jumpstart's declarative data_load block (if any).
+
+        Loads CSVs from the cloned source into Lakehouse/Kusto tables and
+        refreshes item definitions - entirely via REST, no notebook execution.
+
+        Args:
+            prefix: Applied item prefix (or None)
+
+        Returns:
+            Load summary dict ({} when data_load is not configured)
+        """
+        if not self.config.get("data_load"):
+            return {}
+        if self.working_repo_path is None:
+            raise RuntimeError("working_repo_path must be set before loading data")
+        if self.workspace_id is None:
+            raise RuntimeError("workspace_id must be set before loading data")
+
+        from .data_loader import DataLoader
+
+        logger.info("Loading sample data (declarative data_load)...")
+        loader = DataLoader(
+            config=self.config,
+            workspace_id=self.workspace_id,
+            working_repo_path=self.working_repo_path,
+            install_option=self.install_option,
+            item_prefix=prefix,
+            on_progress=lambda msg: logger.info(msg),
+        )
+        return loader.run()
+    
     def generate_entry_url(self, target_ws: FabricWorkspace, prefix: Optional[str]) -> Optional[str]:
         """Generate entry point URL for deployed jumpstart.
         

@@ -339,6 +339,9 @@ class jumpstart:
                 # Phase 6: Upload files to lakehouse (if configured)
                 installer.upload_files(target_ws, resolved_prefix)
 
+                # Phase 6.5: Declarative data load (if configured)
+                installer.load_data(resolved_prefix)
+
                 # Phase 7: Generate entry URL
                 entry_url = installer.generate_entry_url(target_ws, resolved_prefix)
 

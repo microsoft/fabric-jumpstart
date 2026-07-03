@@ -185,6 +185,17 @@ class WorkspaceManager:
             for flag in feature_flags:
                 append_feature_flag(flag)
         
+        # TEMP SHIM: fabric-cicd 1.1.0 publishes DataAgent (order 25) before Ontology
+        # (order 27), so a DataAgent referencing $items.Ontology.<name>.$id fails on
+        # first deploy. Swap them so the Ontology publishes first.
+        # Remove once fabric-cicd fixes SERIAL_ITEM_PUBLISH_ORDER upstream.
+        from fabric_cicd import constants as _cicd_constants
+        _order = _cicd_constants.SERIAL_ITEM_PUBLISH_ORDER
+        _inv = {v.value: k for k, v in _order.items()}
+        if "DataAgent" in _inv and "Ontology" in _inv and _inv["DataAgent"] < _inv["Ontology"]:
+            _order[_inv["DataAgent"]], _order[_inv["Ontology"]] = _order[_inv["Ontology"]], _order[_inv["DataAgent"]]
+            logger.info("Publish-order shim applied: Ontology now publishes before DataAgent")
+        
         workspace = self.get_fabric_workspace()
         logger.info(f"Deploying items from {self.workspace_path} to workspace '{self.workspace_id}'")
         publish_all_items(workspace)

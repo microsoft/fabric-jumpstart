@@ -1,0 +1,437 @@
+"""Declarative post-deploy data loading (the ``data_load`` YAML block).
+
+Runs entirely client-side against public Fabric/Kusto REST APIs — no Spark, no
+notebook execution, and no code from the jumpstart's content repository is ever
+executed. The library only interprets data files.
+
+YAML shape::
+
+    data_load:
+      source: my-jumpstart/data/{install_option}_package.zip   # repo-relative file or folder
+      shift_timestamps_to_now: true          # optional, default false
+      lakehouse_tables:                      # optional
+        lakehouse: my_lakehouse
+        archive_path: instance_data/         # csv members -> one Delta table each
+      kusto_tables:                          # optional
+        database: my_eventhouse
+        archive_path: events_data/           # csv members -> one KQL table each
+      refresh_definitions:                   # optional; re-save items after load
+        - MyOntology.Ontology
+
+CSV file names map to table names (sanitized: non-alphanumerics -> ``_``,
+lowercased, ``t_`` prefix when starting with a digit).
+"""
+
+from __future__ import annotations
+
+import csv
+import io
+import json
+import logging
+import re
+import time
+import zipfile
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import requests
+
+from .utils import resolve_token_credential
+
+logger = logging.getLogger(__name__)
+
+FABRIC_API = "https://api.fabric.microsoft.com/v1"
+ONELAKE_DFS = "https://onelake.dfs.fabric.microsoft.com"
+
+_TS_FORMATS = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d")
+_INGEST_CHUNK_BYTES = 900_000  # stay under the 1MB inline ingest limit
+
+
+def sanitize_table_name(file_name: str) -> str:
+    """CSV member name -> table name (accelerator-compatible sanitization)."""
+    base = file_name.rsplit("/", 1)[-1]
+    base = re.sub(r"\.csv$", "", base, flags=re.I)
+    base = re.sub(r"[^0-9a-zA-Z]+", "_", base).strip("_").lower()
+    if base and base[0].isdigit():
+        base = f"t_{base}"
+    return base
+
+
+def _parse_ts(value: str) -> Tuple[Optional[datetime], Optional[str]]:
+    for fmt in _TS_FORMATS:
+        try:
+            return datetime.strptime(value, fmt), fmt
+        except ValueError:
+            continue
+    return None, None
+
+
+def shift_timestamps(members: Dict[str, bytes], paths: List[str]) -> Dict[str, bytes]:
+    """Shift timestamp-ish columns in the given csv members so the newest lands ~yesterday.
+
+    A single global day-offset preserves relative order and time-of-day.
+    Idempotent: re-running shifts by ~0 days.
+    """
+    def in_scope(name: str) -> bool:
+        return any(name.startswith(p) for p in paths) and name.lower().endswith(".csv")
+
+    global_max: Optional[datetime] = None
+    for name, data in members.items():
+        if not in_scope(name):
+            continue
+        reader = csv.DictReader(io.StringIO(data.decode("utf-8")))
+        for row in reader:
+            for col, val in row.items():
+                if col and "timestamp" in col.lower() and val:
+                    ts, _ = _parse_ts(val)
+                    if ts and (global_max is None or ts > global_max):
+                        global_max = ts
+
+    if global_max is None:
+        logger.info("No timestamp columns found - skipping shift")
+        return members
+
+    now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+    delta = timedelta(days=(now_utc - timedelta(days=1) - global_max).days)
+    if delta.days <= 0:
+        logger.info(f"Timestamps already current (max {global_max:%Y-%m-%d}) - no shift needed")
+        return members
+
+    shifted = dict(members)
+    for name in list(shifted):
+        if not in_scope(name):
+            continue
+        reader = csv.DictReader(io.StringIO(shifted[name].decode("utf-8")))
+        fieldnames = list(reader.fieldnames or [])
+        if not fieldnames:
+            continue
+        out = io.StringIO()
+        writer = csv.DictWriter(out, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        for row in reader:
+            for col in fieldnames:
+                if col and "timestamp" in col.lower() and row[col]:
+                    ts, fmt = _parse_ts(row[col])
+                    if ts and fmt:
+                        row[col] = (ts + delta).strftime(fmt)
+            writer.writerow(row)
+        shifted[name] = out.getvalue().encode("utf-8")
+    logger.info(f"Shifted timestamps forward by {delta.days} days (was max {global_max:%Y-%m-%d})")
+    return shifted
+
+
+def infer_kusto_type(values: List[str]) -> str:
+    """Infer a Kusto column type from sample values (port of the notebook logic)."""
+    non_empty = [v for v in values if v not in (None, "")]
+    if not non_empty:
+        return "string"
+    ts_hits = sum(1 for v in non_empty if _parse_ts(v)[0] is not None)
+    if ts_hits / len(non_empty) >= 0.9:
+        return "datetime"
+    if all(re.fullmatch(r"[+-]?\d+", v) for v in non_empty):
+        return "long"
+    try:
+        for v in non_empty:
+            float(v)
+        return "real"
+    except ValueError:
+        pass
+    if all(v.lower() in ("true", "false") for v in non_empty):
+        return "bool"
+    return "string"
+
+
+class DataLoader:
+    """Executes a jumpstart's declarative ``data_load`` block."""
+
+    def __init__(
+        self,
+        config: dict,
+        workspace_id: str,
+        working_repo_path: Path,
+        install_option: Optional[str] = None,
+        item_prefix: Optional[str] = None,
+        on_progress=None,
+    ):
+        self.spec = config.get("data_load") or {}
+        self.workspace_id = workspace_id
+        self.working_repo_path = working_repo_path
+        self.install_option = install_option
+        self.item_prefix = item_prefix or ""
+        self.on_progress = on_progress or (lambda msg: None)
+        self._credential = None
+        self._items_cache: Optional[list] = None
+
+    # ── auth / REST helpers ─────────────────────────────────────────────
+
+    def _token(self, scope: str) -> str:
+        if self._credential is None:
+            self._credential = resolve_token_credential()
+        return self._credential.get_token(scope).token
+
+    def _fabric_headers(self) -> dict:
+        return {
+            "Authorization": f"Bearer {self._token('https://api.fabric.microsoft.com/.default')}",
+            "Content-Type": "application/json",
+        }
+
+    def _wait_lro(self, response: requests.Response, timeout_s: int = 600) -> None:
+        if response.status_code not in (200, 202):
+            raise RuntimeError(f"Fabric API error {response.status_code}: {response.text[:300]}")
+        if response.status_code == 200:
+            return
+        location = response.headers.get("Location") or response.headers.get("Azure-AsyncOperation")
+        if not location:
+            return
+        deadline = time.time() + timeout_s
+        while time.time() < deadline:
+            status = requests.get(location, headers=self._fabric_headers(), timeout=60)
+            body = status.json() if status.text else {}
+            state = body.get("status", "")
+            if state == "Succeeded":
+                return
+            if state in ("Failed", "Cancelled"):
+                raise RuntimeError(f"Fabric operation {state}: {json.dumps(body)[:400]}")
+            time.sleep(3)
+        raise RuntimeError("Fabric operation timed out")
+
+    def _workspace_item(self, name: str, item_type: str) -> dict:
+        if self._items_cache is None:
+            r = requests.get(
+                f"{FABRIC_API}/workspaces/{self.workspace_id}/items",
+                headers=self._fabric_headers(),
+                timeout=60,
+            )
+            r.raise_for_status()
+            self._items_cache = r.json()["value"]
+        prefixed = f"{self.item_prefix}{name}"
+        for item in self._items_cache:
+            if item["displayName"] == prefixed and item["type"] == item_type:
+                return item
+        raise RuntimeError(f"Deployed item '{prefixed}' ({item_type}) not found in workspace")
+
+    # ── source resolution ───────────────────────────────────────────────
+
+    def _read_members(self) -> Dict[str, bytes]:
+        raw_source = self.spec["source"]
+        if "{install_option}" in raw_source:
+            if not self.install_option:
+                raise RuntimeError("data_load.source uses {install_option} but no install option was provided")
+            raw_source = raw_source.replace("{install_option}", self.install_option)
+        source = self.working_repo_path / raw_source.lstrip("/\\")
+        if not source.exists():
+            raise RuntimeError(f"data_load source not found in repository: {raw_source}")
+        members: Dict[str, bytes] = {}
+        if source.is_dir():
+            for f in source.rglob("*.csv"):
+                members[str(f.relative_to(source)).replace("\\", "/")] = f.read_bytes()
+        else:
+            with zipfile.ZipFile(source) as z:
+                for n in z.namelist():
+                    members[n] = z.read(n)
+        return members
+
+    # ── lakehouse ───────────────────────────────────────────────────────
+
+    def _upload_to_files(self, lakehouse_id: str, rel_path: str, data: bytes) -> None:
+        token = self._token("https://storage.azure.com/.default")
+        headers = {"Authorization": f"Bearer {token}"}
+        base = f"{ONELAKE_DFS}/{self.workspace_id}/{lakehouse_id}/{rel_path}"
+        r = requests.put(f"{base}?resource=file", headers=headers, timeout=60)
+        if r.status_code not in (200, 201):
+            raise RuntimeError(f"OneLake create failed {r.status_code}: {r.text[:200]}")
+        r = requests.patch(
+            f"{base}?action=append&position=0",
+            headers={**headers, "Content-Type": "application/octet-stream"},
+            data=data,
+            timeout=300,
+        )
+        if r.status_code not in (200, 202):
+            raise RuntimeError(f"OneLake append failed {r.status_code}: {r.text[:200]}")
+        r = requests.patch(f"{base}?action=flush&position={len(data)}", headers=headers, timeout=60)
+        if r.status_code not in (200, 202):
+            raise RuntimeError(f"OneLake flush failed {r.status_code}: {r.text[:200]}")
+
+    def load_lakehouse_tables(self, members: Dict[str, bytes]) -> List[str]:
+        block = self.spec.get("lakehouse_tables")
+        if not block:
+            return []
+        lakehouse = self._workspace_item(block["lakehouse"], "Lakehouse")
+        prefix = block.get("archive_path", "")
+        loaded = []
+        for name, data in sorted(members.items()):
+            if not (name.startswith(prefix) and name.lower().endswith(".csv")):
+                continue
+            table = sanitize_table_name(name)
+            rel = f"Files/_jumpstart_load/{table}.csv"
+            self.on_progress(f"Loading lakehouse table '{table}'...")
+            self._upload_to_files(lakehouse["id"], rel, data)
+            r = requests.post(
+                f"{FABRIC_API}/workspaces/{self.workspace_id}/lakehouses/{lakehouse['id']}/tables/{table}/load",
+                headers=self._fabric_headers(),
+                json={
+                    "relativePath": rel,
+                    "pathType": "File",
+                    "mode": "Overwrite",
+                    "formatOptions": {"format": "Csv", "header": True, "delimiter": ","},
+                },
+                timeout=60,
+            )
+            self._wait_lro(r)
+            loaded.append(table)
+            logger.info(f"Lakehouse table loaded: {table} ({len(data)} bytes)")
+        return loaded
+
+    # ── kusto ───────────────────────────────────────────────────────────
+
+    def _kusto_mgmt(self, cluster: str, db: str, csl: str, timeout: int = 120) -> requests.Response:
+        token = self._token(f"{cluster}/.default")
+        return requests.post(
+            f"{cluster}/v1/rest/mgmt",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"db": db, "csl": csl},
+            timeout=timeout,
+        )
+
+    def _wait_for_database(self, cluster: str, db_display_name: str, timeout_s: int = 600) -> None:
+        deadline = time.time() + timeout_s
+        while time.time() < deadline:
+            try:
+                r = self._kusto_mgmt(cluster, "NetDefaultDB", ".show databases | project DatabaseName, PrettyName")
+                if r.status_code == 200:
+                    rows = r.json()["Tables"][0]["Rows"]
+                    for row in rows:
+                        if db_display_name in (row[0], row[1]):
+                            return
+            except Exception as e:  # noqa: BLE001
+                logger.debug(f"Waiting for eventhouse database... ({type(e).__name__})")
+            self.on_progress("Waiting for the eventhouse database to provision...")
+            time.sleep(15)
+        raise RuntimeError(f"Eventhouse database '{db_display_name}' not provisioned within {timeout_s}s")
+
+    def load_kusto_tables(self, members: Dict[str, bytes]) -> List[str]:
+        block = self.spec.get("kusto_tables")
+        if not block:
+            return []
+        db_name = block["database"]
+        eventhouse = self._workspace_item(db_name, "Eventhouse")
+        detail = requests.get(
+            f"{FABRIC_API}/workspaces/{self.workspace_id}/eventhouses/{eventhouse['id']}",
+            headers=self._fabric_headers(),
+            timeout=60,
+        ).json()
+        cluster = detail["properties"]["queryServiceUri"]
+        prefixed_db = f"{self.item_prefix}{db_name}"
+        self._wait_for_database(cluster, prefixed_db)
+
+        prefix = block.get("archive_path", "")
+        loaded = []
+        for name, data in sorted(members.items()):
+            if not (name.startswith(prefix) and name.lower().endswith(".csv")):
+                continue
+            table = sanitize_table_name(name)
+            self.on_progress(f"Loading eventhouse table '{table}'...")
+            text = data.decode("utf-8")
+            reader = csv.reader(io.StringIO(text))
+            rows = list(reader)
+            header, body = rows[0], rows[1:]
+            samples = list(zip(*body[:200])) if body else [[] for _ in header]
+            schema = ", ".join(
+                f"['{col}']:{infer_kusto_type(list(vals))}" for col, vals in zip(header, samples)
+            )
+            r = self._kusto_mgmt(cluster, prefixed_db, f".create-merge table ['{table}'] ({schema})")
+            if r.status_code != 200:
+                raise RuntimeError(f"Kusto table create failed for '{table}': {r.status_code} {r.text[:300]}")
+
+            # inline ingest in <1MB chunks (data rows only, no header)
+            chunk: List[str] = []
+            size = 0
+            def flush_chunk():
+                if not chunk:
+                    return
+                payload = "\n".join(chunk)
+                rr = self._kusto_mgmt(cluster, prefixed_db, f".ingest inline into table ['{table}'] <|\n{payload}", timeout=300)
+                if rr.status_code != 200:
+                    raise RuntimeError(f"Kusto ingest failed for '{table}': {rr.status_code} {rr.text[:300]}")
+            out = io.StringIO()
+            w = csv.writer(out, lineterminator="\n")
+            for row in body:
+                out.seek(0)
+                out.truncate(0)
+                w.writerow(row)
+                line = out.getvalue().rstrip("\n")
+                if size + len(line) > _INGEST_CHUNK_BYTES:
+                    flush_chunk()
+                    chunk, size = [], 0
+                chunk.append(line)
+                size += len(line) + 1
+            flush_chunk()
+            loaded.append(table)
+            logger.info(f"Eventhouse table loaded: {table} ({len(body)} rows)")
+        return loaded
+
+    # ── definition refresh ──────────────────────────────────────────────
+
+    def refresh_definitions(self) -> List[str]:
+        refreshed = []
+        for entry in self.spec.get("refresh_definitions", []) or []:
+            name, _, item_type = entry.partition(".")
+            item = self._workspace_item(name, item_type)
+            self.on_progress(f"Refreshing '{name}' so it ingests the loaded data...")
+            r = requests.post(
+                f"{FABRIC_API}/workspaces/{self.workspace_id}/items/{item['id']}/getDefinition",
+                headers=self._fabric_headers(),
+                timeout=60,
+            )
+            if r.status_code == 202:
+                location = r.headers["Location"]
+                deadline = time.time() + 300
+                while time.time() < deadline:
+                    s = requests.get(location, headers=self._fabric_headers(), timeout=60)
+                    if s.json().get("status") in ("Succeeded", "Failed"):
+                        break
+                    time.sleep(2)
+                definition = requests.get(f"{location}/result", headers=self._fabric_headers(), timeout=60).json()
+            else:
+                r.raise_for_status()
+                definition = r.json()
+            u = requests.post(
+                f"{FABRIC_API}/workspaces/{self.workspace_id}/items/{item['id']}/updateDefinition",
+                headers=self._fabric_headers(),
+                json={"definition": definition["definition"]},
+                timeout=120,
+            )
+            self._wait_lro(u)
+            refreshed.append(entry)
+            logger.info(f"Definition refreshed: {entry}")
+        return refreshed
+
+    # ── orchestration ───────────────────────────────────────────────────
+
+    def run(self) -> dict:
+        """Execute the full data_load block. Returns a summary dict."""
+        if not self.spec:
+            return {}
+        self.on_progress("Reading sample data from the jumpstart source...")
+        members = self._read_members()
+
+        if self.spec.get("shift_timestamps_to_now"):
+            shift_paths = []
+            if self.spec.get("kusto_tables"):
+                shift_paths.append(self.spec["kusto_tables"].get("archive_path", ""))
+            if self.spec.get("lakehouse_tables"):
+                shift_paths.append(self.spec["lakehouse_tables"].get("archive_path", ""))
+            members = shift_timestamps(members, shift_paths)
+
+        lakehouse_tables = self.load_lakehouse_tables(members)
+        kusto_tables = self.load_kusto_tables(members)
+        refreshed = self.refresh_definitions()
+
+        summary = {
+            "lakehouse_tables": lakehouse_tables,
+            "kusto_tables": kusto_tables,
+            "refreshed": refreshed,
+        }
+        logger.info(f"Data load complete: {json.dumps(summary)}")
+        return summary

@@ -56,6 +56,7 @@ export class ScenarioYml {
   // Python-only (present in YAML, not used by TS at runtime)
   feature_flags: string[] | undefined = undefined;
   test_suite: string | undefined = undefined;
+  data_load: object | undefined = undefined;
 
   /** Top-level field names allowed in a scenario YAML file. */
   static allowedFields(): Set<string> {

@@ -42,6 +42,49 @@ class JumpstartSource(BaseModel):
             )
         return self
 
+
+class DataLoadLakehouseTables(BaseModel):
+    """Lakehouse table load block within data_load."""
+    model_config = ConfigDict(extra="forbid")
+
+    lakehouse: str
+    archive_path: Optional[str] = ""
+
+
+class DataLoadKustoTables(BaseModel):
+    """Kusto table load block within data_load."""
+    model_config = ConfigDict(extra="forbid")
+
+    database: str
+    archive_path: Optional[str] = ""
+
+
+class DataLoad(BaseModel):
+    """Declarative post-deploy data load executed by the installer (no repo code runs)."""
+    model_config = ConfigDict(extra="forbid")
+
+    source: str
+    shift_timestamps_to_now: Optional[bool] = False
+    lakehouse_tables: Optional[DataLoadLakehouseTables] = None
+    kusto_tables: Optional[DataLoadKustoTables] = None
+    refresh_definitions: Optional[List[str]] = None
+
+    @model_validator(mode="after")
+    def validate_has_target(self):
+        if not self.lakehouse_tables and not self.kusto_tables:
+            raise ValueError("data_load must define lakehouse_tables and/or kusto_tables")
+        return self
+
+    @field_validator("refresh_definitions")
+    @classmethod
+    def validate_refresh_entries(cls, value: Optional[List[str]]):
+        if value is None:
+            return value
+        for entry in value:
+            if "." not in entry:
+                raise ValueError(f"refresh_definitions entry '{entry}' must be '<Name>.<ItemType>'")
+        return value
+
 class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""
     model_config = ConfigDict(extra="forbid")
@@ -71,6 +114,7 @@ class Jumpstart(BaseModel):
     mermaid_diagram: Optional[str] = None
     install_options: Optional[List[str]] = None
     install_options_label: Optional[str] = None
+    data_load: Optional[DataLoad] = None
 
     @field_validator("id")
     @classmethod

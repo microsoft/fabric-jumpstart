@@ -259,29 +259,124 @@ class DataLoader:
             return []
         lakehouse = self._workspace_item(block["lakehouse"], "Lakehouse")
         prefix = block.get("archive_path", "")
-        loaded = []
+
+        # Upload all CSVs to Files first and collect the file -> table mapping.
+        mapping: Dict[str, str] = {}
         for name, data in sorted(members.items()):
             if not (name.startswith(prefix) and name.lower().endswith(".csv")):
                 continue
             table = sanitize_table_name(name)
             rel = f"Files/_jumpstart_load/{table}.csv"
-            self.on_progress(f"Loading lakehouse table '{table}'...")
+            self.on_progress(f"Uploading data for table '{table}'...")
             self._upload_to_files(lakehouse["id"], rel, data)
-            r = requests.post(
+            mapping[f"{table}.csv"] = table
+        if not mapping:
+            return []
+
+        # Preferred path: the public Load Table API (schema-less lakehouses).
+        first_table = next(iter(mapping.values()))
+        r = requests.post(
+            f"{FABRIC_API}/workspaces/{self.workspace_id}/lakehouses/{lakehouse['id']}/tables/{first_table}/load",
+            headers=self._fabric_headers(),
+            json={
+                "relativePath": f"Files/_jumpstart_load/{first_table}.csv",
+                "pathType": "File",
+                "mode": "Overwrite",
+                "formatOptions": {"format": "Csv", "header": True, "delimiter": ","},
+            },
+            timeout=60,
+        )
+        if r.status_code == 400 and "SchemasEnabledLakehouse" in r.text:
+            # Schema-enabled lakehouse: load through a short-lived Livy Spark
+            # session (library-generated code; nothing from the repo executes).
+            self.on_progress("Lakehouse uses schemas - loading tables via a temporary Spark session...")
+            self._livy_bulk_load(lakehouse["id"], mapping)
+            return sorted(mapping.values())
+
+        self._wait_lro(r)
+        loaded = [first_table]
+        logger.info(f"Lakehouse table loaded: {first_table}")
+        for file_name, table in mapping.items():
+            if table == first_table:
+                continue
+            self.on_progress(f"Loading lakehouse table '{table}'...")
+            rr = requests.post(
                 f"{FABRIC_API}/workspaces/{self.workspace_id}/lakehouses/{lakehouse['id']}/tables/{table}/load",
                 headers=self._fabric_headers(),
                 json={
-                    "relativePath": rel,
+                    "relativePath": f"Files/_jumpstart_load/{file_name}",
                     "pathType": "File",
                     "mode": "Overwrite",
                     "formatOptions": {"format": "Csv", "header": True, "delimiter": ","},
                 },
                 timeout=60,
             )
-            self._wait_lro(r)
+            self._wait_lro(rr)
             loaded.append(table)
-            logger.info(f"Lakehouse table loaded: {table} ({len(data)} bytes)")
+            logger.info(f"Lakehouse table loaded: {table}")
         return loaded
+
+    def _livy_bulk_load(self, lakehouse_id: str, mapping: Dict[str, str], schema: str = "dbo") -> None:
+        """Load uploaded CSVs into schema tables via a short-lived Livy session."""
+        base = (
+            f"{FABRIC_API}/workspaces/{self.workspace_id}/lakehouses/{lakehouse_id}"
+            f"/livyapi/versions/2023-12-01/sessions"
+        )
+        create = requests.post(base, headers=self._fabric_headers(), json={}, timeout=60)
+        if create.status_code not in (200, 201, 202):
+            raise RuntimeError(f"Livy session create failed {create.status_code}: {create.text[:200]}")
+        session_id = create.json().get("id") or create.json().get("livyId")
+        if not session_id:
+            raise RuntimeError(f"Livy session id missing in response: {create.text[:200]}")
+        try:
+            deadline = time.time() + 600
+            while time.time() < deadline:
+                s = requests.get(f"{base}/{session_id}", headers=self._fabric_headers(), timeout=60)
+                state = (s.json().get("state") or "").lower()
+                if state == "idle":
+                    break
+                if state in ("dead", "error", "killed"):
+                    raise RuntimeError(f"Livy session failed to start: {s.text[:300]}")
+                self.on_progress("Starting the temporary Spark session...")
+                time.sleep(10)
+            else:
+                raise RuntimeError("Livy session did not become idle within 10 minutes")
+
+            code_lines = ["results = {}"]
+            for file_name, table in mapping.items():
+                code_lines.append(
+                    f"df = spark.read.option('header', True).option('inferSchema', True)"
+                    f".csv('Files/_jumpstart_load/{file_name}')"
+                )
+                code_lines.append(
+                    f"df.write.mode('overwrite').saveAsTable('{schema}.{table}')"
+                )
+                code_lines.append(f"results['{table}'] = df.count()")
+            code_lines.append("print(results)")
+            statement = {"code": "\n".join(code_lines), "kind": "pyspark"}
+            st = requests.post(f"{base}/{session_id}/statements", headers=self._fabric_headers(), json=statement, timeout=60)
+            if st.status_code not in (200, 201, 202):
+                raise RuntimeError(f"Livy statement submit failed {st.status_code}: {st.text[:200]}")
+            st_id = st.json().get("id", 0)
+            deadline = time.time() + 900
+            while time.time() < deadline:
+                out = requests.get(f"{base}/{session_id}/statements/{st_id}", headers=self._fabric_headers(), timeout=60).json()
+                if out.get("state") == "available":
+                    output = out.get("output") or {}
+                    if output.get("status") == "error":
+                        raise RuntimeError(
+                            f"Spark load failed: {output.get('ename')}: {output.get('evalue', '')[:300]}"
+                        )
+                    logger.info(f"Spark load output: {json.dumps(output.get('data', {}))[:300]}")
+                    return
+                self.on_progress("Loading lakehouse tables via Spark...")
+                time.sleep(10)
+            raise RuntimeError("Spark load statement timed out")
+        finally:
+            try:
+                requests.delete(f"{base}/{session_id}", headers=self._fabric_headers(), timeout=60)
+            except Exception:  # noqa: BLE001
+                pass
 
     # ── kusto ───────────────────────────────────────────────────────────
 

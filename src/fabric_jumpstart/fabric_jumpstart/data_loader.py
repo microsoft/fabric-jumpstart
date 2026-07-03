@@ -166,8 +166,27 @@ class DataLoader:
     # ── auth / REST helpers ─────────────────────────────────────────────
 
     def _token(self, scope: str) -> str:
+        from .utils import _is_fabric_runtime
+
+        if _is_fabric_runtime():
+            # The Fabric notebook runtime credential ignores requested scopes,
+            # so map the scope to the matching notebookutils audience instead.
+            import notebookutils  # type: ignore[import-untyped]
+
+            if scope.startswith("https://storage.azure.com"):
+                audience = "storage"
+            elif scope.startswith("https://api.fabric.microsoft.com"):
+                audience = "pbi"
+            else:
+                audience = scope.removesuffix("/.default")
+            return notebookutils.credentials.getToken(audience)
+
         if self._credential is None:
             self._credential = resolve_token_credential()
+            if self._credential is None:
+                from azure.identity import DefaultAzureCredential
+
+                self._credential = DefaultAzureCredential()
         return self._credential.get_token(scope).token
 
     def _fabric_headers(self) -> dict:

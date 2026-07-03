@@ -51,6 +51,7 @@ class JumpstartInstaller:
         self.unattended = options.get('unattended', False)
         self.debug_logs = bool(options.get('debug', False))
         self.repo_ref_override = options.get('repo_ref')
+        self.install_option = options.get('install_option')
         
         # State tracking
         self.log_buffer: List[Dict] = []
@@ -78,8 +79,30 @@ class JumpstartInstaller:
             Resolved workspace ID
             
         Raises:
-            ValueError: If workspace_id cannot be determined
+            ValueError: If workspace_id cannot be determined or the install
+                option is missing/unknown for jumpstarts that declare
+                install_options
         """
+        declared_options = self.config.get('install_options') or []
+        logical_id = self.config.get('logical_id', '')
+        if self.install_option is not None and not declared_options:
+            raise ValueError(
+                f"Jumpstart '{logical_id}' does not define install options; "
+                "remove the install_option argument"
+            )
+        if declared_options:
+            if self.install_option is None:
+                raise ValueError(
+                    f"Jumpstart '{logical_id}' requires an install option. "
+                    f"Choose one of: {', '.join(declared_options)} "
+                    f"(e.g. install_option='{declared_options[0]}')"
+                )
+            if self.install_option not in declared_options:
+                raise ValueError(
+                    f"Unknown install option '{self.install_option}' for jumpstart "
+                    f"'{logical_id}'. Valid options: {', '.join(declared_options)}"
+                )
+
         if self.workspace_id is None and _is_fabric_runtime():
             import notebookutils  # type: ignore[import-untyped]
             self.workspace_id = notebookutils.runtime.context['currentWorkspaceId']
@@ -104,6 +127,13 @@ class JumpstartInstaller:
         
         source_config = self.config['source']
         workspace_path = source_config['workspace_path']
+        if self.install_option:
+            base_path = workspace_path.rstrip('/\\')
+            workspace_path = f"{base_path}/{self.install_option}/"
+            logger.info(
+                f"Using install option '{self.install_option}' "
+                f"(workspace path: {workspace_path})"
+            )
         config_id = self.config.get('id')
         if config_id is None:
             raise ValueError("Jumpstart config missing required 'id' field")
@@ -135,6 +165,13 @@ class JumpstartInstaller:
             logger.info(f"Cloned local repo_path {repo_path} to temp {self.working_repo_path}")
         
         candidate = self.working_repo_path / workspace_path.lstrip('/\\')
+        # An install option must resolve to its dedicated source folder; falling
+        # back to the repo root would deploy every option's items.
+        if self.install_option and not candidate.exists():
+            raise ValueError(
+                f"Install option '{self.install_option}' has no source folder "
+                f"'{workspace_path}' in the repository"
+            )
         # If the declared workspace_path doesn't exist in the repo, fall back to the
         # repo root rather than creating an artificial folder named after workspace_path.
         self.temp_workspace_path = candidate if candidate.exists() else self.working_repo_path

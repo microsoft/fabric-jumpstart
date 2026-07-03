@@ -90,6 +90,8 @@ uv run pytest tests/test_registry.py  # Registry validation (required for new ju
        - `files_destination_lakehouse` _(optional)_: Name of the target Lakehouse (must be deployed by the jumpstart). Required if `files_source_path` is set.
        - `files_destination_path` _(optional)_: Destination path within the Lakehouse Files area (defaults to root if omitted)
      - `items_in_scope`: List of Fabric item types in scope for deployment (e.g., Lakehouse, Notebook)
+     - `install_options` _(optional)_: List of kebab-case install variants (e.g., industries). Each option must have its own subfolder under `workspace_path` containing that variant's Fabric items (e.g., `my-jumpstart/healthcare/`). Users then select a variant at install time — `jumpstart.install('<logical-id>', install_option='healthcare')` — and only that option's folder is deployed. The website renders a dropdown for the options and updates the install snippet accordingly.
+     - `install_options_label` _(optional)_: Display label for the option dropdown on the website (e.g., `Industry choice`). Defaults to "Install option". Requires `install_options`.
      - `entry_point`: Either a URL or `<name>.<item_type>` format
      - `owner_email`: Valid email address
 1. Run `fabric_jumpstart.install('<logical-id>', workspace_id='<workspace_guid>')` to validate the Jumpstart deploys correctly (see [dev_example.ipynb](../../dev/dev_example.ipynb) for a quick way to test).

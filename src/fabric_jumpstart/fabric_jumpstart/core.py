@@ -169,13 +169,16 @@ class jumpstart:
         """Get jumpstart config by logical_id, with backward compatibility for old id lookups."""
         return self._registry_manager.get_by_id(jumpstart_id)
 
-    def install(self, name: str, workspace_id: Optional[str] = None, **kwargs):
+    def install(self, name: str, workspace_id: Optional[str] = None, install_option: Optional[str] = None, **kwargs):
         """
         Install a jumpstart to a Fabric workspace.
 
         Args:
             name: Logical id of the jumpstart from registry
             workspace_id: Target workspace GUID (optional)
+            install_option: For jumpstarts that declare ``install_options``
+                (e.g. industry variants), selects which option to deploy.
+                Required when the jumpstart defines install_options.
             **kwargs: Additional options (overrides registry defaults)
                 - unattended: If True, suppresses live HTML output and prints to console instead
                 - item_prefix: Custom prefix for created items, set as None for no prefix
@@ -188,6 +191,8 @@ class jumpstart:
         if not config:
             error_msg = f"Unknown jumpstart '{name}'. Use fabric_jumpstart.list() to list available jumpstarts."
             raise ValueError(error_msg)
+        if install_option is not None:
+            kwargs['install_option'] = install_option
         return self._install_with_config(config, workspace_id, **kwargs)
 
     def _install_with_config(self, config: dict, workspace_id: Optional[str] = None, non_registered_install: bool = False, **kwargs):
@@ -348,6 +353,7 @@ class jumpstart:
                     duration_seconds=round(_time.monotonic() - _telemetry_start_time, 1),
                     install_mode=install_mode,
                     non_registered_install=non_registered_install,
+                    install_option=installer.install_option,
                 )
                 
                 # Render success — animate progress bar to 100% first
@@ -423,6 +429,7 @@ class jumpstart:
                         duration_seconds=round(_time.monotonic() - _telemetry_start_time, 1),
                         install_mode=fail_install_mode,
                         non_registered_install=non_registered_install,
+                        install_option=installer.install_option,
                     )
                 logger.exception(f"Failed to install jumpstart '{logical_id}'")
                 error_text = str(e).strip() or e.__class__.__name__
@@ -486,6 +493,7 @@ class jumpstart:
         files_destination_lakehouse: Optional[str] = None,
         files_destination_path: str = '',
         workspace_id: Optional[str] = None,
+        install_options: Optional[List[str]] = None,
         **kwargs,
     ):
         """
@@ -519,9 +527,13 @@ class jumpstart:
                                     Defaults to the root (``""``).
             workspace_id: Target Fabric workspace GUID (optional; auto-detected inside
                           a Fabric runtime).
+            install_options: Declared install option names (e.g. industry variants)
+                             when testing a jumpstart that uses option subfolders.
+                             Pass the selected option via the ``install_option``
+                             keyword argument.
             **kwargs: Additional options forwarded to the installer
                 (unattended, item_prefix, update_existing, auto_prefix_on_conflict,
-                debug, repo_ref override, etc.).
+                debug, repo_ref override, install_option, etc.).
         """
         effective_workspace_path = workspace_path if workspace_path is not None else f"{logical_id}/"
 
@@ -552,5 +564,7 @@ class jumpstart:
             'minutes_to_deploy': 0,
             'minutes_to_complete_jumpstart': 0,
         }
+        if install_options:
+            synthetic_config['install_options'] = install_options
 
         return self._install_with_config(synthetic_config, workspace_id, non_registered_install=True, **kwargs)

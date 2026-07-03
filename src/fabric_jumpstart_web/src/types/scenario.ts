@@ -51,6 +51,8 @@ export class ScenarioYml {
   difficulty: string | undefined = undefined;
   last_updated: string | undefined = undefined;
   mermaid_diagram: string | undefined = undefined;
+  install_options: string[] | undefined = undefined;
+  install_options_label: string | undefined = undefined;
   // Python-only (present in YAML, not used by TS at runtime)
   feature_flags: string[] | undefined = undefined;
   test_suite: string | undefined = undefined;
@@ -83,4 +85,6 @@ export class ScenarioCard {
   isNew: boolean = false;
   mermaid_diagram: string = '';
   installCount: number = 0;
+  installOptions: string[] = [];
+  installOptionsLabel: string = '';
 }

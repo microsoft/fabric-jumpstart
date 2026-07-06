@@ -7,8 +7,7 @@ description: >-
   Lake semantic model, 8-page IBCS Power BI report with an Azure Map of all
   422 Hochschulen, plus a Data Agent. Bundled snapshot; live refresh optional
   via a free DESTATIS token.
-date_added: 05/26/2026
-include_in_listing: false
+date_added: 07/06/2026
 workload_tags:
   - Data Engineering
   - Data Factory

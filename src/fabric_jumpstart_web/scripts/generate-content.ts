@@ -502,11 +502,153 @@ function generateFabricItemIcons(): void {
   );
 }
 
+// ─── Publish gating (hide jumpstarts not yet released to PyPI) ──────────────
+
+const PYPI_PACKAGE_URL = 'https://pypi.org/pypi/fabric-jumpstart/json';
+
+/**
+ * Whether to hide jumpstarts that are not yet published to PyPI.
+ *
+ * Default: enabled only in CI (GitHub Actions), so local dev always shows
+ * every manifest — including brand-new ones a contributor is authoring.
+ * Override explicitly with JUMPSTART_GATING=on|off (true|false|1|0).
+ */
+function isGatingEnabled(): boolean {
+  const flag = process.env.JUMPSTART_GATING?.trim().toLowerCase();
+  if (flag === 'on' || flag === 'true' || flag === '1') return true;
+  if (flag === 'off' || flag === 'false' || flag === '0') return false;
+  return Boolean(process.env.CI || process.env.GITHUB_ACTIONS);
+}
+
+/**
+ * List the entry names in a ZIP archive by reading its central directory.
+ *
+ * A wheel is a standard (non-Zip64) ZIP; entry names live uncompressed in the
+ * central directory, so we can enumerate them without decompressing anything
+ * and without a third-party zip dependency.
+ */
+function listZipEntryNames(buf: Buffer): string[] {
+  const EOCD_SIG = 0x06054b50; // End Of Central Directory record
+  const CEN_SIG = 0x02014b50; // Central directory file header
+  const EOCD_MIN = 22;
+
+  // The EOCD sits at the end, optionally followed by a comment (≤ 0xffff).
+  let eocd = -1;
+  const scanFloor = Math.max(0, buf.length - EOCD_MIN - 0xffff);
+  for (let i = buf.length - EOCD_MIN; i >= scanFloor; i--) {
+    if (buf.readUInt32LE(i) === EOCD_SIG) {
+      eocd = i;
+      break;
+    }
+  }
+  if (eocd < 0) throw new Error('ZIP end-of-central-directory not found');
+
+  const totalEntries = buf.readUInt16LE(eocd + 10);
+  let off = buf.readUInt32LE(eocd + 16);
+
+  const names: string[] = [];
+  for (let n = 0; n < totalEntries; n++) {
+    if (off + 46 > buf.length || buf.readUInt32LE(off) !== CEN_SIG) break;
+    const nameLen = buf.readUInt16LE(off + 28);
+    const extraLen = buf.readUInt16LE(off + 30);
+    const commentLen = buf.readUInt16LE(off + 32);
+    names.push(buf.toString('utf8', off + 46, off + 46 + nameLen));
+    off += 46 + nameLen + extraLen + commentLen;
+  }
+  return names;
+}
+
+/**
+ * Set of jumpstart logical_ids installable via the currently published PyPI
+ * release, read directly from the published wheel (the authoritative artifact).
+ * Returns null on any failure so the caller can fail open.
+ */
+async function fetchPublishedJumpstartIds(): Promise<Set<string> | null> {
+  try {
+    const metaRes = await fetch(PYPI_PACKAGE_URL, {
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!metaRes.ok) {
+      console.warn(`  ⚠ PyPI lookup failed (HTTP ${metaRes.status})`);
+      return null;
+    }
+    const meta = (await metaRes.json()) as {
+      info?: { version?: string };
+      urls?: Array<{ packagetype: string; url: string }>;
+    };
+    const version = meta.info?.version?.trim() ?? '';
+    const wheel = meta.urls?.find((u) => u.packagetype === 'bdist_wheel');
+    if (!wheel) {
+      console.warn('  ⚠ No wheel found in published PyPI release');
+      return null;
+    }
+
+    const wheelRes = await fetch(wheel.url, {
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!wheelRes.ok) {
+      console.warn(`  ⚠ Wheel download failed (HTTP ${wheelRes.status})`);
+      return null;
+    }
+    const buf = Buffer.from(await wheelRes.arrayBuffer());
+
+    const ids = new Set<string>();
+    for (const name of listZipEntryNames(buf)) {
+      if (!name.endsWith('.yml')) continue;
+      if (!/\/jumpstarts\/(core|community)\//.test(name)) continue;
+      ids.add(path.basename(name, '.yml'));
+    }
+    if (ids.size === 0) {
+      console.warn('  ⚠ No jumpstart manifests found in published wheel');
+      return null;
+    }
+
+    console.log(
+      `  Gating against published lib v${version} (${ids.size} jumpstarts)`
+    );
+    return ids;
+  } catch (err) {
+    console.warn(`  ⚠ Could not determine published set from PyPI: ${err}`);
+    return null;
+  }
+}
+
 async function main(): Promise<void> {
   console.log('🔧 Generating website content from scenario YAMLs...');
 
-  const scenarios = loadScenarios();
+  let scenarios = loadScenarios();
   console.log(`  Found ${scenarios.length} scenarios`);
+
+  // Gate the catalog to jumpstarts that are actually installable via the
+  // published Python lib. A jumpstart manifest merged to main is not usable
+  // until fabric-jumpstart is published to PyPI (tag → ADO, ~1h+ lag), so we
+  // hide manifests whose logical_id is not yet in the published release.
+  if (isGatingEnabled()) {
+    const publishedIds = await fetchPublishedJumpstartIds();
+    if (publishedIds) {
+      const hidden = scenarios
+        .filter((s) => !publishedIds.has(s.logical_id))
+        .map((s) => s.logical_id);
+      scenarios = scenarios.filter((s) => publishedIds.has(s.logical_id));
+      if (hidden.length > 0) {
+        console.log(
+          `  Excluded ${hidden.length} jumpstart(s) not yet published to PyPI: ${hidden.join(', ')}`
+        );
+      } else {
+        console.log('  All jumpstarts are present in the published lib');
+      }
+    } else {
+      // Fail open: if we can't determine the published set (PyPI/network/git
+      // error) do NOT gate, so a transient outage can't empty the catalog.
+      console.warn(
+        '  ⚠ Could not determine published jumpstart set — proceeding WITHOUT gating (fail-open)'
+      );
+    }
+  } else {
+    console.log(
+      '  Publish gating disabled (local dev) — including all jumpstarts'
+    );
+  }
 
   // Generate docs
   generateDocs(scenarios);

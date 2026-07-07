@@ -2,19 +2,17 @@ id: 27
 logical_id: payer-provider-healthcare
 name: Payer/Provider Healthcare Demo
 description: >-
-  End-to-end healthcare payer/provider analytics on Fabric. A launcher
-  notebook deploys a medallion lakehouse, ETL pipelines, a Direct Lake
-  Power BI report, an HLS Data Agent grounded on the star-schema model,
-  and an opt-in Real-Time Intelligence stack (Eventhouse + KQL DB) for
+  End-to-end healthcare payer/provider analytics on Fabric with optional
+  Real-Time Intelligence stack (Eventhouse + KQL DB) for
   fraud, care-gap, and high-cost-member scoring on synthetic data.
-date_added: 06/15/2026
-include_in_listing: false
+date_added: 07/7/2026
 workload_tags:
 - Power BI
 - Data Engineering
 - Data Factory
 - Data Science
 - Real-Time Intelligence
+- Ontology
 scenario_tags:
 - Batch Processing
 - Modeling
@@ -35,6 +33,7 @@ items_in_scope:
 - DataAgent
 - Eventhouse
 - KQLDatabase
+- Ontology
 jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/payer-provider-healthcare
 entry_point: Healthcare_Launcher.Notebook
 test_suite: ''

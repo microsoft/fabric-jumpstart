@@ -43,9 +43,9 @@ This jumpstart deploys an **end-to-end healthcare payer/provider analytics stack
 
 The solution is a **dual-path design**: an authoritative **batch ETL** path that runs the medallion load on demand, and an operational **Real-Time Intelligence** path that scores live events sub-minute. The batch path feeds streaming — the gold dimension tables are the enrichment layer real-time scoring joins against.
 
-### Deploy — the launcher notebook
+### Post installation setup
 
-`Healthcare_Launcher` is the entry point. The Fabric Jumpstart installer creates the workspace items from the repo ahead of time; **Run All** then executes the runtime steps that bring the workspace to life:
+`Healthcare_Launcher` completes setup of the solution by generating synthentic data and completing setup of all Fabric Items. Simply click **Run All** to execute the runtime steps that bring the workspace to life:
 
 1. Upload clinical knowledge docs from the repo into `lh_gold_curated/Files/healthcare_knowledge/`.
 2. Run `NB_Generate_Sample_Data` to emit ~10K patients, 100K encounters, claims, prescriptions, diagnoses, SDOH, and HEDIS measures.

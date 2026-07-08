@@ -1,0 +1,75 @@
+id: 28
+logical_id: spark-performance-engineering
+name: Spark Performance Engineering
+description: >-
+  Self-guided, hands-on tutorial for finding and fixing Apache Spark
+  performance problems in Microsoft Fabric. Work through sub-optimal
+  workloads on a synthetic Toy Brick lakehouse, following the code → data →
+  execution tuning hierarchy with before-and-after benchmarks.
+date_added: 07/08/2026
+workload_tags:
+- Data Engineering
+scenario_tags:
+- Batch Processing
+- Streaming
+type: Tutorial
+source:
+  repo_url: https://github.com/microsoft/fabric-spark-performance-engineering.git
+  repo_ref: v0.1.0
+  workspace_path: workspace/
+items_in_scope:
+- Lakehouse
+- Notebook
+- Environment
+- SparkJobDefinition
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/spark-performance-engineering
+entry_point: 00_getting-started.Notebook
+test_suite: ''
+owner_email: FabricJumpstart.SparkPerformanceEngineering@microsoft.com
+minutes_to_deploy: 8
+minutes_to_complete_jumpstart: 90
+difficulty: Advanced
+last_updated: "2026-07-08"
+mermaid_diagram: |
+  graph LR
+
+      %% Symbolic source events landed into the toy_bricks lakehouse.
+      MFG[Manufacturing Events]:::U1F3ED
+      WEB[Web Orders]:::U1F6D2
+
+      %% Data generation feeds bronze Delta tables that every module reads.
+      subgraph Fabric:::Workspace
+          direction LR
+
+          GS[00_getting-started]:::Notebook
+
+          DGE[datagen_env]:::Environment
+          SNE[single_node_explore]:::Environment
+
+          SJD[source_to_bronze]:::SparkJobDefinition
+          SJDO[source_to_bronze_optimized]:::SparkJobDefinition
+
+          TB[toy_bricks]:::Lakehouse
+          TBO[toy_bricks_optimized]:::Lakehouse
+
+          BU[_benchmark_utils]:::Notebook
+          M1[01_optimizing-code]:::Notebook
+          M2[02_optimizing-tables]:::Notebook
+          M3[03_optimizing-execution]:::Notebook
+      end
+
+      %% Source events land in toy_bricks; source_to_bronze reads landing
+      %% files from and writes bronze tables to the same lakehouse.
+      MFG -.-> TB
+      WEB -.-> TB
+      SJD --- DGE
+      SJDO --- DGE
+      TB <-.-> SJD
+      TBO <-.-> SJDO
+
+      %% Modules read the seeded lakehouse and reuse shared benchmark helpers.
+
+      M1 --- SNE
+      M2 --- SNE
+      M3 --- SNE
+

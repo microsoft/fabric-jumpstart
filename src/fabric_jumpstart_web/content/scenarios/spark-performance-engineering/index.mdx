@@ -1,0 +1,93 @@
+---
+title: Spark Performance Engineering
+toc: true
+---
+
+This tutorial deploys a self-guided, hands-on **Apache Spark performance lab** into your Microsoft Fabric workspace. Instead of abstract theory, you work through real, sub-optimal workloads on a synthetic **Toy Bricks** Manufacturing & Sales lakehouse — seeded for you during setup — and measure the impact of every fix with before-and-after benchmarks.
+
+<Callout>
+
+🐌➡️🚀 Stop guessing why your Spark jobs are slow. Each exercise follows the same loop — **benchmark → diagnose → fix → re-benchmark → understand** — so you can start to build a durable performance-tuning workflow.
+
+</Callout>
+
+⏱️ **Deploy time: ~8 minutes.** After install you first run the `source_to_bronze` Spark Job Definition (~30 minutes of data generation), then work through three ~20-minute modules at your own pace.
+
+## The Tuning Hierarchy
+
+The lab is organized around the **tuning hierarchy** — *code → data → execution* — so you learn to identify which layer a problem lives in and reach for the right lever.
+
+| Module | Theme | Fix lever | Examples |
+|--------|-------|-----------|----------|
+| **1 — Optimizing Code** | The query is written inefficiently | Edit the transformation logic | Predicate pushdown, column pruning, avoiding repeated scans, replacing Python UDFs, cartesian joins, driver OOM |
+| **2 — Optimizing Tables** | The table layout is suboptimal | `OPTIMIZE`, clustering, deletion vectors, stats, schema | Small-file compaction, optimize-write, Liquid Clustering, data-skipping stats |
+| **3 — Optimizing Execution** | Code and tables are fine, execution isn't | Join hints, AQE, partition sizing, caching | Broadcast joins, skew handling, shuffle-partition sizing, materialization, Native Execution Engine |
+
+**How Modules 1 and 3 differ:** Module 1 is when the *query is written badly* (fix = edit the code). Module 3 is when the code and tables are fine but Spark *executes* it sub-optimally (fix = a hint / config / `.cache()` / repartition, logic unchanged). Module 2 is when the *table layout* is the problem (fix = `OPTIMIZE` / clustering / schema / partitioning).
+
+## The Toy Bricks Data Model
+
+Throughout the lab you use a synthetic **Toy Bricks** Manufacturing & Sales lakehouse. The schema has fact tables (manufacturing events, orders, inventory transactions) at the center and dimensions (parts, colors, themes, sets) on the periphery.
+
+![Toy Bricks Manufacturing & Sales ERD](https://github.com/microsoft/fabric-spark-performance-engineering/blob/main/assets/toy_bricks_erd.png?raw=true)
+
+<Callout>
+
+💡 The biggest fact table is `manufacturing_event` (~8M rows / ~350MB). Most exercises target it because it's the only table large enough to make Spark break a sweat at lab scale on a single node.
+
+</Callout>
+
+## What Gets Deployed
+
+| Item | Type | Role |
+|------|------|------|
+| `00_getting-started` | Notebook | Entry point. Verifies prerequisites, orients you to the data model, and points you at the `source_to_bronze` job to seed the bronze layer. |
+| `01_optimizing-code` | Notebook | Module 1 — rewrite the query. Reading the Spark UI, query plans, and Delta metadata, then fixing code-level anti-patterns (predicate pushdown, Python UDFs vs. native / NEE, driver `collect()`/`toPandas()` & OOM, cartesian / missing join keys). |
+| `02_optimizing-tables` | Notebook | Module 2 — change the data at rest. `OPTIMIZE` / compaction, Optimize Write, Liquid Clustering & data-skipping stats, deletion vectors, data types, partitioning strategy, storage-regression auditing (`DESCRIBE HISTORY`). |
+| `03_optimizing-execution` | Notebook | Module 3 — tune how Spark runs it. Join strategies & broadcast, AQE & skew / salting, shuffle-partition sizing & spill, caching / materialization, streaming. |
+| `_benchmark_utils` | Notebook | Shared helpers: `df.benchmark(scenario, state)` / `benchmark_op(...)` timers and `get_table_metrics()` / `show_metrics()`. Don't run it standalone — each module `%run`s it. |
+| `toy_bricks` | Lakehouse | The synthetic Toy Brick lakehouse. `source_to_bronze` seeds its bronze Delta tables; the modules read from and re-benchmark against it. |
+| `toy_bricks_optimized` | Lakehouse | Companion lakehouse that the `source_to_bronze_optimized` variant writes to for an optional deep dive comparing the execution and data layout quality produced by the two Spark Job Definitions. |
+| `datagen_env` | Environment | Spark environment for the data-generation Spark Job Definitions. Bundles the `arcflow` and `lakegen` wheels used to generate and ingest synthetic landing data. |
+| `single_node_explore` | Environment | Single-node Spark environment used for the interactive module notebooks. |
+| `source_to_bronze` | SparkJobDefinition | Generates synthetic toy-brick landing data (mixed JSON + Parquet) into `Files/landing/…`, then ingests every table into bronze Delta tables under the `bronze` schema. Incremental — re-run to grow the dataset. |
+| `source_to_bronze_optimized` | SparkJobDefinition | Optimized variant of the seeding job, used to contrast an efficient ELT implementation against the baseline. |
+
+## How Each Exercise Works
+
+Every exercise follows the same repeatable loop:
+
+| Step | What you do |
+|------|-------------|
+| 🐌 **Benchmark** | Run the workload and capture a baseline time/metric. |
+| 🔍 **Diagnose** | Inspect the plan, Spark UI, or Delta metadata to prove the root cause. |
+| 🔧 **Fix** | Apply the change — a hands-on challenge, with an inline solution. |
+| 🚀 **Re-benchmark** | Re-run and compare against the baseline. |
+| 💡 **What Just Happened?** | Read a short explanation of *why* the fix worked. |
+
+## Try It — The Workflow
+
+1. **Install** — `jumpstart.install("spark-performance-engineering")` and wait for the ~8-minute deploy.
+2. **Seed the bronze layer** — open `00_getting-started`, then trigger the `source_to_bronze` Spark Job Definition. Click **Run** once; it runs for ~30 minutes to generate tables with hundreds of transactions that surface real-world performance challenges. Wait for **Succeeded** before starting the modules.
+3. **Module 1 — Optimizing Code** — open `01_optimizing-code`. Learn the diagnostic toolkit (Spark UI, query plans, Delta metadata) and fix code-level anti-patterns. ~20 minutes.
+4. **Module 2 — Optimizing Tables** — open `02_optimizing-tables`. Compact small files, apply Optimize Write and Liquid Clustering, tune schema and partitioning. ~20 minutes.
+5. **Module 3 — Optimizing Execution** — open `03_optimizing-execution`. Tune join strategies, AQE and skew handling, shuffle-partition sizing, and caching. ~20 minutes.
+
+<Callout>
+
+🔁 **Re-run the seeding job anytime.** `source_to_bronze` is incremental — run it again to generate a larger dataset if you want to stress a fix at bigger scale or with more transactions in the Delta log.
+
+</Callout>
+
+## Requirements
+
+- A Microsoft Fabric workspace with Spark enabled and a minimum of an F2 capacity assigned. Approximately 4 CUs are used for the duration of the lab.
+- Permissions to create Notebook, Lakehouse, Environment, and Spark Job Definition items.
+
+## Resources
+
+- [Source repository — microsoft/fabric-spark-performance-engineering](https://github.com/microsoft/fabric-spark-performance-engineering)
+- [Delta Lake table maintenance overview](https://learn.microsoft.com/fabric/data-engineering/delta-optimization-and-v-order)
+- [Delta Lake file skipping](https://learn.microsoft.com/en-us/fabric/data-engineering/delta-lake-file-skipping?tabs=sparksql)
+- [Native Execution Engine for Fabric Spark](https://learn.microsoft.com/fabric/data-engineering/native-execution-engine-overview)
+- [Adaptive Query Execution (AQE)](https://spark.apache.org/docs/latest/sql-performance-tuning.html#adaptive-query-execution)

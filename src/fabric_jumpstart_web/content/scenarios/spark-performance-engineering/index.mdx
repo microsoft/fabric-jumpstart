@@ -11,7 +11,7 @@ This tutorial deploys a self-guided, hands-on **Apache Spark performance lab** i
 
 </Callout>
 
-⏱️ **Deploy time: ~8 minutes.** After install you first run the `source_to_bronze` Spark Job Definition (~30 minutes of data generation), then work through three ~20-minute modules at your own pace.
+⏱️ **Deploy time: ~8 minutes.** After install you first run the `source_to_bronze` Spark Job Definition (~30 minutes of data generation), then work through three ~20-minute modules at your own pace — in your choice of the **DataFrame API** or **Spark SQL** track.
 
 ## The Tuning Hierarchy
 
@@ -24,6 +24,17 @@ The lab is organized around the **tuning hierarchy** — *code → data → exec
 | **3 — Optimizing Execution** | Code and tables are fine, execution isn't | Join hints, AQE, partition sizing, caching | Broadcast joins, skew handling, shuffle-partition sizing, materialization, Native Execution Engine |
 
 **How Modules 1 and 3 differ:** Module 1 is when the *query is written badly* (fix = edit the code). Module 3 is when the code and tables are fine but Spark *executes* it sub-optimally (fix = a hint / config / `.cache()` / repartition, logic unchanged). Module 2 is when the *table layout* is the problem (fix = `OPTIMIZE` / clustering / schema / partitioning).
+
+## Choose Your Track — DataFrame API or Spark SQL
+
+All three modules ship in **two parallel tracks** that teach the exact same concepts and follow the same benchmark loop — pick whichever matches how you write Spark. The exercise numbering is identical across tracks, so you can switch back and forth or work through both.
+
+| Track | Folder | How the queries are written |
+|-------|--------|-----------------------------|
+| **DataFrame API** | `dataframe-lab/` | Fluent PySpark: `spark.table(...).filter(...).groupBy(...)` |
+| **Spark SQL** | `sql-lab/` | `spark.sql("SELECT ... FROM ...")` from PySpark |
+
+The Spark SQL notebooks are suffixed `_sql` (e.g. `02_optimizing-tables_sql`). Module 2's SQL track writes to a separate lab schema (`bronze_fast_sql`) so both tracks can run side by side without clobbering each other.
 
 ## The Toy Bricks Data Model
 
@@ -42,9 +53,9 @@ Throughout the lab you use a synthetic **Toy Bricks** Manufacturing & Sales lake
 | Item | Type | Role |
 |------|------|------|
 | `00_getting-started` | Notebook | Entry point. Verifies prerequisites, orients you to the data model, and points you at the `source_to_bronze` job to seed the bronze layer. |
-| `01_optimizing-code` | Notebook | Module 1 — rewrite the query. Reading the Spark UI, query plans, and Delta metadata, then fixing code-level anti-patterns (predicate pushdown, Python UDFs vs. native / NEE, driver `collect()`/`toPandas()` & OOM, cartesian / missing join keys). |
-| `02_optimizing-tables` | Notebook | Module 2 — change the data at rest. `OPTIMIZE` / compaction, Optimize Write, Liquid Clustering & data-skipping stats, deletion vectors, data types, partitioning strategy, storage-regression auditing (`DESCRIBE HISTORY`). |
-| `03_optimizing-execution` | Notebook | Module 3 — tune how Spark runs it. Join strategies & broadcast, AQE & skew / salting, shuffle-partition sizing & spill, caching / materialization, streaming. |
+| `01_optimizing-code` | Notebook | Module 1 — rewrite the query. Reading the Spark UI, query plans, and Delta metadata, then fixing code-level anti-patterns (predicate pushdown, Python UDFs vs. native / NEE, driver `collect()`/`toPandas()` & OOM, cartesian / missing join keys). Ships in both tracks: `dataframe-lab/` and `sql-lab/` (as `01_optimizing-code_sql`). |
+| `02_optimizing-tables` | Notebook | Module 2 — change the data at rest. `OPTIMIZE` / compaction, Optimize Write, Liquid Clustering & data-skipping stats, deletion vectors, data types, partitioning strategy, storage-regression auditing (`DESCRIBE HISTORY`). Ships in both tracks: `dataframe-lab/` and `sql-lab/` (as `02_optimizing-tables_sql`). |
+| `03_optimizing-execution` | Notebook | Module 3 — tune how Spark runs it. Join strategies & broadcast, AQE & skew / salting, shuffle-partition sizing & spill, caching / materialization, streaming. Ships in both tracks: `dataframe-lab/` and `sql-lab/` (as `03_optimizing-execution_sql`). |
 | `_benchmark_utils` | Notebook | Shared helpers: `df.benchmark(scenario, state)` / `benchmark_op(...)` timers and `get_table_metrics()` / `show_metrics()`. Don't run it standalone — each module `%run`s it. |
 | `toy_bricks` | Lakehouse | The synthetic Toy Brick lakehouse. `source_to_bronze` seeds its bronze Delta tables; the modules read from and re-benchmark against it. |
 | `toy_bricks_optimized` | Lakehouse | Companion lakehouse that the `source_to_bronze_optimized` variant writes to for an optional deep dive comparing the execution and data layout quality produced by the two Spark Job Definitions. |
@@ -69,9 +80,10 @@ Every exercise follows the same repeatable loop:
 
 1. **Install** — `jumpstart.install("spark-performance-engineering")` and wait for the ~8-minute deploy.
 2. **Seed the bronze layer** — open `00_getting-started`, then trigger the `source_to_bronze` Spark Job Definition. Click **Run** once; it runs for ~30 minutes to generate tables with hundreds of transactions that surface real-world performance challenges. Wait for **Succeeded** before starting the modules.
-3. **Module 1 — Optimizing Code** — open `01_optimizing-code`. Learn the diagnostic toolkit (Spark UI, query plans, Delta metadata) and fix code-level anti-patterns. ~20 minutes.
-4. **Module 2 — Optimizing Tables** — open `02_optimizing-tables`. Compact small files, apply Optimize Write and Liquid Clustering, tune schema and partitioning. ~20 minutes.
-5. **Module 3 — Optimizing Execution** — open `03_optimizing-execution`. Tune join strategies, AQE and skew handling, shuffle-partition sizing, and caching. ~20 minutes.
+3. **Pick your track** — decide whether to work in the **DataFrame API** (`dataframe-lab/`) or **Spark SQL** (`sql-lab/`) notebooks. The modules below are identical across tracks; the Spark SQL versions are suffixed `_sql`.
+4. **Module 1 — Optimizing Code** — open `01_optimizing-code` in your chosen track. Learn the diagnostic toolkit (Spark UI, query plans, Delta metadata) and fix code-level anti-patterns. ~20 minutes.
+5. **Module 2 — Optimizing Tables** — open `02_optimizing-tables`. Compact small files, apply Optimize Write and Liquid Clustering, tune schema and partitioning. ~20 minutes.
+6. **Module 3 — Optimizing Execution** — open `03_optimizing-execution`. Tune join strategies, AQE and skew handling, shuffle-partition sizing, and caching. ~20 minutes.
 
 <Callout>
 

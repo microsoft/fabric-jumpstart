@@ -62,6 +62,36 @@ function extractNodeInfo(chart: string): Map<string, NodeInfo> {
   return nodes;
 }
 
+/**
+ * Map each declared node id to the set of subgraph (cluster) ids that enclose it.
+ * Used to detect edges that cross a subgraph boundary — Mermaid terminates those
+ * edges at the cluster border (not at the inner node), so they must not be trimmed.
+ */
+function parseClusterMembership(chart: string): Map<string, Set<string>> {
+  const membership = new Map<string, Set<string>>();
+  const stack: string[] = [];
+  const subgraphRe = /^\s*subgraph\s+([A-Za-z_]\w*)/;
+  const endRe = /^\s*end\s*$/;
+  const nodeDeclRe = /([A-Za-z_]\w*)\s*[[(]/g;
+  for (const line of chart.split('\n')) {
+    const sg = subgraphRe.exec(line);
+    if (sg) {
+      stack.push(sg[1]);
+      continue;
+    }
+    if (endRe.test(line)) {
+      stack.pop();
+      continue;
+    }
+    let m: RegExpExecArray | null;
+    nodeDeclRe.lastIndex = 0;
+    while ((m = nodeDeclRe.exec(line)) !== null) {
+      if (!membership.has(m[1])) membership.set(m[1], new Set(stack));
+    }
+  }
+  return membership;
+}
+
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 function svgEl(tag: string, attrs: Record<string, string>): SVGElement {
@@ -252,10 +282,45 @@ export function enhanceDiagram(
   // Trim amount depends on which face of the node the edge connects to.
   const HALF_W = EXTRA_W / 2;
   const HALF_H = EXTRA_H / 2;
+
+  // Edges that cross a subgraph boundary are terminated by Mermaid at the cluster
+  // border (not at the inner node, which was widened), so their boundary endpoints
+  // must not be trimmed — otherwise the arrow floats short of the workspace box.
+  const membership = parseClusterMembership(chart);
+  const knownIds = new Set(membership.keys());
+  const parseEdgeId = (id: string): [string, string] | null => {
+    const m = id.match(/(?:^|[-_])L[_-](.+)[_-]\d+$/);
+    if (!m) return null;
+    const parts = m[1].split('_');
+    for (let k = 1; k < parts.length; k++) {
+      const s = parts.slice(0, k).join('_');
+      const d = parts.slice(k).join('_');
+      if (knownIds.has(s) && knownIds.has(d)) return [s, d];
+    }
+    return null;
+  };
+  // True when some cluster encloses `a` but not `b` (so the a-end sits on a border).
+  const endsOnBorder = (a: string, b: string): boolean => {
+    const ca = membership.get(a);
+    const cb = membership.get(b) ?? new Set<string>();
+    if (!ca) return false;
+    for (const c of ca) if (!cb.has(c)) return true;
+    return false;
+  };
+
   root.querySelectorAll('.edgePaths path, .edgePath path').forEach(p => {
     const el = p as SVGPathElement;
     const totalLen = el.getTotalLength();
     if (totalLen <= EXTRA_W) return;
+
+    let skipStart = false;
+    let skipEnd = false;
+    const parsed = parseEdgeId(el.getAttribute('data-id') || el.id || '');
+    if (parsed) {
+      const [src, dst] = parsed;
+      skipStart = endsOnBorder(src, dst);
+      skipEnd = endsOnBorder(dst, src);
+    }
 
     // Helper: compute trim for an endpoint based on edge direction there.
     // Side-entering edges (|dx|>|dy|) trim by HALF_W; top/bottom by HALF_H.
@@ -274,11 +339,11 @@ export function enhanceDiagram(
 
     const p0 = el.getPointAtLength(0);
     const p0n = el.getPointAtLength(Math.min(2, totalLen));
-    const trimStart = trimForEndpoint(p0n.x - p0.x, p0n.y - p0.y);
+    const trimStart = skipStart ? 0 : trimForEndpoint(p0n.x - p0.x, p0n.y - p0.y);
 
     const pe = el.getPointAtLength(totalLen);
     const pe1 = el.getPointAtLength(Math.max(0, totalLen - 2));
-    const trimEnd = trimForEndpoint(pe.x - pe1.x, pe.y - pe1.y);
+    const trimEnd = skipEnd ? 0 : trimForEndpoint(pe.x - pe1.x, pe.y - pe1.y);
 
     const startAt = Math.min(trimStart, totalLen * 0.4);
     const endAt = Math.max(totalLen - trimEnd, totalLen * 0.6);

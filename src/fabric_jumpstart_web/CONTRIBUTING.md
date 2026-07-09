@@ -119,13 +119,16 @@ Mermaid diagrams are pre-rendered as static SVGs (light and dark variants) and c
 
 ### Option 1: Batch Render Script (recommended)
 
-To regenerate all diagrams at once (requires Puppeteer/Chrome):
+To regenerate all diagrams at once (requires Puppeteer/Chrome), run from the **repository root** (the `render-diagrams` script is defined in the root `package.json`, not in this project):
 
 ```bash
+# from the repository root
 npm run render-diagrams
 ```
 
 This reads the `mermaid_diagram` field from every jumpstart YAML and writes SVGs to `assets/images/diagrams/`.
+
+> **Fonts matter for layout.** Mermaid sizes each node from its measured label, so the layout depends on the fonts available when rendering. Diagrams use **Consolas** (node labels) and **Segoe UI** (type/subgraph text). The script auto-discovers these from the OS (Windows `C:\Windows\Fonts`, WSL `/mnt/c/Windows/Fonts`, or macOS), embeds them, and logs `Embedded layout fonts: …`. If it logs a `Missing layout fonts` warning, the layout may differ from the web diagram-generator — install Segoe UI / Consolas, or point `DIAGRAM_FONT_DIR` at a folder containing the `.ttf` files.
 
 ### Option 2: Diagram Generator Page
 

@@ -84,15 +84,14 @@ mermaid_diagram: |
           %% Real-Time Intelligence (opt-in)
           EH[Healthcare_RTI_Eventhouse]:::Eventhouse
           KDB[Healthcare_RTI_DB]:::KQLDatabase
-          NBR[NB_RTI_Fraud_Detection<br/>NB_RTI_Care_Gap_Alerts<br/>NB_RTI_HighCost_Trajectory]:::Notebook
+          NBR1[NB_RTI_Fraud_Detection]:::Notebook
+          NBR2[NB_RTI_Care_Gap_Alerts]:::Notebook
+          NBR3[NB_RTI_HighCost_Trajectory]:::Notebook
       end
 
       %% FLOWS
-      LAUNCH -.-> NBG
-      LAUNCH -.-> PLM
-      SD -.-> NBG
-      KB -.-> LG
-      NBG -.-> LB
+      SD -.-> LB
+      KB -.-> LB
       PLM -.-> NB1
       NB1 -.-> LB
       LB -.-> NB2
@@ -106,9 +105,12 @@ mermaid_diagram: |
       SM -.-> RPT
       SM -.-> DA
       LG -.-> DA
-      LAUNCH -.-> PLR
       PLR -.-> EH
       PLR -.-> KDB
       EH -.-> KDB
-      LB -.-> NBR
-      NBR -.-> LG
+      LB -.-> NBR1
+      LB -.-> NBR2
+      LB -.-> NBR3
+      NBR1 -.-> LG
+      NBR2 -.-> LG
+      NBR3 -.-> LG

@@ -30,6 +30,82 @@ const JUMPSTARTS_DIRS = [
 const OUTPUT_DIR = path.resolve(REPO_ROOT, 'assets/images/diagrams');
 const ICONS_JSON = path.join(WEB_ROOT, 'src/data/fabric-item-icons.json');
 
+/**
+ * Fonts that drive Mermaid's dagre layout. Node labels render in Consolas and
+ * type/subgraph text in Segoe UI (see MermaidDiagram/enhance.ts). Dagre sizes
+ * every node from its measured label, so if these fonts are missing the browser
+ * falls back to metrically different fonts (DejaVu Sans / DejaVu Sans Mono),
+ * producing a different layout than the web diagram-generator (which runs in a
+ * browser where Segoe UI / Consolas are present). We locate the real font files
+ * and inject them as @font-face rules so headless rendering matches.
+ */
+interface FontFace {
+  family: string;
+  weight: number;
+  filenames: string[];
+}
+
+const REQUIRED_FONTS: FontFace[] = [
+  { family: 'Segoe UI', weight: 400, filenames: ['segoeui.ttf', 'SegoeUI.ttf'] },
+  { family: 'Segoe UI', weight: 600, filenames: ['seguisb.ttf', 'SegoeUI-Semibold.ttf'] },
+  { family: 'Segoe UI', weight: 700, filenames: ['segoeuib.ttf', 'SegoeUI-Bold.ttf'] },
+  { family: 'Consolas', weight: 400, filenames: ['consola.ttf', 'Consolas.ttf'] },
+  { family: 'Consolas', weight: 700, filenames: ['consolab.ttf', 'Consolas-Bold.ttf'] },
+];
+
+/** Candidate directories that may contain the Windows fonts (incl. WSL / macOS). */
+function fontSearchDirs(): string[] {
+  const dirs: string[] = [];
+  if (process.env.DIAGRAM_FONT_DIR) dirs.push(process.env.DIAGRAM_FONT_DIR);
+  if (process.platform === 'win32') {
+    dirs.push(path.join(process.env.WINDIR || 'C:\\Windows', 'Fonts'));
+    if (process.env.LOCALAPPDATA) dirs.push(path.join(process.env.LOCALAPPDATA, 'Microsoft', 'Windows', 'Fonts'));
+  } else {
+    dirs.push('/mnt/c/Windows/Fonts'); // WSL
+    dirs.push('/usr/share/fonts', '/usr/local/share/fonts');
+    if (process.env.HOME) dirs.push(path.join(process.env.HOME, '.fonts'), path.join(process.env.HOME, '.local/share/fonts'));
+    dirs.push('/Library/Fonts', '/Library/Fonts/Microsoft'); // macOS
+    if (process.env.HOME) dirs.push(path.join(process.env.HOME, 'Library/Fonts'));
+  }
+  return dirs.filter((d) => fs.existsSync(d));
+}
+
+/** Recursively find a font file by candidate basenames (case-insensitive). */
+function findFontFile(dirs: string[], filenames: string[]): string | null {
+  const wanted = new Set(filenames.map((f) => f.toLowerCase()));
+  for (const dir of dirs) {
+    const hits = glob.sync('**/*.ttf', { cwd: dir, nocase: true, absolute: true });
+    for (const hit of hits) {
+      if (wanted.has(path.basename(hit).toLowerCase())) return hit;
+    }
+  }
+  return null;
+}
+
+/** Build @font-face CSS embedding the discovered Segoe UI / Consolas faces. */
+function buildFontFaceCss(): { css: string; found: string[]; missing: string[] } {
+  const dirs = fontSearchDirs();
+  const rules: string[] = [];
+  const found: string[] = [];
+  const missing: string[] = [];
+  for (const face of REQUIRED_FONTS) {
+    const file = dirs.length ? findFontFile(dirs, face.filenames) : null;
+    const label = `${face.family} ${face.weight}`;
+    if (!file) {
+      missing.push(label);
+      continue;
+    }
+    const b64 = fs.readFileSync(file).toString('base64');
+    rules.push(
+      `@font-face{font-family:'${face.family}';font-weight:${face.weight};font-style:normal;` +
+        `src:url(data:font/ttf;base64,${b64}) format('truetype');}`
+    );
+    found.push(label);
+  }
+  return { css: rules.join('\n'), found, missing };
+}
+
+
 /** Generate fabric-item-icons.json from @fabric-msft/svg-icons if stale/missing. */
 function ensureItemIconsJson(): void {
   const iconsDir = path.resolve(WEB_ROOT, 'node_modules/@fabric-msft/svg-icons/dist/svg');
@@ -69,6 +145,21 @@ function ensureItemIconsJson(): void {
 interface JumpstartInfo {
   logicalId: string;
   mermaid_diagram: string;
+}
+
+/**
+ * Make browser-serialized SVG markup valid XML.
+ *
+ * Mermaid renders node labels as HTML inside <foreignObject>. Reading the
+ * result back via `innerHTML` HTML-serializes void elements without a closing
+ * slash (e.g. `<br/>` in a label becomes `<br>`), which is invalid XML and
+ * prevents the committed `.svg` file from rendering. Self-close known void
+ * elements so the output parses as XML.
+ */
+function xmlSafeSvg(svg: string): string {
+  const voidTags = ['br', 'hr', 'img', 'input', 'area', 'base', 'col', 'embed', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+  const re = new RegExp(`<(${voidTags.join('|')})((?:\\s[^>]*?)?)\\s*/?>`, 'gi');
+  return svg.replace(re, '<$1$2/>');
 }
 
 function loadJumpstarts(): JumpstartInfo[] {
@@ -204,6 +295,27 @@ async function main(): Promise<void> {
     <html><head><style>body{margin:0;padding:0;}</style></head>
     <body><div id="container"></div></body></html>`);
 
+  // Embed the real layout fonts so headless measurement matches the web tool.
+  const { css: fontCss, found: fontsFound, missing: fontsMissing } = buildFontFaceCss();
+  if (fontCss) {
+    await page.addStyleTag({ content: fontCss });
+    // Wait until every embedded face is actually loaded before any render, so
+    // Mermaid measures node labels with the correct metrics.
+    await page.evaluate(async (families: string[]) => {
+      await Promise.all(
+        families.map((f) => (document as unknown as { fonts: FontFaceSet }).fonts.load(f))
+      );
+      await (document as unknown as { fonts: FontFaceSet }).fonts.ready;
+    }, ['400 16px "Segoe UI"', '600 16px "Segoe UI"', '700 16px "Segoe UI"', '400 16px "Consolas"', '700 16px "Consolas"']);
+    console.log(`  Embedded layout fonts: ${fontsFound.join(', ')}`);
+  }
+  if (fontsMissing.length) {
+    console.warn(
+      `  ⚠ Missing layout fonts (${fontsMissing.join(', ')}) — diagram layout may differ from the web diagram-generator. ` +
+        `Set DIAGRAM_FONT_DIR to a folder containing Segoe UI / Consolas .ttf files.`
+    );
+  }
+
   await page.evaluate(mermaidJs);
 
   // Inject enhance dependencies and script
@@ -248,6 +360,7 @@ async function main(): Promise<void> {
             // Same config as MermaidDiagram/index.tsx
             mermaid.initialize({
               startOnLoad: false,
+              securityLevel: 'loose',
               theme: 'base',
               themeVariables: {
                 primaryColor: dark ? '#2a2a32' : '#f5f8fa',
@@ -286,7 +399,7 @@ async function main(): Promise<void> {
           isDark
         );
 
-        fs.writeFileSync(outFile, svg);
+        fs.writeFileSync(outFile, xmlSafeSvg(svg));
         success++;
       } catch (e) {
         const msg = e instanceof Error ? e.message.split('\n')[0] : String(e);

@@ -19,6 +19,11 @@
     "secondary": "#096bbc",
     "icon": "/images/tags/workload/data-warehouse.svg"
   },
+  "Ontology": {
+    "primary": "#0078D4",
+    "secondary": "#004E8C",
+    "icon": "/images/tags/workload/ontology.svg"
+  },
   "Power BI": {
     "primary": "#ffe642",
     "secondary": "#e2c718",

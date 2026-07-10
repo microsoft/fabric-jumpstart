@@ -55,9 +55,6 @@ mermaid_diagram: |
       RPT[Gateway Monitoring]:::Report
     end
 
-    %% Setup notebook generates config.json with the Eventstream connection strings.
-    NB_SETUP -.-> GW
-
     %% Runtime telemetry flow.
     LOGS --> GW
     GW -.-> ES_HB

@@ -308,18 +308,167 @@ export function enhanceDiagram(
     return false;
   };
 
+  // Map node id → its <g class="node"> element, so cross-boundary edges (which
+  // Mermaid clips at the cluster border) can be extended to the real node.
+  const nodeElById = new Map<string, SVGGElement>();
+  root.querySelectorAll('g.node').forEach(g => {
+    const m = (g.id || '').match(/flowchart-(.+)-\d+$/);
+    if (m && !nodeElById.has(m[1])) nodeElById.set(m[1], g as SVGGElement);
+  });
+
+  // Pull each external "source" node to the vertical position of the node it
+  // feeds. Mermaid/dagre packs the source rank and centres it vertically — it
+  // never aligns a source with its target — so left-column sources sit mid-height
+  // and their connectors run at an angle. We align each source with its target's
+  // vertical centre (in viewport space, since source and target live in different
+  // transform groups), then spread apart only enough to avoid overlap. Sources
+  // that live in their own subgraph box stay clamped within that box's extent.
+  const getTranslate = (g: SVGGElement): { x: number; y: number } | null => {
+    const m = (g.getAttribute('transform') || '').match(
+      /translate\(\s*([-\d.]+)[ ,]+([-\d.]+)/,
+    );
+    return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : null;
+  };
+  const setTranslateY = (g: SVGGElement, y: number): void => {
+    const t = g.getAttribute('transform') || '';
+    g.setAttribute(
+      'transform',
+      t.replace(
+        /translate\(\s*([-\d.]+)([ ,]+)[-\d.]+/,
+        (_all, x, sep) => `translate(${x}${sep}${y}`,
+      ),
+    );
+  };
+  const nodeVp = (g: SVGGElement): { y: number; h: number } | null => {
+    const shape = (g.querySelector('rect') as SVGGraphicsElement | null) ?? g;
+    const m = shape.getCTM();
+    if (!m) return null;
+    const bb = shape.getBBox();
+    const c = new DOMPoint(bb.x + bb.width / 2, bb.y + bb.height / 2).matrixTransform(m);
+    return { y: c.y, h: bb.height * (m.d || 1) };
+  };
+
+  // key (cluster + source column) → external sources feeding into that cluster.
+  const groups = new Map<string, { id: string; wantSum: number; n: number }[]>();
+  root.querySelectorAll('.edgePaths path, .edgePath path').forEach(p => {
+    const parsed = parseEdgeId((p as SVGElement).getAttribute('data-id') || p.id || '');
+    if (!parsed) return;
+    const [src, dst] = parsed;
+    // dst sits on a cluster border that src is outside of → src is an external source.
+    if (!endsOnBorder(dst, src)) return;
+    const srcEl = nodeElById.get(src);
+    const dstEl = nodeElById.get(dst);
+    if (!srcEl || !dstEl) return;
+    const srcPos = getTranslate(srcEl);
+    const dstVp = nodeVp(dstEl);
+    if (!srcPos || !dstVp) return;
+    // the cluster that encloses dst but not src
+    const csrc = membership.get(src) ?? new Set<string>();
+    let cluster: string | undefined;
+    for (const c of membership.get(dst) ?? new Set<string>()) {
+      if (!csrc.has(c)) {
+        cluster = c;
+        break;
+      }
+    }
+    if (!cluster) return;
+    // One lane per source column (same x), so a source never jumps lanes.
+    const key = `${cluster}@${Math.round(srcPos.x)}`;
+    const arr = groups.get(key) ?? [];
+    const existing = arr.find(e => e.id === src);
+    if (existing) {
+      existing.wantSum += dstVp.y; // multiple targets → average their y
+      existing.n += 1;
+    } else arr.push({ id: src, wantSum: dstVp.y, n: 1 });
+    groups.set(key, arr);
+  });
+
+  const GAP_PAD = 12;
+  groups.forEach(entries => {
+    const nodes = entries
+      .map(e => {
+        const el = nodeElById.get(e.id)!;
+        const vp = nodeVp(el);
+        const t = getTranslate(el);
+        return vp && t
+          ? { el, id: e.id, want: e.wantSum / e.n, curY: vp.y, curT: t.y, h: vp.h }
+          : null;
+      })
+      .filter((x): x is NonNullable<typeof x> => !!x);
+    if (nodes.length === 0) return;
+    nodes.sort((a, b) => a.want - b.want);
+
+    const boxed = nodes.every(n => (membership.get(n.id)?.size ?? 0) > 0);
+    const minGap = Math.max(...nodes.map(n => n.h)) + GAP_PAD;
+    const pos = nodes.map(n => n.want);
+
+    if (boxed) {
+      // Keep the sources inside their subgraph box's original vertical extent.
+      const lo = Math.min(...nodes.map(n => n.curY));
+      const hi = Math.max(...nodes.map(n => n.curY));
+      pos[0] = Math.min(Math.max(pos[0], lo), hi);
+      for (let i = 1; i < pos.length; i++) {
+        pos[i] = Math.min(Math.max(pos[i], pos[i - 1] + minGap), hi);
+      }
+      for (let i = pos.length - 2; i >= 0; i--) {
+        if (pos[i] > pos[i + 1] - minGap) pos[i] = pos[i + 1] - minGap;
+      }
+      if (pos.length > 1 && pos[0] < lo) {
+        // Doesn't fit — distribute evenly across the box, preserving order.
+        for (let i = 0; i < pos.length; i++) {
+          pos[i] = lo + (i * (hi - lo)) / (pos.length - 1);
+        }
+      }
+    } else {
+      // Free vertical space: honour target alignment, spread only to de-overlap,
+      // then recentre on the desired centroid so the group doesn't drift.
+      for (let i = 1; i < pos.length; i++) {
+        pos[i] = Math.max(pos[i], pos[i - 1] + minGap);
+      }
+      const wantMean = nodes.reduce((s, n) => s + n.want, 0) / nodes.length;
+      const posMean = pos.reduce((s, y) => s + y, 0) / pos.length;
+      const shift = wantMean - posMean;
+      for (let i = 0; i < pos.length; i++) pos[i] += shift;
+    }
+
+    nodes.forEach((n, i) => setTranslateY(n.el, n.curT + (pos[i] - n.curY)));
+  });
+
+  // Connection point on a node face (in the edge path's coordinate space).
+  // side: 'left' | 'right' — which vertical face the edge attaches to.
+  const facePoint = (
+    nodeEl: SVGGElement,
+    side: 'left' | 'right',
+    pathEl: SVGPathElement,
+  ): { x: number; y: number } | null => {
+    const shape = (nodeEl.querySelector('rect') as SVGGraphicsElement | null) ?? nodeEl;
+    const pathM = pathEl.getCTM();
+    const fromM = shape.getCTM();
+    if (!pathM || !fromM) return null;
+    const bb = shape.getBBox();
+    const lx = side === 'left' ? bb.x : bb.x + bb.width;
+    const ly = bb.y + bb.height / 2;
+    const vp = new DOMPoint(lx, ly).matrixTransform(fromM);
+    const local = new DOMPoint(vp.x, vp.y).matrixTransform(pathM.inverse());
+    return { x: local.x, y: local.y };
+  };
+
   root.querySelectorAll('.edgePaths path, .edgePath path').forEach(p => {
     const el = p as SVGPathElement;
     const totalLen = el.getTotalLength();
     if (totalLen <= EXTRA_W) return;
 
-    let skipStart = false;
-    let skipEnd = false;
+    let srcBorder = false;
+    let dstBorder = false;
+    let srcNode: SVGGElement | undefined;
+    let dstNode: SVGGElement | undefined;
     const parsed = parseEdgeId(el.getAttribute('data-id') || el.id || '');
     if (parsed) {
       const [src, dst] = parsed;
-      skipStart = endsOnBorder(src, dst);
-      skipEnd = endsOnBorder(dst, src);
+      srcBorder = endsOnBorder(src, dst);
+      dstBorder = endsOnBorder(dst, src);
+      srcNode = nodeElById.get(src);
+      dstNode = nodeElById.get(dst);
     }
 
     // Helper: compute trim for an endpoint based on edge direction there.
@@ -337,26 +486,56 @@ export function enhanceDiagram(
       }
     }
 
-    const p0 = el.getPointAtLength(0);
-    const p0n = el.getPointAtLength(Math.min(2, totalLen));
-    const trimStart = skipStart ? 0 : trimForEndpoint(p0n.x - p0.x, p0n.y - p0.y);
+    // Cross-boundary edges (either endpoint sits on a cluster border) are clipped
+    // by Mermaid at the box edge and their source node may have been re-slotted
+    // above, so reconnect BOTH ends straight to the real node faces. Same-cluster
+    // edges are trimmed back to the widened node face as usual.
+    const isCross = srcBorder || dstBorder;
+    const srcPos = srcNode ? getTranslate(srcNode) : null;
+    const dstPos = dstNode ? getTranslate(dstNode) : null;
+    const srcRightOfDst = !!(srcPos && dstPos && srcPos.x > dstPos.x);
+    const startSide: 'left' | 'right' = srcRightOfDst ? 'left' : 'right';
+    const endSide: 'left' | 'right' = srcRightOfDst ? 'right' : 'left';
 
-    const pe = el.getPointAtLength(totalLen);
-    const pe1 = el.getPointAtLength(Math.max(0, totalLen - 2));
-    const trimEnd = skipEnd ? 0 : trimForEndpoint(pe.x - pe1.x, pe.y - pe1.y);
-
-    const startAt = Math.min(trimStart, totalLen * 0.4);
-    const endAt = Math.max(totalLen - trimEnd, totalLen * 0.6);
-    if (startAt >= endAt) return;
-
-    const span = endAt - startAt;
-    const steps = Math.max(24, Math.round(span / 4));
-    let newD = '';
-    for (let i = 0; i <= steps; i++) {
-      const t = startAt + (i / steps) * span;
-      const pt = el.getPointAtLength(t);
-      newD += (i === 0 ? 'M' : 'L') + pt.x.toFixed(2) + ',' + pt.y.toFixed(2);
+    const startExtend = isCross && srcNode ? facePoint(srcNode, startSide, el) : null;
+    let startAt = 0;
+    if (!startExtend) {
+      const p0 = el.getPointAtLength(0);
+      const p0n = el.getPointAtLength(Math.min(2, totalLen));
+      startAt = Math.min(trimForEndpoint(p0n.x - p0.x, p0n.y - p0.y), totalLen * 0.4);
     }
+
+    // End endpoint: extend to the real target node when clipped at a border.
+    const endExtend = isCross && dstNode ? facePoint(dstNode, endSide, el) : null;
+    let endAt = totalLen;
+    if (!endExtend) {
+      const pe = el.getPointAtLength(totalLen);
+      const pe1 = el.getPointAtLength(Math.max(0, totalLen - 2));
+      endAt = Math.max(totalLen - trimForEndpoint(pe.x - pe1.x, pe.y - pe1.y), totalLen * 0.6);
+    }
+
+    if (endAt <= startAt) return;
+
+    const pts: { x: number; y: number }[] = [];
+    if (startExtend || endExtend) {
+      // Cross-boundary edge: Mermaid clipped it at the cluster border, leaving a
+      // short stub that kinks away from the real endpoints. Draw a clean straight
+      // line between the resolved node faces instead of following that stub.
+      const startPt = startExtend ?? el.getPointAtLength(startAt);
+      const endPt = endExtend ?? el.getPointAtLength(endAt);
+      pts.push(startPt, endPt);
+    } else {
+      const span = endAt - startAt;
+      const steps = Math.max(24, Math.round(span / 4));
+      for (let i = 0; i <= steps; i++) {
+        const t = startAt + (i / steps) * span;
+        pts.push(el.getPointAtLength(t));
+      }
+    }
+
+    const newD = pts
+      .map((pt, i) => (i === 0 ? 'M' : 'L') + pt.x.toFixed(2) + ',' + pt.y.toFixed(2))
+      .join('');
     el.setAttribute('d', newD);
   });
 

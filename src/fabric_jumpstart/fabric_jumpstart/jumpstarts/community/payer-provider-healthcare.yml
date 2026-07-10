@@ -1,6 +1,6 @@
 id: 27
 logical_id: payer-provider-healthcare
-name: Payer/Provider Healthcare Demo
+name: Payer/Provider Healthcare
 description: >-
   End-to-end healthcare payer/provider analytics on Fabric with optional
   Real-Time Intelligence stack (Eventhouse + KQL DB) for

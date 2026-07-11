@@ -22,7 +22,7 @@ items_in_scope:
 catalog_docs_uri: 'https://github.com/dcnsakthi/ftsmonitor/blob/v0.0.1/README.md'
 entry_point: nb_ftsm_tenant_settings.Notebook
 test_suite: ""
-owner_email: fabricjumpstart.collab@microsoft.com
+owner_email: fabricjumpstartcore@microsoft.com
 minutes_to_deploy: 1
 minutes_to_complete_catalog: 2
 video_url: ""

@@ -1,0 +1,44 @@
+id: 29
+logical_id: fabric-tenant-monitoring
+name: Fabric Tenant Settings Monitoring
+description: >-
+  A scheduled notebook extracts Fabric tenant settings data from the Fabric Admin REST APIs and stores it in a Lakehouse in a semi-structured format, enabling comprehensive monitoring and reporting through Power BI.
+date_added: 07/11/2026
+workload_tags:
+- Power BI
+- Data Engineering
+scenario_tags:
+- Monitoring
+type: Accelerator
+source:
+  repo_url: https://github.com/dcnsakthi/ftsmonitor
+  repo_ref: v0.0.1
+  workspace_path: /
+items_in_scope:
+- Notebook
+- Lakehouse
+- SemanticModel
+- Report
+catalog_docs_uri: 'https://github.com/dcnsakthi/ftsmonitor/blob/v0.0.1/README.md'
+entry_point: nb_ftsm_tenant_settings.Notebook
+test_suite: ''
+owner_email: fabricjumpstart.collab@microsoft.com
+minutes_to_deploy: 1
+minutes_to_complete_catalog: 2
+video_url: ""
+difficulty: Beginner
+last_updated: "2026-07-07"
+mermaid_diagram: |
+    graph LR
+      %% Tenant Settings Monitoring solution deployed within the Fabric workspace
+      subgraph Fabric:::Workspace
+        direction LR
+        NB[Extract Fabric Tenant Settings on a Daily Schedule]:::Notebook
+        LH[Store Historical Snapshots in the Lakehouse]:::Lakehouse
+        SM[Create Default Semantic Model for Analytics]:::SemanticModel
+        RPT[Visualize Current and Historical Tenant Settings]:::Report
+      end
+      %% Extract and persist Fabric Tenant Settings
+      NB --> LH
+      %% Build semantic model and reporting layer from Lakehouse
+      LH --> SM --> RPT

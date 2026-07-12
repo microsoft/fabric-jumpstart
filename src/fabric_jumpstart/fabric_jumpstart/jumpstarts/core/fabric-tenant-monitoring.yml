@@ -19,7 +19,7 @@ items_in_scope:
 - Lakehouse
 - SemanticModel
 - Report
-catalog_docs_uri: 'https://github.com/dcnsakthi/ftsmonitor/blob/v0.0.1/README.md'
+catalog_docs_uri: ""
 entry_point: nb_ftsm_tenant_settings.Notebook
 test_suite: ""
 owner_email: fabricjumpstartcore@microsoft.com

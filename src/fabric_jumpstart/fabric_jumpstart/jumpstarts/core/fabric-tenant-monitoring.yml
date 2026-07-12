@@ -19,12 +19,10 @@ items_in_scope:
 - Lakehouse
 - SemanticModel
 - Report
-catalog_docs_uri: ''
 entry_point: nb_ftsm_tenant_settings.Notebook
 test_suite: ""
 owner_email: fabricjumpstartcore@microsoft.com
 minutes_to_deploy: 2
-minutes_to_complete_catalog: 2
 video_url: ''
 difficulty: Beginner
 last_updated: "07/07/2026"

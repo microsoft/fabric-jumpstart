@@ -14,7 +14,6 @@ This catalog contains a **Microsoft Fabric end-to-end monitoring solution** for 
 
 The objective is to track tenant setting changes over time for governance and audit scenarios.
 
----
 
 ## Repository Structure
 
@@ -26,8 +25,6 @@ The objective is to track tenant setting changes over time for governance and au
 └── FTSMonitorRPT.Report/                 # Fabric Report artifact
 
 ```
-
----
 
 ## Solution Architecture
 
@@ -45,8 +42,6 @@ The objective is to track tenant setting changes over time for governance and au
    - The report consumes the semantic model to show:
      - current settings snapshot
      - comparisons across snapshots/versions
-
----
 
 ## Artifacts
 
@@ -72,8 +67,6 @@ The objective is to track tenant setting changes over time for governance and au
 - `definition.pbir` + `definition/` store report definitions
 - `StaticResources/` includes report static assets/resources
 
----
-
 ## Deployment / Usage
 
 ### Prerequisites
@@ -89,12 +82,8 @@ Refer to Getting Started with Fabric catalog page [Getting Started](/getting-sta
 5. Open **`FTSMonitorRPT.Report`** to validate visuals for current snapshot and comparisons.
 6. Configure or verify notebook schedule as required (in Fabric UI).
 
----
-
 ## Operational Notes
 
 - Keep notebook schedule aligned with your governance monitoring interval.
 - Use semantic model refresh sequencing after notebook runs.
 - Consider adding alerting (e.g., pipeline/Teams/email) for notebook or refresh failures.
-
----

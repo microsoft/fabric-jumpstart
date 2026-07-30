@@ -15,7 +15,7 @@ scenario_tags:
 type: Tutorial
 source:
   repo_url: https://github.com/microsoft/fabric-stateful-streaming-lakehouse.git/
-  repo_ref: v0.1.0
+  repo_ref: v0.1.1
   workspace_path: workspace/
 items_in_scope:
 - Lakehouse
@@ -26,11 +26,11 @@ items_in_scope:
 feature_flags:
 - enable_lakehouse_unpublish
 jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/stateful-streaming-lakehouse/
-entry_point: explore_streaming.Notebook
+entry_point: 01_explore-streaming.Notebook
 test_suite: ''
 owner_email: FabricJumpstart.StatefulStreamingLakehouse@microsoft.com
 minutes_to_deploy: 8
-minutes_to_complete_jumpstart: 30
+minutes_to_complete_jumpstart: 40
 video_url: ""
 difficulty: Advanced
 last_updated: "2026-02-28"
@@ -47,8 +47,8 @@ mermaid_diagram: |
     LH[sales_and_logistics]:::Lakehouse
     SJD[stream_all_zones]:::SparkJobDefinition
     ENV[stream_env]:::Environment
-    EXP[explore_streaming]:::Notebook
-    ARC[acrflow_framework]:::Notebook
+    EXP[01_explore-streaming]:::Notebook
+    ARC[01_acrflow-framework]:::Notebook
     direction LR
   end
 

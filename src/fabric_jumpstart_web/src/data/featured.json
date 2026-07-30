@@ -3,5 +3,6 @@
   "multivariate-anomaly-detection",
   "stateful-streaming-rocksdb",
   "stateful-streaming-lakehouse",
+  "spark-performance-engineering",
   "materialized-lake-views"
 ]

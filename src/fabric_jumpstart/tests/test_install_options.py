@@ -370,3 +370,27 @@ def test_installer_wraps_items_in_workspace_folder_name(tmp_path):
 
     assert (result / "healthcare" / "Item.Notebook").is_dir()
     assert not (result / "test-jumpstart").exists()
+
+
+def test_deploy_items_refreshes_parameters_before_publish(tmp_path):
+    """Prefix rewrites land after the workspace's parameter snapshot; deploy must re-read it."""
+    from unittest.mock import MagicMock
+
+    from fabric_jumpstart.workspace_manager import WorkspaceManager
+
+    manager = WorkspaceManager(
+        workspace_id="ws-123", workspace_path=tmp_path, items_in_scope=["Notebook"]
+    )
+    fake_ws = MagicMock()
+    manager._fabric_workspace = fake_ws
+
+    calls = []
+    fake_ws._refresh_parameter_file.side_effect = lambda: calls.append("refresh")
+
+    with patch(
+        "fabric_jumpstart.workspace_manager.publish_all_items",
+        side_effect=lambda ws: calls.append("publish"),
+    ):
+        manager.deploy_items()
+
+    assert calls == ["refresh", "publish"]

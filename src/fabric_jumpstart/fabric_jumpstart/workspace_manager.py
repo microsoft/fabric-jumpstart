@@ -197,6 +197,12 @@ class WorkspaceManager:
             logger.info("Publish-order shim applied: Ontology now publishes before DataAgent")
         
         workspace = self.get_fabric_workspace()
+        # Re-read parameter.yml: prefixes rewrite it on disk after this workspace
+        # object (and its parameter snapshot) was created for conflict scanning,
+        # and publish_all_items refreshes repository items but not parameters.
+        refresh_params = getattr(workspace, "_refresh_parameter_file", None)
+        if callable(refresh_params):
+            refresh_params()
         logger.info(f"Deploying items from {self.workspace_path} to workspace '{self.workspace_id}'")
         publish_all_items(workspace)
         logger.info("Successfully deployed all items")

@@ -52,6 +52,9 @@ class JumpstartInstaller:
         self.debug_logs = bool(options.get('debug', False))
         self.repo_ref_override = options.get('repo_ref')
         self.install_option = options.get('install_option')
+        # Workspace folder to wrap deployed items in (defaults to logical_id);
+        # multi-option installs pass the option name so each industry gets its own folder.
+        self.workspace_folder_name = options.get('workspace_folder_name')
         
         # State tracking
         self.log_buffer: List[Dict] = []
@@ -85,6 +88,12 @@ class JumpstartInstaller:
         """
         declared_options = self.config.get('install_options') or []
         logical_id = self.config.get('logical_id', '')
+        if self.install_option is not None and not isinstance(self.install_option, str):
+            # Arrays are expanded by jumpstart.install(); each installer handles one option.
+            raise ValueError(
+                "JumpstartInstaller expects a single install_option string; "
+                "pass arrays to jumpstart.install() instead"
+            )
         if self.install_option is not None and not declared_options:
             raise ValueError(
                 f"Jumpstart '{logical_id}' does not define install options; "
@@ -176,18 +185,19 @@ class JumpstartInstaller:
         # repo root rather than creating an artificial folder named after workspace_path.
         self.temp_workspace_path = candidate if candidate.exists() else self.working_repo_path
 
-        # Ensure a logical_id subfolder exists within temp_workspace_path so that
+        # Ensure a wrap subfolder exists within temp_workspace_path so that
         # fabric_cicd deploys items into a named Fabric workspace folder.
-        logical_id_folder = self.temp_workspace_path / logical_id
-        if not logical_id_folder.exists():
+        wrap_folder_name = self.workspace_folder_name or logical_id
+        wrap_folder = self.temp_workspace_path / wrap_folder_name
+        if not wrap_folder.exists():
             logger.info(
-                f"No '{logical_id}' folder found in workspace root; "
+                f"No '{wrap_folder_name}' folder found in workspace root; "
                 f"creating it and moving Fabric items inside."
             )
-            logical_id_folder.mkdir(parents=True, exist_ok=True)
+            wrap_folder.mkdir(parents=True, exist_ok=True)
             for item in list(self.temp_workspace_path.iterdir()):
-                if item.is_dir() and item != logical_id_folder:
-                    item.rename(logical_id_folder / item.name)
+                if item.is_dir() and item != wrap_folder:
+                    item.rename(wrap_folder / item.name)
 
         self.repository_directory = self.temp_workspace_path
         logger.info(f"Workspace path {self.temp_workspace_path}")

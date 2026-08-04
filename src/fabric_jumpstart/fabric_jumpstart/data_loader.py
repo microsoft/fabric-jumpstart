@@ -11,14 +11,18 @@ YAML shape::
       shift_timestamps_to_now: true          # optional, default false
       lakehouse_tables:                      # optional
         lakehouse: my_lakehouse
-        archive_path: instance_data/         # csv members -> one Delta table each
+        archive_path: instance_data/         # csv/parquet members -> one Delta table each
       kusto_tables:                          # optional
         database: my_eventhouse
-        archive_path: events_data/           # csv members -> one KQL table each
+        archive_path: events_data/           # csv/parquet members -> one KQL table each
       refresh_definitions:                   # optional; re-save items after load
         - MyOntology.Ontology
 
-CSV file names map to table names (sanitized: non-alphanumerics -> ``_``,
+Members may be CSV or Parquet; when a table exists in both formats the Parquet
+file wins (better types, smaller payloads). Parquet handling uses ``pyarrow``,
+which ships in Fabric notebook runtimes and is imported lazily elsewhere.
+
+Data file names map to table names (sanitized: non-alphanumerics -> ``_``,
 lowercased, ``t_`` prefix when starting with a digit).
 """
 
@@ -49,13 +53,113 @@ _INGEST_CHUNK_BYTES = 900_000  # stay under the 1MB inline ingest limit
 
 
 def sanitize_table_name(file_name: str) -> str:
-    """CSV member name -> table name (accelerator-compatible sanitization)."""
+    """Data member name -> table name (accelerator-compatible sanitization)."""
     base = file_name.rsplit("/", 1)[-1]
-    base = re.sub(r"\.csv$", "", base, flags=re.I)
+    base = re.sub(r"\.(csv|parquet)$", "", base, flags=re.I)
     base = re.sub(r"[^0-9a-zA-Z]+", "_", base).strip("_").lower()
     if base and base[0].isdigit():
         base = f"t_{base}"
     return base
+
+
+def _member_format(name: str) -> Optional[str]:
+    low = name.lower()
+    if low.endswith(".parquet"):
+        return "parquet"
+    if low.endswith(".csv"):
+        return "csv"
+    return None
+
+
+def select_members(members: Dict[str, bytes], prefix: str) -> Dict[str, bytes]:
+    """Pick the loadable members under ``prefix`` — Parquet wins over CSV per table."""
+    by_table: Dict[str, Dict[str, str]] = {}
+    for name in sorted(members):
+        fmt = _member_format(name)
+        if fmt is None or not name.startswith(prefix):
+            continue
+        by_table.setdefault(sanitize_table_name(name), {}).setdefault(fmt, name)
+    selected: Dict[str, bytes] = {}
+    for formats in by_table.values():
+        chosen = formats.get("parquet") or formats["csv"]
+        selected[chosen] = members[chosen]
+    return selected
+
+
+def _load_pyarrow():
+    """Lazy pyarrow import — present in Fabric runtimes, optional elsewhere."""
+    try:
+        import pyarrow
+        import pyarrow.parquet  # noqa: F401
+    except ImportError as e:  # pragma: no cover - environment specific
+        raise RuntimeError(
+            "This data_load source contains Parquet files, which require the "
+            "'pyarrow' package (preinstalled in Fabric notebooks; "
+            "'pip install pyarrow' elsewhere)"
+        ) from e
+    return pyarrow
+
+
+def _is_ts_column(col: Optional[str]) -> bool:
+    return bool(col) and "timestamp" in str(col).lower()
+
+
+def _read_parquet_table(data: bytes):
+    pa = _load_pyarrow()
+    return pa, pa.parquet.read_table(io.BytesIO(data))
+
+
+def _write_parquet_table(pa, table) -> bytes:
+    buf = io.BytesIO()
+    pa.parquet.write_table(table, buf)
+    return buf.getvalue()
+
+
+def _parquet_max_timestamp(data: bytes) -> Optional[datetime]:
+    """Max value across timestamp-named columns (typed or string)."""
+    pa, table = _read_parquet_table(data)
+    result: Optional[datetime] = None
+    for idx, field in enumerate(table.schema):
+        if not _is_ts_column(field.name):
+            continue
+        for value in table.column(idx).to_pylist():
+            ts: Optional[datetime] = None
+            if isinstance(value, datetime):
+                ts = value.replace(tzinfo=None)
+            elif isinstance(value, str) and value:
+                ts, _ = _parse_ts(value)
+            if ts and (result is None or ts > result):
+                result = ts
+    return result
+
+
+def _shift_parquet(data: bytes, delta: timedelta) -> bytes:
+    """Return parquet bytes with timestamp-named columns shifted by ``delta``."""
+    pa, table = _read_parquet_table(data)
+    changed = False
+    for idx, field in enumerate(table.schema):
+        if not _is_ts_column(field.name):
+            continue
+        values = table.column(idx).to_pylist()
+        shifted_values = []
+        column_changed = False
+        for value in values:
+            if isinstance(value, datetime):
+                shifted_values.append(value + delta)
+                column_changed = True
+            elif isinstance(value, str) and value:
+                ts, fmt = _parse_ts(value)
+                if ts and fmt:
+                    shifted_values.append((ts + delta).strftime(fmt))
+                    column_changed = True
+                else:
+                    shifted_values.append(value)
+            else:
+                shifted_values.append(value)
+        if column_changed:
+            table = table.set_column(idx, field, pa.array(shifted_values, type=field.type))
+            changed = True
+    return _write_parquet_table(pa, table) if changed else data
 
 
 def _parse_ts(value: str) -> Tuple[Optional[datetime], Optional[str]]:
@@ -68,22 +172,27 @@ def _parse_ts(value: str) -> Tuple[Optional[datetime], Optional[str]]:
 
 
 def shift_timestamps(members: Dict[str, bytes], paths: List[str]) -> Dict[str, bytes]:
-    """Shift timestamp-ish columns in the given csv members so the newest lands ~yesterday.
+    """Shift timestamp-ish columns in csv/parquet members so the newest lands ~yesterday.
 
     A single global day-offset preserves relative order and time-of-day.
     Idempotent: re-running shifts by ~0 days.
     """
     def in_scope(name: str) -> bool:
-        return any(name.startswith(p) for p in paths) and name.lower().endswith(".csv")
+        return any(name.startswith(p) for p in paths) and _member_format(name) is not None
 
     global_max: Optional[datetime] = None
     for name, data in members.items():
         if not in_scope(name):
             continue
+        if _member_format(name) == "parquet":
+            ts = _parquet_max_timestamp(data)
+            if ts and (global_max is None or ts > global_max):
+                global_max = ts
+            continue
         reader = csv.DictReader(io.StringIO(data.decode("utf-8")))
         for row in reader:
             for col, val in row.items():
-                if col and "timestamp" in col.lower() and val:
+                if _is_ts_column(col) and val:
                     ts, _ = _parse_ts(val)
                     if ts and (global_max is None or ts > global_max):
                         global_max = ts
@@ -102,6 +211,9 @@ def shift_timestamps(members: Dict[str, bytes], paths: List[str]) -> Dict[str, b
     for name in list(shifted):
         if not in_scope(name):
             continue
+        if _member_format(name) == "parquet":
+            shifted[name] = _shift_parquet(shifted[name], delta)
+            continue
         reader = csv.DictReader(io.StringIO(shifted[name].decode("utf-8")))
         fieldnames = list(reader.fieldnames or [])
         if not fieldnames:
@@ -111,7 +223,7 @@ def shift_timestamps(members: Dict[str, bytes], paths: List[str]) -> Dict[str, b
         writer.writeheader()
         for row in reader:
             for col in fieldnames:
-                if col and "timestamp" in col.lower() and row[col]:
+                if _is_ts_column(col) and row[col]:
                     ts, fmt = _parse_ts(row[col])
                     if ts and fmt:
                         row[col] = (ts + delta).strftime(fmt)
@@ -140,6 +252,47 @@ def infer_kusto_type(values: List[str]) -> str:
     if all(v.lower() in ("true", "false") for v in non_empty):
         return "bool"
     return "string"
+
+
+def _parquet_kusto_table(data: bytes) -> Tuple[List[Tuple[str, str]], List[List[str]]]:
+    """Parquet bytes -> ([(column, kusto_type), ...], stringified data rows)."""
+    pa, table = _read_parquet_table(data)
+    schema: List[Tuple[str, str]] = []
+    for field in table.schema:
+        t = field.type
+        if pa.types.is_boolean(t):
+            kusto = "bool"
+        elif pa.types.is_integer(t):
+            kusto = "long"
+        elif pa.types.is_floating(t) or pa.types.is_decimal(t):
+            kusto = "real"
+        elif pa.types.is_timestamp(t) or pa.types.is_date(t):
+            kusto = "datetime"
+        else:
+            kusto = "string"
+        schema.append((field.name, kusto))
+    columns = [table.column(i).to_pylist() for i in range(table.num_columns)]
+    rows: List[List[str]] = []
+    for values in (zip(*columns) if columns else []):
+        row: List[str] = []
+        for v in values:
+            if v is None:
+                row.append("")
+            elif isinstance(v, bool):
+                row.append("true" if v else "false")
+            elif isinstance(v, datetime):
+                row.append(v.isoformat())
+            else:
+                row.append(str(v))
+        rows.append(row)
+    return schema, rows
+
+
+def _format_options(file_name: str) -> dict:
+    """Load Table API formatOptions for a staged file."""
+    if file_name.lower().endswith(".parquet"):
+        return {"format": "Parquet"}
+    return {"format": "Csv", "header": True, "delimiter": ","}
 
 
 class DataLoader:
@@ -243,8 +396,9 @@ class DataLoader:
             raise RuntimeError(f"data_load source not found in repository: {raw_source}")
         members: Dict[str, bytes] = {}
         if source.is_dir():
-            for f in source.rglob("*.csv"):
-                members[str(f.relative_to(source)).replace("\\", "/")] = f.read_bytes()
+            for f in source.rglob("*"):
+                if f.is_file() and _member_format(f.name) is not None:
+                    members[str(f.relative_to(source)).replace("\\", "/")] = f.read_bytes()
         else:
             with zipfile.ZipFile(source) as z:
                 for n in z.namelist():
@@ -279,29 +433,28 @@ class DataLoader:
         lakehouse = self._workspace_item(block["lakehouse"], "Lakehouse")
         prefix = block.get("archive_path", "")
 
-        # Upload all CSVs to Files first and collect the file -> table mapping.
+        # Upload the selected members (Parquet preferred) and map file -> table.
         mapping: Dict[str, str] = {}
-        for name, data in sorted(members.items()):
-            if not (name.startswith(prefix) and name.lower().endswith(".csv")):
-                continue
+        for name, data in sorted(select_members(members, prefix).items()):
             table = sanitize_table_name(name)
-            rel = f"Files/_jumpstart_load/{table}.csv"
+            file_name = f"{table}.{_member_format(name)}"
+            rel = f"Files/_jumpstart_load/{file_name}"
             self.on_progress(f"Uploading data for table '{table}'...")
             self._upload_to_files(lakehouse["id"], rel, data)
-            mapping[f"{table}.csv"] = table
+            mapping[file_name] = table
         if not mapping:
             return []
 
         # Preferred path: the public Load Table API (schema-less lakehouses).
-        first_table = next(iter(mapping.values()))
+        first_file, first_table = next(iter(mapping.items()))
         r = requests.post(
             f"{FABRIC_API}/workspaces/{self.workspace_id}/lakehouses/{lakehouse['id']}/tables/{first_table}/load",
             headers=self._fabric_headers(),
             json={
-                "relativePath": f"Files/_jumpstart_load/{first_table}.csv",
+                "relativePath": f"Files/_jumpstart_load/{first_file}",
                 "pathType": "File",
                 "mode": "Overwrite",
-                "formatOptions": {"format": "Csv", "header": True, "delimiter": ","},
+                "formatOptions": _format_options(first_file),
             },
             timeout=60,
         )
@@ -326,7 +479,7 @@ class DataLoader:
                     "relativePath": f"Files/_jumpstart_load/{file_name}",
                     "pathType": "File",
                     "mode": "Overwrite",
-                    "formatOptions": {"format": "Csv", "header": True, "delimiter": ","},
+                    "formatOptions": _format_options(file_name),
                 },
                 timeout=60,
             )
@@ -363,10 +516,15 @@ class DataLoader:
 
             code_lines = ["results = {}"]
             for file_name, table in mapping.items():
-                code_lines.append(
-                    f"df = spark.read.option('header', True).option('inferSchema', True)"
-                    f".csv('Files/_jumpstart_load/{file_name}')"
-                )
+                if file_name.lower().endswith(".parquet"):
+                    code_lines.append(
+                        f"df = spark.read.parquet('Files/_jumpstart_load/{file_name}')"
+                    )
+                else:
+                    code_lines.append(
+                        f"df = spark.read.option('header', True).option('inferSchema', True)"
+                        f".csv('Files/_jumpstart_load/{file_name}')"
+                    )
                 code_lines.append(
                     f"df.write.mode('overwrite').saveAsTable('{schema}.{table}')"
                 )
@@ -441,19 +599,19 @@ class DataLoader:
 
         prefix = block.get("archive_path", "")
         loaded = []
-        for name, data in sorted(members.items()):
-            if not (name.startswith(prefix) and name.lower().endswith(".csv")):
-                continue
+        for name, data in sorted(select_members(members, prefix).items()):
             table = sanitize_table_name(name)
             self.on_progress(f"Loading eventhouse table '{table}'...")
-            text = data.decode("utf-8")
-            reader = csv.reader(io.StringIO(text))
-            rows = list(reader)
-            header, body = rows[0], rows[1:]
-            samples = list(zip(*body[:200])) if body else [[] for _ in header]
-            schema = ", ".join(
-                f"['{col}']:{infer_kusto_type(list(vals))}" for col, vals in zip(header, samples)
-            )
+            if _member_format(name) == "parquet":
+                typed_schema, body = _parquet_kusto_table(data)
+                schema = ", ".join(f"['{col}']:{kusto}" for col, kusto in typed_schema)
+            else:
+                rows = list(csv.reader(io.StringIO(data.decode("utf-8"))))
+                header, body = rows[0], rows[1:]
+                samples = list(zip(*body[:200])) if body else [[] for _ in header]
+                schema = ", ".join(
+                    f"['{col}']:{infer_kusto_type(list(vals))}" for col, vals in zip(header, samples)
+                )
             r = self._kusto_mgmt(cluster, prefixed_db, f".create-merge table ['{table}'] ({schema})")
             if r.status_code != 200:
                 raise RuntimeError(f"Kusto table create failed for '{table}': {r.status_code} {r.text[:300]}")

@@ -48,6 +48,9 @@ lint = [
 test = [
     "pydantic>=2.12.5",
     "pytest>=9.0.2",
+    # Exercises the data_load Parquet path (runtime import is lazy: the Fabric
+    # notebook environment ships pyarrow, so it is not a hard dependency).
+    "pyarrow>=15.0.0",
 ]
 
 [tool.ruff]

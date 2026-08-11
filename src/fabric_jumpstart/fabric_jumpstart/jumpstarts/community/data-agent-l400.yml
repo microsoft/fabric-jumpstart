@@ -18,7 +18,7 @@ scenario_tags:
 type: Tutorial
 source:
   repo_url: https://github.com/pawarbi/fda-l400.git
-  repo_ref: v0.1.0-test
+  repo_ref: v0.1.1-test
   workspace_path: .
 items_in_scope:
   - Notebook

@@ -1,0 +1,33 @@
+id: 29
+logical_id: data-agent-l400
+name: Fabric Data Agent L400 Workshop
+description: >-
+  Build, govern, and evaluate a multi-source Fabric Data Agent using baseline
+  and AI-ready semantic models, a Lakehouse source, calibrated LLM judging,
+  fixed evaluation sets, and MLflow quality tracking.
+date_added: 08/11/2026
+include_in_listing: false
+workload_tags:
+  - Power BI
+  - Data Engineering
+  - Data Science
+scenario_tags:
+  - Modeling
+  - Monitoring
+  - Data Integration
+type: Tutorial
+source:
+  repo_url: https://github.com/pawarbi/fda-l400.git
+  repo_ref: v0.1.0-test
+  workspace_path: .
+items_in_scope:
+  - Notebook
+  - SemanticModel
+  - Report
+entry_point: WorkshopStart.Notebook
+test_suite: ""
+owner_email: sandeeppawar@microsoft.com
+minutes_to_deploy: 8
+minutes_to_complete_jumpstart: 180
+difficulty: Advanced
+last_updated: "2026-08-11"

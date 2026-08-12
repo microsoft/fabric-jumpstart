@@ -14,7 +14,7 @@ scenario_tags:
 type: Tutorial
 source:
   repo_url: https://github.com/MarkPryceMaherMSFT/LakeBench.git
-  repo_ref: v1.0.2
+  repo_ref: v1.0.3
   workspace_path: lakebench-tpcds/
 items_in_scope:
 - Lakehouse

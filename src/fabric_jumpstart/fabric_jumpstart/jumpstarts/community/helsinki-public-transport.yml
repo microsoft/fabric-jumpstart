@@ -23,8 +23,9 @@ items_in_scope:
   - KQLDatabase
   - Eventstream
   - Notebook
+  - SemanticModel
 jumpstart_docs_uri: https://github.com/microsoft/awesome-rayfin/tree/main/templates/helsinki-public-transport
-entry_point: NB_Helsinki_Realtime_Tracker.Notebook
+entry_point: 00_start_here.Notebook
 owner_email: alkorn@microsoft.com
 minutes_to_deploy: 3
 minutes_to_complete_jumpstart: 10

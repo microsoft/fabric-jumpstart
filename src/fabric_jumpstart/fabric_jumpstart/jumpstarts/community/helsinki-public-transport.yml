@@ -2,11 +2,10 @@ id: 30
 logical_id: helsinki-public-transport
 name: Helsinki Public Transport
 description: >-
-  Watch a city's buses, trams and ferries move in real time. Authored by Kevin
-  Thomas. A notebook polls the public HSL GTFS-RT feed into an Eventstream, an
-  Eventhouse shapes it with update policies, and a DirectQuery semantic model
-  drives a KQL dashboard and an optional Rayfin app with a photoreal 3D city
-  twin built from open geodata.
+  Watch a city's buses, trams and ferries move in real time. Authored by Kevin Thomas. A
+  notebook polls the public HSL GTFS-RT feed into an Eventstream, an Eventhouse shapes it
+  with update policies, and a DirectQuery semantic model drives a KQL dashboard. The
+  matching map app ships separately as an Awesome Rayfin template.
 date_added: 08/13/2026
 workload_tags:
   - Real-Time Intelligence
@@ -26,6 +25,7 @@ items_in_scope:
   - Notebook
   - SemanticModel
   - KQLDashboard
+jumpstart_docs_uri: https://github.com/microsoft/awesome-rayfin/tree/main/templates/helsinki-public-transport
 entry_point: NB_Helsinki_Realtime_Tracker.Notebook
 owner_email: alkorn@microsoft.com
 minutes_to_deploy: 3

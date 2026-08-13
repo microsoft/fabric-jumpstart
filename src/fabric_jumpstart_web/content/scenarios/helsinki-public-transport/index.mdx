@@ -59,7 +59,7 @@ The semantic model sits on the KQL database in DirectQuery, so there is nothing 
 
 ## The Map App (Optional, Separate Install)
 
-The jumpstart deploys the Fabric back end. The matching front end — a live map that renders the fleet on a 2D Leaflet map **and** on a photoreal 3D city twin — ships separately as a template in the [Awesome Rayfin](https://github.com/microsoft/awesome-rayfin) gallery:
+The jumpstart deploys the Fabric back end. The matching front end — a live map that renders the fleet on a 2D Leaflet map **and** on a 3D city twin — ships separately as a template in the [Awesome Rayfin](https://github.com/microsoft/awesome-rayfin) gallery:
 
 ```bash
 npm create @microsoft/rayfin -- --template https://github.com/microsoft/awesome-rayfin
@@ -75,21 +75,19 @@ Running **inside the Fabric portal**, the app never handles a token: the portal 
 
 ### A 3D city twin with no keys attached
 
-The 3D mode renders vehicles on the City of Helsinki's own photogrammetric city model — **no Cesium ion token, no Google Maps API key**. Every layer is CC BY 4.0 open data streamed straight from `kartta.hel.fi`, which sends CORS headers, so nothing has to be re-hosted:
+The 3D mode renders vehicles on the City of Helsinki's own semantic city model — **no Cesium ion token, no Google Maps API key**. Every layer is CC BY 4.0 open data streamed straight from `kartta.hel.fi`, which sends CORS headers, so nothing has to be re-hosted:
 
 | Layer | Source |
 |---|---|
-| Reality mesh (2017) | 3D Tiles, 42k aerial photos, ~7.5 cm/px |
 | Textured semantic LoD2 buildings | CityGML converted to 3D Tiles |
-| Park and street trees | 3D Tiles |
 | Terrain | quantized-mesh (2021) |
 | Base imagery | `Ortoilmakuva_2025_5cm` orthophoto WMS, 5 cm/px |
 
-![CityGML buildings with the tree models](images/02-citygml-trees.webp)
+![The 3D city view in the Fabric portal](images/02-3d-city.webp)
 
-The photogrammetric mesh already contains the tree canopy — it is baked into the aerial photos — which is why the separate tree models only apply to the CityGML surface:
+The city also publishes photogrammetric reality meshes, and they look better from the air — but vehicles are clamped to the *terrain*, and the mesh surface sits several metres above it, so zoomed in the buses sank under the buildings and vanished. A transit map that hides the transit is not a trade-off, so the app ships one surface:
 
-![Street-level detail on the photogrammetric mesh](images/03-mesh-street-level.webp)
+![Street-level detail on the LoD2 buildings](images/03-street-level.webp)
 
 <Callout>
 

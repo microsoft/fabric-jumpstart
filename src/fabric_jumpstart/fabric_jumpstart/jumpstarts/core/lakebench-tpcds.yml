@@ -1,0 +1,37 @@
+id: 29
+logical_id: lakebench-tpcds
+name: LakeBench TPC-DS Benchmark
+description: >-
+  Run the industry-standard TPC-DS benchmark against Fabric Spark using the
+  open-source LakeBench Python library, from synthetic data generation
+  through ELT loading and query performance testing, with timings captured
+  in a queryable Delta table.
+date_added: 08/11/2026
+workload_tags:
+- Data Engineering
+scenario_tags:
+- Batch Processing
+type: Tutorial
+source:
+  repo_url: https://github.com/MarkPryceMaherMSFT/LakeBench.git
+  repo_ref: v1.0.4
+  workspace_path: lakebench-tpcds/
+items_in_scope:
+- Lakehouse
+- Notebook
+jumpstart_docs_uri: 'https://github.com/microsoft/LakeBench/blob/main/README.md'
+entry_point: lakebench_jumpstart.Notebook
+test_suite: ''
+owner_email: maprycem@microsoft.com
+minutes_to_deploy: 2
+minutes_to_complete_jumpstart: 15
+video_url: ""
+difficulty: "Beginner"
+last_updated: "2026-08-11"
+mermaid_diagram: |
+  graph LR
+  %% FABRIC WORKSPACE
+  subgraph Fabric:::Workspace
+    NB[lakebench_jumpstart]:::Notebook --> LH[Lakebench]:::Lakehouse
+    direction LR
+  end

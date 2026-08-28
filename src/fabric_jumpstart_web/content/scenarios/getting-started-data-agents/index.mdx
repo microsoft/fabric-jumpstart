@@ -39,14 +39,15 @@ hash-validated PBIX files:
 
 ## Required First Step
 
-Open `SetupDataAgentJumpstart`, review its parameter cell, and select **Run
-all**. The tested defaults point to the immutable release used by the catalog.
-The notebook then:
+Open `SetupDataAgentJumpstart` and select **Run all without changing any
+values**. The tested defaults point to the immutable release used by the
+catalog. The notebook then:
 
 1. Downloads both PBIX assets and validates their SHA-256 hashes.
 2. Imports the reports and semantic models with `CreateOrOverwrite`.
 3. Moves every imported item into the `getting-started-data-agents` folder.
-4. Queries both semantic models to verify that populated data is available.
+4. Updates both semantic models to use the Microsoft-hosted data source.
+5. Queries both semantic models to verify that populated data is available.
 
 Do not continue until the notebook prints its final success message. Rerunning
 the notebook is safe and replaces the same-named imported items.

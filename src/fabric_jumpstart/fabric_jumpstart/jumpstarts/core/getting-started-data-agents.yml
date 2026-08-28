@@ -1,8 +1,8 @@
 id: 29
-logical_id: data-agent-l400
-name: Fabric Data Agent L400 Workshop
+logical_id: getting-started-data-agents
+name: Getting Started with Data Agents
 description: >-
-  Learn to build, govern, and evaluate a multi-source Fabric Data Agent with
+  Build, govern, and evaluate a multi-source Data Agent with
   AI-ready semantic models, Lakehouse data, calibrated LLM judging, fixed
   evaluation sets, and MLflow quality tracking.
 date_added: 08/16/2026
@@ -17,14 +17,14 @@ scenario_tags:
   - Data Integration
 type: Tutorial
 source:
-  repo_url: https://github.com/pawarbi/fda-l400.git
-  repo_ref: v1.0.1
-  workspace_path: data-agent-l400
+  repo_url: https://github.com/microsoft/fabric-data-agent-workshop.git
+  repo_ref: v1.0.3
+  workspace_path: getting-started-data-agents
 items_in_scope:
   - Notebook
-entry_point: DataAgentGettingStarted.Notebook
+entry_point: SetupDataAgentJumpstart.Notebook
 owner_email: jumpstart.data_agent@microsoft.com
 minutes_to_deploy: 8
 minutes_to_complete_jumpstart: 180
 difficulty: Advanced
-last_updated: "2026-08-16"
+last_updated: "2026-08-28"

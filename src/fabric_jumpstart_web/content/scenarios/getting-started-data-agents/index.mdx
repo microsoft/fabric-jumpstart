@@ -1,0 +1,79 @@
+---
+title: Getting Started with Data Agents
+toc: true
+---
+
+This tutorial walks through building, governing, extending, and evaluating a
+Microsoft Fabric Data Agent. It starts with a baseline semantic model and an
+AI-ready version of the same model, then adds a Lakehouse source and a
+repeatable evaluation workflow with calibrated LLM judging and MLflow.
+
+<Callout>
+
+Run `SetupDataAgentJumpstart` first. The Jumpstart deploys the notebooks, but
+the populated semantic models and reports require the post-deployment import
+performed by this notebook.
+
+</Callout>
+
+## What Gets Deployed
+
+The initial installation deploys six Python notebooks:
+
+| Notebook | Purpose |
+| --- | --- |
+| `SetupDataAgentJumpstart` | Required entry point. Imports, organizes, and validates the populated semantic models and reports. |
+| `RefreshSemanticModel` | Optional maintenance for refreshing or repairing the semantic model Web connection. |
+| `BuildOpsRefData` | Creates the schema-enabled `OpsRefData` Lakehouse and its supported Data Agent interface. |
+| `CreateMultiSourceDataAgent` | Adds the Lakehouse source and publishes a multi-source Data Agent. |
+| `JudgeCalibration` | Calibrates and registers the LLM judge used for evaluation. |
+| `EvaluateDataAgent` | Evaluates Data Agent responses and records quality results in MLflow. |
+
+`SetupDataAgentJumpstart` imports these additional assets from immutable,
+hash-validated PBIX files:
+
+| Item | Type | Role |
+| --- | --- | --- |
+| `ManufacturingOps` | Semantic model and report | Baseline model used for comparison. |
+| `ManufacturingOpsAIReady` | Semantic model and report | AI-ready model used to create the initial Data Agent. |
+
+## Required First Step
+
+Open `SetupDataAgentJumpstart`, review its parameter cell, and select **Run
+all**. The tested defaults point to the immutable release used by the catalog.
+The notebook then:
+
+1. Downloads both PBIX assets and validates their SHA-256 hashes.
+2. Imports the reports and semantic models with `CreateOrOverwrite`.
+3. Moves every imported item into the `getting-started-data-agents` folder.
+4. Queries both semantic models to verify that populated data is available.
+
+Do not continue until the notebook prints its final success message. Rerunning
+the notebook is safe and replaces the same-named imported items.
+
+## Learning Path
+
+After setup:
+
+1. Compare the `ManufacturingOps` and `ManufacturingOpsAIReady` reports and
+   semantic models.
+2. Create and publish a Data Agent using `ManufacturingOpsAIReady`.
+3. Run `BuildOpsRefData` to create a Lakehouse source.
+4. Run `CreateMultiSourceDataAgent` to add that source to a new Data Agent.
+5. Run `JudgeCalibration` to register a calibrated evaluator.
+6. Run `EvaluateDataAgent` to score responses and inspect MLflow results.
+
+## Requirements
+
+- A Microsoft Fabric capacity and tenant that support notebooks, semantic
+  models, reports, Data Agents, Lakehouses, and MLflow.
+- Contributor or higher access to the target workspace.
+- Permission to create and publish Data Agents and Fabric connections.
+- Outbound access to `raw.githubusercontent.com`.
+- Delegated `Workspace.ReadWrite.All` permission for folder placement.
+
+## Resources
+
+- [Source repository](https://github.com/microsoft/fabric-data-agent-workshop/tree/v1.0.3)
+- [Microsoft Fabric Data Agent documentation](https://learn.microsoft.com/fabric/data-science/concept-data-agent)
+- [Evaluate your Data Agent](https://learn.microsoft.com/fabric/data-science/evaluate-data-agent)

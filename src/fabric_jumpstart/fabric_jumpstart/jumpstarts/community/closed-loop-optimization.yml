@@ -1,0 +1,65 @@
+id: 29
+logical_id: closed-loop-optimization
+name: Closed-Loop Optimization
+description: >-
+  A live, self-optimizing manufacturing line on Fabric Real-Time Intelligence.
+  Machines stream telemetry while an SPSA optimizer continuously tunes their
+  setpoints toward a drifting quality target, closing the loop autonomously or
+  with operator approval.
+date_added: 07/14/2026
+workload_tags:
+  - Real-Time Intelligence
+  - Data Engineering
+  - SQL Database
+scenario_tags:
+  - Streaming
+  - Monitoring
+type: Demo
+source:
+  repo_url: https://github.com/DaSenf1860/jumpstart-closed-loop-optimization.git
+  repo_ref: v1.0.0
+  workspace_path: closedloopoptimization/
+items_in_scope:
+  - Eventhouse
+  - KQLDatabase
+  - Notebook
+  - KQLDashboard
+  - Reflex
+jumpstart_docs_uri: https://github.com/DaSenf1860/jumpstart-closed-loop-optimization/blob/main/closedloopoptimization/Readme.md
+entry_point: PostDeploymentNotebook.Notebook
+test_suite: ""
+owner_email: andreas.rederer@microsoft.com
+minutes_to_deploy: 5
+minutes_to_complete_jumpstart: 15
+video_url:
+difficulty: "Intermediate"
+last_updated: "2026-07-14"
+mermaid_diagram: |
+  graph LR
+
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      direction LR
+      CONTROLLER[ClosedLoopController]:::Notebook
+      BRIDGE[ClosedLoopBridge]:::Notebook
+      EH[MfgRTI]:::Eventhouse
+      KDB[MfgRTI]:::KQLDatabase
+      DASH[ClosedLoopDashboard]:::KQLDashboard
+      ALERT[DefectRateAlert]:::Reflex
+      APP[closed-loop-console]:::SQLDatabase
+    end
+
+    %% OPERATOR
+    OPERATOR[Operator]:::U1F468
+
+    %% FLOWS
+    CONTROLLER -.-> KDB
+    KDB -.-> EH
+    KDB -.-> DASH
+    KDB -.-> ALERT
+    KDB -.-> BRIDGE
+    BRIDGE -.-> APP
+    APP -.-> OPERATOR
+    OPERATOR -.-> APP
+    APP -.-> BRIDGE
+    BRIDGE -.-> KDB

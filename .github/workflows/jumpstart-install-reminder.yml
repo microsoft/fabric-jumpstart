@@ -1,0 +1,94 @@
+name: Jumpstart Install Reminder
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Only need to read the repo and comment on the PR.
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      REPO: ${{ github.repository }}
+      MANIFEST_DIRS: >-
+        src/fabric_jumpstart/fabric_jumpstart/jumpstarts/core/
+        src/fabric_jumpstart/fabric_jumpstart/jumpstarts/community/
+    steps:
+      - name: Check out
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # Check out the PR head so the added manifest file is available locally.
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install --quiet pyyaml
+
+      - name: Find net-new jumpstart manifests
+        id: detect
+        run: |
+          set -euo pipefail
+          # List files ADDED by this PR (status == "added") under the manifest dirs.
+          mapfile -t added < <(
+            gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate \
+              --jq '.[] | select(.status == "added") | .filename'
+          )
+
+          manifests=()
+          for f in "${added[@]:-}"; do
+            [[ "$f" == *.yml || "$f" == *.yaml ]] || continue
+            for d in $MANIFEST_DIRS; do
+              if [[ "$f" == "$d"* ]]; then
+                manifests+=("$f")
+                break
+              fi
+            done
+          done
+
+          count=${#manifests[@]}
+          echo "Found ${count} net-new manifest(s): ${manifests[*]:-<none>}"
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
+          # Act only when exactly one net-new manifest is added.
+          if [[ "$count" -eq 1 ]]; then
+            echo "manifest=${manifests[0]}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Render reminder comment
+        if: steps.detect.outputs.count == '1'
+        run: |
+          set -euo pipefail
+          python tools/pr_jumpstart_reminder.py "${{ steps.detect.outputs.manifest }}" > comment.md
+          cat comment.md
+
+      - name: Post or update sticky comment
+        if: steps.detect.outputs.count == '1'
+        run: |
+          set -euo pipefail
+          marker='<!-- jumpstart-install-reminder -->'
+          # Look for an existing sticky comment authored by github-actions.
+          existing_id=$(
+            gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \
+              --jq "[.[] | select(.body | contains(\"${marker}\"))] | .[0].id // empty"
+          )
+          if [[ -n "$existing_id" ]]; then
+            echo "Updating existing comment ${existing_id}"
+            gh api --method PATCH "repos/${REPO}/issues/comments/${existing_id}" \
+              -F body=@comment.md > /dev/null
+          else
+            echo "Creating new comment"
+            gh api --method POST "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+              -F body=@comment.md > /dev/null
+          fi

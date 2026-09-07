@@ -3,7 +3,7 @@
 import logging
 import traceback
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 from .installer import JumpstartInstaller
 from .logger import log_capture_context
@@ -169,13 +169,21 @@ class jumpstart:
         """Get jumpstart config by logical_id, with backward compatibility for old id lookups."""
         return self._registry_manager.get_by_id(jumpstart_id)
 
-    def install(self, name: str, workspace_id: Optional[str] = None, **kwargs):
+    def install(self, name: str, workspace_id: Optional[str] = None, install_option: Optional[Union[str, List[str]]] = None, **kwargs):
         """
         Install a jumpstart to a Fabric workspace.
 
         Args:
             name: Logical id of the jumpstart from registry
             workspace_id: Target workspace GUID (optional)
+            install_option: For jumpstarts that declare ``install_options``
+                (e.g. industry variants), selects which option(s) to deploy.
+                Required when the jumpstart defines install_options.
+                A string deploys that single option at the workspace root folder.
+                A list deploys each option into the same workspace, one
+                workspace folder per option, with option-prefixed item names so
+                options never collide (e.g. ``install_option=["retail-sales",
+                "media"]``). Later installs can add more options the same way.
             **kwargs: Additional options (overrides registry defaults)
                 - unattended: If True, suppresses live HTML output and prints to console instead
                 - item_prefix: Custom prefix for created items, set as None for no prefix
@@ -188,6 +196,8 @@ class jumpstart:
         if not config:
             error_msg = f"Unknown jumpstart '{name}'. Use fabric_jumpstart.list() to list available jumpstarts."
             raise ValueError(error_msg)
+        if install_option is not None:
+            kwargs['install_option'] = install_option
         return self._install_with_config(config, workspace_id, **kwargs)
 
     def _install_with_config(self, config: dict, workspace_id: Optional[str] = None, non_registered_install: bool = False, **kwargs):
@@ -206,7 +216,69 @@ class jumpstart:
         """
         logical_id = config.get('logical_id', '')
         instance_name = self._get_instance_name()
-        installer = JumpstartInstaller(config, workspace_id, instance_name, **kwargs)
+
+        # Normalize install_option: a list deploys every option into the same
+        # workspace — one workspace folder and item-name prefix per option —
+        # while a plain string keeps the original single-option behavior.
+        raw_option = kwargs.get('install_option')
+        multi_options: Optional[List[str]] = None
+        if isinstance(raw_option, (list, tuple)):
+            declared = config.get('install_options') or []
+            if not declared:
+                raise ValueError(
+                    f"Jumpstart '{logical_id}' does not define install options; "
+                    "remove the install_option argument"
+                )
+            options = list(raw_option)
+            if not options:
+                raise ValueError(
+                    f"install_option list is empty. Choose at least one of: {', '.join(declared)}"
+                )
+            non_str = [o for o in options if not isinstance(o, str)]
+            if non_str:
+                raise ValueError(f"install_option entries must be strings, got: {non_str!r}")
+            seen: set = set()
+            dupes = []
+            for o in options:
+                if o in seen:
+                    dupes.append(o)
+                seen.add(o)
+            if dupes:
+                raise ValueError(
+                    f"Duplicate install option(s): {', '.join(dict.fromkeys(dupes))}"
+                )
+            unknown = [o for o in options if o not in declared]
+            if unknown:
+                raise ValueError(
+                    f"Unknown install option(s) {', '.join(unknown)} for jumpstart "
+                    f"'{logical_id}'. Valid options: {', '.join(declared)}"
+                )
+            multi_options = options
+
+        user_item_prefix = kwargs.get('item_prefix')
+
+        def _option_kwargs(option):
+            if multi_options is None:
+                return kwargs
+            kw = dict(kwargs)
+            kw['install_option'] = option
+            kw['workspace_folder_name'] = option
+            # Fabric item names ignore folders, so each option gets a name prefix.
+            kw['item_prefix'] = f"{user_item_prefix or ''}{option.replace('-', '_')}_"
+            return kw
+
+        pending_options: List[Optional[str]] = (
+            list(multi_options) if multi_options is not None else [raw_option]
+        )
+        total_options = len(pending_options)
+        entry_urls: List[tuple] = []
+        any_update_mode = False
+        current_option: Optional[str] = None
+        display_state: Dict[str, Optional[str]] = {'text': None}
+
+        installer = JumpstartInstaller(
+            config, workspace_id, instance_name, **_option_kwargs(pending_options[0])
+        )
         
         # Setup state for rendering
         unattended = installer.unattended
@@ -226,7 +298,7 @@ class jumpstart:
             elapsed = time.monotonic() - _install_start_time if _install_start_time else 0.0
             html = render_install_status_html(
                 status=status_label,
-                jumpstart_name=config.get('name', logical_id),
+                jumpstart_name=display_state['text'] or config.get('name', logical_id),
                 type=config.get('type', '').lower(),
                 workspace_id=installer.workspace_id,
                 entry_point=entry,
@@ -283,62 +355,101 @@ class jumpstart:
         
         with log_capture_context(log_buffer, target_loggers, on_emit=on_emit, debug=installer.debug_logs):
             try:
-                # Phase 1: Validate and prepare
-                installer.validate()
-                installer.prepare_workspace()
-                installer.initialize_workspace_manager()
-                
-                # Phase 2: Check for conflicts
-                planned_items_base, existing_items, conflicts, had_conflicts = installer.check_conflicts()
-                
-                # Phase 3: Resolve conflicts
-                resolved_prefix, remaining_conflicts = installer.resolve_conflicts(
-                    planned_items_base,
-                    existing_items,
-                    conflicts
-                )
-                
-                # If conflicts remain unresolved, render UI and fail
-                if remaining_conflicts:
-                    conflict_already_rendered = True
-                    conflict_html = ConflictUI.render_conflict_html(
-                        remaining_conflicts,
-                        instance_name,
-                        logical_id,
-                        installer.workspace_id
-                    )
-                    
-                    if unattended:
-                        raise RuntimeError(f"Conflicting items detected: {', '.join(remaining_conflicts)}")
-                    
-                    # Update live display with conflict UI
-                    current_status['label'] = 'conflict'  # Prevent on_emit from overwriting
-                    _update_live(
-                        status_label='conflict',
-                        entry=config.get('entry_point'),
-                        err=None,
-                        extra_html=conflict_html
-                    )
-                    
-                    # Raise error to mark cell as failed
-                    raise RuntimeError(f"Conflicting items detected: {', '.join(remaining_conflicts)}")
-                
-                # Phase 4: Apply prefix to files
-                installer.apply_prefix_to_files(resolved_prefix)
-                
-                # Phase 5: Deploy
-                logger.info(f"Deploying items from {installer.temp_workspace_path} to workspace '{installer.workspace_id}'")
-                target_ws = installer.deploy()
-                logger.info(f"Successfully installed '{logical_id}'")
-                
-                # Phase 6: Upload files to lakehouse (if configured)
-                installer.upload_files(target_ws, resolved_prefix)
+                for option_index, current_option in enumerate(pending_options):
+                    if multi_options is not None:
+                        display_state['text'] = (
+                            f"{config.get('name', logical_id)} — "
+                            f"{current_option} ({option_index + 1}/{total_options})"
+                        )
+                        logger.info(
+                            f"Installing option '{current_option}' "
+                            f"({option_index + 1}/{total_options})"
+                        )
+                        if option_index > 0:
+                            installer = JumpstartInstaller(
+                                config, workspace_id, instance_name,
+                                **_option_kwargs(current_option)
+                            )
 
-                # Phase 7: Generate entry URL
-                entry_url = installer.generate_entry_url(target_ws, resolved_prefix)
+                    # Phase 1: Validate and prepare
+                    installer.validate()
+                    installer.prepare_workspace()
+                    installer.initialize_workspace_manager()
+                
+                    # Phase 2: Check for conflicts
+                    planned_items_base, existing_items, conflicts, had_conflicts = installer.check_conflicts()
+                
+                    # Phase 3: Resolve conflicts
+                    resolved_prefix, remaining_conflicts = installer.resolve_conflicts(
+                        planned_items_base,
+                        existing_items,
+                        conflicts
+                    )
+                
+                    # If conflicts remain unresolved, render UI and fail
+                    if remaining_conflicts:
+                        conflict_already_rendered = True
+                        conflict_msg = f"Conflicting items detected: {', '.join(remaining_conflicts)}"
+                        if multi_options is not None:
+                            conflict_msg = (
+                                f"Conflicting items detected for option '{current_option}': "
+                                f"{', '.join(remaining_conflicts)}"
+                            )
+                        conflict_html = ConflictUI.render_conflict_html(
+                            remaining_conflicts,
+                            instance_name,
+                            logical_id,
+                            installer.workspace_id
+                        )
+                    
+                        if unattended:
+                            raise RuntimeError(conflict_msg)
+                    
+                        # Update live display with conflict UI
+                        current_status['label'] = 'conflict'  # Prevent on_emit from overwriting
+                        _update_live(
+                            status_label='conflict',
+                            entry=config.get('entry_point'),
+                            err=None,
+                            extra_html=conflict_html
+                        )
+                    
+                        # Raise error to mark cell as failed
+                        raise RuntimeError(conflict_msg)
+                
+                    # Phase 4: Apply prefix to files
+                    installer.apply_prefix_to_files(resolved_prefix)
+                
+                    # Phase 5: Deploy
+                    logger.info(f"Deploying items from {installer.temp_workspace_path} to workspace '{installer.workspace_id}'")
+                    target_ws = installer.deploy()
+                    logger.info(
+                        f"Successfully installed '{logical_id}'"
+                        + (f" option '{current_option}'" if multi_options is not None else "")
+                    )
+                
+                    # Phase 6: Upload files to lakehouse (if configured)
+                    installer.upload_files(target_ws, resolved_prefix)
+
+                    # Phase 6.5: Declarative data load (if configured)
+                    installer.load_data(resolved_prefix)
+
+                    # Phase 7: Generate entry URL
+                    entry_urls.append(
+                        (current_option, installer.generate_entry_url(target_ws, resolved_prefix))
+                    )
+                    if had_conflicts and installer.update_existing:
+                        any_update_mode = True
+
+                display_state['text'] = None
+                entry_url = next((u for _, u in entry_urls if u), None)
 
                 # Telemetry: record successful install
-                install_mode = "update" if had_conflicts and installer.update_existing else "new"
+                install_mode = "update" if any_update_mode else "new"
+                telemetry_option = (
+                    ",".join(multi_options) if multi_options is not None
+                    else installer.install_option
+                )
 
                 track_install(
                     jumpstart_id=logical_id,
@@ -348,10 +459,23 @@ class jumpstart:
                     duration_seconds=round(_time.monotonic() - _telemetry_start_time, 1),
                     install_mode=install_mode,
                     non_registered_install=non_registered_install,
+                    install_option=telemetry_option,
                 )
                 
                 # Render success — animate progress bar to 100% first
                 current_status['label'] = 'success'  # Prevent on_emit from overwriting
+
+                success_extra = None
+                if multi_options is not None:
+                    links = "".join(
+                        f'<div style="margin:2px 0"><a href="{u}" target="_blank" rel="noopener">{o}</a></div>'
+                        for o, u in entry_urls if u
+                    )
+                    if links:
+                        success_extra = (
+                            '<div style="margin-top:8px"><b>Installed options</b>'
+                            f'{links}</div>'
+                        )
 
                 # Smooth fill: run ~2.5s of rapid updates to animate bar to 100%
                 if live_handle and HTML_cls is not None:
@@ -393,12 +517,19 @@ class jumpstart:
                     minutes_deploy=config.get('minutes_to_deploy'),
                     docs_uri=installer.effective_docs_uri,
                     logs=log_buffer,
+                    extra_html=success_extra,
                 )
                 
-                _update_live(status_label='success', entry=entry_url)
+                _update_live(status_label='success', entry=entry_url, extra_html=success_extra)
                 
                 if unattended:
-                    print(f"Installed '{logical_id}' to workspace '{installer.workspace_id}'")
+                    if multi_options is not None:
+                        print(
+                            f"Installed '{logical_id}' options "
+                            f"[{', '.join(multi_options)}] to workspace '{installer.workspace_id}'"
+                        )
+                    else:
+                        print(f"Installed '{logical_id}' to workspace '{installer.workspace_id}'")
                     return None
                 
                 if live_rendering:
@@ -423,9 +554,18 @@ class jumpstart:
                         duration_seconds=round(_time.monotonic() - _telemetry_start_time, 1),
                         install_mode=fail_install_mode,
                         non_registered_install=non_registered_install,
+                        install_option=installer.install_option,
                     )
                 logger.exception(f"Failed to install jumpstart '{logical_id}'")
                 error_text = str(e).strip() or e.__class__.__name__
+                if multi_options is not None and not conflict_already_rendered and current_option is not None:
+                    installed_names = [o for o, _ in entry_urls]
+                    progress = (
+                        f" ({len(installed_names)} of {total_options} option(s) already "
+                        f"installed: {', '.join(installed_names)}; re-run with the remaining options)"
+                        if installed_names else ""
+                    )
+                    error_text = f"Install option '{current_option}' failed{progress}: {error_text}"
                 
                 # Don't update_existing conflict UI if it's already been rendered
                 if conflict_already_rendered:
@@ -486,6 +626,7 @@ class jumpstart:
         files_destination_lakehouse: Optional[str] = None,
         files_destination_path: str = '',
         workspace_id: Optional[str] = None,
+        install_options: Optional[List[str]] = None,
         **kwargs,
     ):
         """
@@ -519,9 +660,13 @@ class jumpstart:
                                     Defaults to the root (``""``).
             workspace_id: Target Fabric workspace GUID (optional; auto-detected inside
                           a Fabric runtime).
+            install_options: Declared install option names (e.g. industry variants)
+                             when testing a jumpstart that uses option subfolders.
+                             Pass the selected option via the ``install_option``
+                             keyword argument.
             **kwargs: Additional options forwarded to the installer
                 (unattended, item_prefix, update_existing, auto_prefix_on_conflict,
-                debug, repo_ref override, etc.).
+                debug, repo_ref override, install_option, etc.).
         """
         effective_workspace_path = workspace_path if workspace_path is not None else f"{logical_id}/"
 
@@ -552,5 +697,7 @@ class jumpstart:
             'minutes_to_deploy': 0,
             'minutes_to_complete_jumpstart': 0,
         }
+        if install_options:
+            synthetic_config['install_options'] = install_options
 
         return self._install_with_config(synthetic_config, workspace_id, non_registered_install=True, **kwargs)

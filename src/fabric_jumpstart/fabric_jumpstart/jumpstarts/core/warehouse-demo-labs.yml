@@ -1,0 +1,42 @@
+id: 30
+logical_id: warehouse-demo-labs
+name: Fabric Warehouse Demo Labs
+description: >-
+  Hands-on labs for Microsoft Fabric Data Warehouse using a TPC-H sample
+  dataset: load data with COPY INTO/INSERT INTO/OPENROWSET, tune performance
+  with clustering and custom SQL pools, recover from mistakes with snapshots,
+  time travel, and table clones, explore the SQL analytics endpoint, and
+  secure your warehouse with SQL audit logs.
+date_added: 08/12/2026
+workload_tags:
+- Data Warehouse
+- Data Engineering
+scenario_tags:
+- Batch Processing
+type: Tutorial
+source:
+  repo_url: https://github.com/MarkPryceMaherMSFT/fabric-warehouse-lab.git
+  repo_ref: v1.0.0
+  workspace_path: warehouse-demo-labs/
+items_in_scope:
+- Lakehouse
+- Warehouse
+- Notebook
+jumpstart_docs_uri: https://github.com/MarkPryceMaherMSFT/fabric-warehouse-lab/blob/v1.0.0/README.md
+entry_point: 1_generate_data.Notebook
+test_suite: ''
+owner_email: maprycem@microsoft.com
+minutes_to_deploy: 3
+minutes_to_complete_jumpstart: 90
+video_url: ""
+difficulty: "Intermediate"
+last_updated: "2026-08-12"
+mermaid_diagram: |
+  graph LR
+  %% FABRIC WORKSPACE
+  subgraph Fabric:::Workspace
+    NB1[1_generate_data]:::Notebook --> LH[demolakehouse]:::Lakehouse
+    LH --> NB2[2_warehouse_labs]:::Notebook
+    NB2 --> WH[demowarehouse]:::Warehouse
+    direction LR
+  end

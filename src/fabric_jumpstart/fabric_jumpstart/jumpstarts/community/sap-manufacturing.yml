@@ -1,0 +1,55 @@
+id: 31
+logical_id: sap-manufacturing
+name: Talk to your SAP Data - Manufacturing Edition
+description: >-
+  Ask natural-language questions about synthetic SAP PP / shopfloor data. A grounded
+  Fabric Data Agent answers on production orders, the Laser Balancing bottleneck,
+  missing parts, scrap and S&OP over a Direct Lake semantic model - deployed end to
+  end by fabric-cicd, no real SAP system required.
+date_added: 09/24/2026
+workload_tags:
+  - Data Engineering
+  - Power BI
+scenario_tags:
+  - Modeling
+  - Batch Processing
+type: Demo
+source:
+  repo_url: https://github.com/DaSenf1860/jumpstart-sap-manufacturing.git
+  repo_ref: v1.0.0
+  workspace_path: sapmanufacturing/
+items_in_scope:
+  - Lakehouse
+  - Notebook
+  - SemanticModel
+  - DataAgent
+entry_point: PostDeploymentNotebook.Notebook
+owner_email: andreas.rederer@microsoft.com
+minutes_to_deploy: 8
+minutes_to_complete_jumpstart: 10
+difficulty: "Intermediate"
+last_updated: "2026-09-24"
+mermaid_diagram: |
+  graph LR
+
+    %% CONSUMER
+    USER[Business User]:::U1F464
+
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      direction LR
+      POST[PostDeploymentNotebook]:::Notebook
+      GEN[GenerateSapData]:::Notebook
+      LH[SAP_Manufacturing_LH]:::Lakehouse
+      MODEL[SAP_Manufacturing_Model]:::SemanticModel
+      AGENT[SAP_Manufacturing_DataAgent]:::DataAgent
+    end
+
+    %% FLOWS
+    POST -.-> GEN
+    GEN -.-> LH
+    LH -.-> MODEL
+    POST -.-> MODEL
+    MODEL -.-> AGENT
+    USER -.-> AGENT
+    AGENT -.-> USER

@@ -23,6 +23,14 @@ const difficultyColor: Record<string, { bg: string; fg: string }> = {
   advanced: { bg: '#fde7e9', fg: '#a4262c' },
 };
 
+/** "financial-services" -> "Financial Services" */
+function installOptionLabel(option: string): string {
+  return option
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 function ScenarioHeader({
   scenario,
   isDark,
@@ -108,9 +116,14 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
   const { theme } = useThemeContext();
   const isDark = theme.key === 'dark';
   const [diagramExpanded, setDiagramExpanded] = useState(false);
+  const installOptions = scenario.installOptions ?? [];
+  const installOptionsLabel = scenario.installOptionsLabel || 'Install option';
+  const [selectedOption, setSelectedOption] = useState(installOptions[0] ?? '');
   const colors = difficultyColor[scenario.difficulty?.toLowerCase()] || difficultyColor.intermediate;
 
-  const installCode = `import fabric_jumpstart as jumpstart\n\n# Install this scenario\njumpstart.install("${scenario.slug}")`;
+  const installCode = installOptions.length > 0
+    ? `import fabric_jumpstart as jumpstart\n\n# Install this scenario (${installOptionLabel(selectedOption)})\njumpstart.install("${scenario.slug}", install_option="${selectedOption}")`
+    : `import fabric_jumpstart as jumpstart\n\n# Install this scenario\njumpstart.install("${scenario.slug}")`;
 
   return (
     <div style={{
@@ -336,6 +349,47 @@ export default function ScenarioOverview({ scenario, mermaid_diagram }: { scenar
         >
           🚀 New to Jumpstart? Read the Getting Started guide →
         </a>
+        {installOptions.length > 0 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginBottom: '10px',
+            flexWrap: 'wrap',
+          }}>
+            <label
+              htmlFor="install-option-select"
+              style={{
+                fontSize: '13px',
+                fontWeight: 600,
+                color: tokens.colorNeutralForeground2,
+              }}
+            >
+              {installOptionsLabel}
+            </label>
+            <select
+              id="install-option-select"
+              value={selectedOption}
+              onChange={(e) => setSelectedOption(e.target.value)}
+              style={{
+                fontSize: '13px',
+                fontWeight: 500,
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+                backgroundColor: isDark ? '#2a2a30' : '#ffffff',
+                color: isDark ? '#e0e0e0' : '#242424',
+                cursor: 'pointer',
+              }}
+            >
+              {installOptions.map((option) => (
+                <option key={option} value={option}>
+                  {installOptionLabel(option)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div style={{
           borderRadius: '6px',
           overflow: 'hidden',

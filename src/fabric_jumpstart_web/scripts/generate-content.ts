@@ -315,6 +315,8 @@ function generateScenariosJson(scenarios: TaggedScenarioYml[]): ScenarioCard[] {
         isNew: isNewJumpstart(s.date_added),
         mermaid_diagram: s.mermaid_diagram || '',
         installCount: 0,
+        installOptions: s.install_options ?? [],
+        installOptionsLabel: s.install_options_label ?? '',
       };
     });
 }

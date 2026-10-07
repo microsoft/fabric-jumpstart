@@ -1,0 +1,87 @@
+---
+title: Fabric Tenant Settings Monitoring
+toc: true
+---
+
+## Overview
+
+This catalog contains a **Microsoft Fabric end-to-end monitoring solution** for tenant settings:
+
+- **Notebook** (`nb_ftsm_tenant_settings.Notebook`) extracts tenant settings snapshots
+- **Lakehouse** (`FTSMonitorLH.Lakehouse`) stores persisted snapshot data
+- **Semantic Model** (`FTSMonitorSM.SemanticModel`) provides analytical modeling
+- **Report** (`FTSMonitorRPT.Report`) visualizes the current snapshot and historical comparison
+
+The objective is to track tenant setting changes over time for governance and audit scenarios.
+
+## Repository Structure
+
+```text
+.
+├── nb_ftsm_tenant_settings.Notebook/     # Fabric Notebook artifact
+├── FTSMonitorLH.Lakehouse/               # Fabric Lakehouse artifact
+├── FTSMonitorSM.SemanticModel/           # Fabric Semantic Model artifact
+└── FTSMonitorRPT.Report/                 # Fabric Report artifact
+```
+
+## Solution Architecture
+
+1. **Extract (Notebook)**
+   - The Fabric notebook runs scheduled/on-demand.
+   - It captures tenant settings snapshot data at execution time.
+
+2. **Persist (Lakehouse)**
+   - Snapshot output is written to Lakehouse-managed storage/tables.
+
+3. **Model (Semantic Model)**
+   - The semantic model is built over Lakehouse data for analytics.
+
+4. **Visualize (Report)**
+   - The report consumes the semantic model to show:
+     - current settings snapshot
+     - comparisons across snapshots/versions
+
+## Artifacts
+
+### Notebook: `nb_ftsm_tenant_settings.Notebook`
+
+- Main code file: `notebook-content.py`
+- Includes schedule configuration: `.schedules`
+- Used to extract and prepare tenant settings snapshot data
+
+### Lakehouse: `FTSMonitorLH.Lakehouse`
+
+- `lakehouse.metadata.json` defines core Lakehouse metadata
+- `shortcuts.metadata.json` contains shortcut metadata (currently minimal)
+- `alm.settings.json` provides deployment/environment binding settings for ALM flows
+
+### Semantic Model: `FTSMonitorSM.SemanticModel`
+
+- `definition.pbism` + `definition/` store model definitions
+- Exposes modeled data for report consumption
+
+### Report: `FTSMonitorRPT.Report`
+
+- `definition.pbir` + `definition/` store report definitions
+- `StaticResources/` includes report static assets/resources
+
+## Deployment / Usage
+
+### Prerequisites
+
+Refer to Getting Started with Fabric catalog page [Getting Started](/getting-started) for prerequisites and setup.
+
+### Steps
+
+1. Install the solution catalog into your Fabric workspace (see [Getting Started](/getting-started) for instructions).
+2. Verify that all artifacts are deployed successfully in the Fabric workspace.
+3. Open **`nb_ftsm_tenant_settings.Notebook`** and validate runtime/environment settings.
+4. Run notebook once to generate/refresh snapshot data in **`FTSMonitorLH.Lakehouse`**.
+5. Open **`FTSMonitorRPT.Report`** to validate visuals for current snapshot and comparisons.
+6. Configure or verify notebook schedule as required (in Fabric UI).
+
+## Operational Notes
+
+- Keep notebook schedule aligned with your governance monitoring interval.
+- Use semantic model refresh sequencing after notebook runs.
+- Consider adding alerting (e.g., pipeline/Teams/email) for notebook or refresh failures.

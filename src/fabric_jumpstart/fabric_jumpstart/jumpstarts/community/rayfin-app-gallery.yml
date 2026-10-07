@@ -1,0 +1,50 @@
+id: 29
+logical_id: rayfin-app-gallery
+name: Rayfin App Gallery
+description: >-
+  Browse the whole Awesome Rayfin template gallery from one Fabric notebook.
+  Every full-stack app is listed live from the gallery manifest, with a
+  ready-to-run deploy command — workspace and tenant pre-filled.
+date_added: 07/15/2026
+workload_tags:
+  - Data Engineering
+scenario_tags:
+  - Modeling
+type: Demo
+source:
+  repo_url: https://github.com/KornAlexander/rayfin-app-gallery.git
+  repo_ref: v1.0.0
+  workspace_path: workspace/rayfin-app-gallery/
+items_in_scope:
+  - Notebook
+entry_point: RayfinAppGallery.Notebook
+test_suite: ""
+owner_email: alkorn@microsoft.com
+minutes_to_deploy: 1
+minutes_to_complete_jumpstart: 3
+video_url: ""
+difficulty: "Beginner"
+last_updated: "2026-07-16"
+mermaid_diagram: |
+  graph LR
+
+    %% LIVE GALLERY SOURCE
+    MANIFEST[Awesome Rayfin manifest]:::U2601
+
+    %% DEVELOPER MACHINE
+    TERM[Your terminal · Rayfin CLI]:::U1F4BB
+
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      direction LR
+      NB[RayfinAppGallery]:::Notebook
+      APP[Rayfin app · static web]:::U1F310
+      DB[App data model]:::SQLDatabase
+      UDF[App backend functions]:::UserDataFunction
+    end
+
+    MANIFEST -.->|live template list| NB
+    NB ==>|copy deploy command| TERM
+    TERM -->|npx rayfin up| APP
+    TERM -.->|if app uses data| DB
+    TERM -.->|if app has backend| UDF

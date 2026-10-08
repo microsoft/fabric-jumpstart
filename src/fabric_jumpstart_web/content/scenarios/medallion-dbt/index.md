@@ -24,7 +24,7 @@ engines produced the same numbers.
 | `aemo_dwh`, `aemo_spark` | SemanticModel | A Direct Lake model on each engine's gold tables. |
 | `deploy_config` | VariableLibrary | The run's settings. |
 
-All items land in a workspace folder named `fabric-medallion-dbt`.
+All items land in a workspace folder named `medallion-dbt`.
 
 ## Run it
 

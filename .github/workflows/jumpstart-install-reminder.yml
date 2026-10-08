@@ -1,13 +1,14 @@
 name: Jumpstart Install Reminder
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
-# Only need to read the repo and comment on the PR.
+# Use the target event so fork PRs can receive the reminder comment.
 permissions:
   contents: read
-  pull-requests: write
+  issues: write
+  pull-requests: read
 
 jobs:
   remind:
@@ -18,6 +19,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       REPO: ${{ github.repository }}
       MANIFEST_DIRS: >-
         src/fabric_jumpstart/fabric_jumpstart/jumpstarts/core/
@@ -26,8 +28,8 @@ jobs:
       - name: Check out
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          # Check out the PR head so the added manifest file is available locally.
-          ref: ${{ github.event.pull_request.head.sha }}
+          # Only run trusted code from the base repository, never code from the PR.
+          ref: ${{ github.event.pull_request.base.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -66,11 +68,46 @@ jobs:
             echo "manifest=${manifests[0]}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Render reminder comment
+      - name: Fetch PR manifest
         if: steps.detect.outputs.count == '1'
+        env:
+          MANIFEST: ${{ steps.detect.outputs.manifest }}
         run: |
           set -euo pipefail
-          python tools/pr_jumpstart_reminder.py "${{ steps.detect.outputs.manifest }}" > comment.md
+
+          valid_manifest=false
+          for d in $MANIFEST_DIRS; do
+            if [[ "$MANIFEST" == "$d"* ]]; then
+              filename=${MANIFEST#"$d"}
+              if [[ "$filename" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*\.ya?ml$ ]]; then
+                valid_manifest=true
+                manifest_dir="$d"
+                break
+              fi
+            fi
+          done
+          if [[ "$valid_manifest" != true ]]; then
+            echo "Unexpected jumpstart manifest path: $MANIFEST" >&2
+            exit 1
+          fi
+
+          encoded_path=$(python -c 'from urllib.parse import quote; import sys; print(quote(sys.argv[1], safe="/"))' "$MANIFEST")
+          manifest_root="$RUNNER_TEMP/pr-manifests"
+          mkdir -p "$manifest_root/$manifest_dir"
+          gh api --method GET "repos/${REPO}/contents/${encoded_path}" \
+            -f "ref=${PR_HEAD_SHA}" --jq .content \
+            | base64 --decode > "$manifest_root/$MANIFEST"
+
+      - name: Render reminder comment
+        if: steps.detect.outputs.count == '1'
+        env:
+          MANIFEST: ${{ steps.detect.outputs.manifest }}
+        run: |
+          set -euo pipefail
+          (
+            cd "$RUNNER_TEMP/pr-manifests"
+            python "$GITHUB_WORKSPACE/tools/pr_jumpstart_reminder.py" "$MANIFEST"
+          ) > comment.md
           cat comment.md
 
       - name: Post or update sticky comment

@@ -1,0 +1,41 @@
+id: 30
+logical_id: warehouse-workshop-labs
+name: Getting Started with Data Warehouse
+description: >-
+  Hands-on labs for Microsoft Fabric Data Warehouse using a TPC-H sample
+  dataset: load data with COPY INTO/INSERT INTO/OPENROWSET, tune performance
+  with clustering and custom SQL pools, recover from mistakes with snapshots,
+  time travel, and table clones, explore the SQL analytics endpoint, and
+  secure your warehouse with SQL audit logs.
+date_added: 10/07/2026
+workload_tags:
+- Data Warehouse
+scenario_tags:
+- Batch Processing
+type: Tutorial
+source:
+  repo_url: https://github.com/microsoft/fabric-warehouse-training-lab.git
+  workspace_path: fabric-warehouse-training-lab/
+  repo_ref: v1.0.1
+items_in_scope:
+- Lakehouse
+- Warehouse
+- Notebook
+jumpstart_docs_uri: https://github.com/microsoft/fabric-warehouse-training-lab/blob/7c2054b3d51bb77c14f44c1ccd896f4d6435f973/README.md
+entry_point: generate_tpc-h_data.Notebook
+test_suite: ''
+owner_email: dw-jumpstart@microsoft.com
+minutes_to_deploy: 3
+minutes_to_complete_jumpstart: 90
+video_url: ""
+difficulty: "Intermediate"
+last_updated: "2026-10-05"
+mermaid_diagram: |
+  graph LR
+  %% FABRIC WORKSPACE
+  subgraph Fabric:::Workspace
+    NB1[generate tpc-h data]:::Notebook --> LH[warehouse_training_lab_sample_data]:::Lakehouse
+    LH --> NB2[warehouse_training_lab]:::Notebook
+    NB2 --> WH[warehouse_training_lab]:::Warehouse
+    direction LR
+  end

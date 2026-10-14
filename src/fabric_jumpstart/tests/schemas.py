@@ -42,6 +42,49 @@ class JumpstartSource(BaseModel):
             )
         return self
 
+
+class DataLoadLakehouseTables(BaseModel):
+    """Lakehouse table load block within data_load."""
+    model_config = ConfigDict(extra="forbid")
+
+    lakehouse: str
+    archive_path: Optional[str] = ""
+
+
+class DataLoadKustoTables(BaseModel):
+    """Kusto table load block within data_load."""
+    model_config = ConfigDict(extra="forbid")
+
+    database: str
+    archive_path: Optional[str] = ""
+
+
+class DataLoad(BaseModel):
+    """Declarative post-deploy data load executed by the installer (no repo code runs)."""
+    model_config = ConfigDict(extra="forbid")
+
+    source: str
+    shift_timestamps_to_now: Optional[bool] = False
+    lakehouse_tables: Optional[DataLoadLakehouseTables] = None
+    kusto_tables: Optional[DataLoadKustoTables] = None
+    refresh_definitions: Optional[List[str]] = None
+
+    @model_validator(mode="after")
+    def validate_has_target(self):
+        if not self.lakehouse_tables and not self.kusto_tables:
+            raise ValueError("data_load must define lakehouse_tables and/or kusto_tables")
+        return self
+
+    @field_validator("refresh_definitions")
+    @classmethod
+    def validate_refresh_entries(cls, value: Optional[List[str]]):
+        if value is None:
+            return value
+        for entry in value:
+            if "." not in entry:
+                raise ValueError(f"refresh_definitions entry '{entry}' must be '<Name>.<ItemType>'")
+        return value
+
 class Jumpstart(BaseModel):
     """Schema for a jumpstart entry."""
     model_config = ConfigDict(extra="forbid")
@@ -69,6 +112,9 @@ class Jumpstart(BaseModel):
     difficulty: Optional[str] = None
     last_updated: Optional[str] = None
     mermaid_diagram: Optional[str] = None
+    install_options: Optional[List[str]] = None
+    install_options_label: Optional[str] = None
+    data_load: Optional[DataLoad] = None
 
     @field_validator("id")
     @classmethod
@@ -86,6 +132,38 @@ class Jumpstart(BaseModel):
         if not slug_re.match(value):
             raise ValueError("logical_id must be lowercase alphanumeric with dashes")
         return value
+
+    @field_validator("install_options")
+    @classmethod
+    def validate_install_options(cls, value: Optional[List[str]]):
+        if value is None:
+            return value
+        if not value:
+            raise ValueError("install_options must contain at least one option when provided")
+        slug_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+        seen = set()
+        for option in value:
+            if not option or not slug_re.match(option):
+                raise ValueError(
+                    f"install option '{option}' must be lowercase alphanumeric with dashes"
+                )
+            if option in seen:
+                raise ValueError(f"install option '{option}' is duplicated")
+            seen.add(option)
+        return value
+
+    @field_validator("install_options_label")
+    @classmethod
+    def validate_install_options_label(cls, value: Optional[str]):
+        if value is not None and not value.strip():
+            raise ValueError("install_options_label must not be blank when provided")
+        return value
+
+    @model_validator(mode="after")
+    def validate_label_requires_options(self):
+        if self.install_options_label and not self.install_options:
+            raise ValueError("install_options_label requires install_options to be defined")
+        return self
 
     @field_validator("description")
     @classmethod

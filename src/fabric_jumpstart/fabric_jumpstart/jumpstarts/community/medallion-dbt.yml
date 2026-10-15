@@ -1,0 +1,71 @@
+id: 30
+logical_id: medallion-dbt
+name: Medallion with dbt on Warehouse and Spark
+description: >-
+  One dbt project builds the same AEMO electricity gold layer on Fabric Warehouse
+  (dbt-fabric) and Fabric Spark (dbt-fabricspark), then checks that the two engines
+  agree. Pipeline, notebooks and a Direct Lake model per engine included.
+date_added: 09/29/2026
+workload_tags:
+  - Data Engineering
+  - Data Warehouse
+  - Data Factory
+  - Power BI
+scenario_tags:
+  - Batch Processing
+  - Modeling
+type: Demo
+source:
+  repo_url: https://github.com/djouallah/fabric-medallion-dbt.git
+  repo_ref: v1.1.1
+  workspace_path: fabric_items/
+items_in_scope:
+  - VariableLibrary
+  - Lakehouse
+  - Warehouse
+  - Notebook
+  - SemanticModel
+  - DataPipeline
+entry_point: run_pipeline.DataPipeline
+test_suite: ""
+owner_email: mimoune.djouallah@gmail.com
+minutes_to_deploy: 3
+minutes_to_complete_jumpstart: 10
+video_url: ""
+difficulty: Intermediate
+last_updated: "2026-10-09"
+mermaid_diagram: |
+  graph LR
+
+    %% EXTERNAL SOURCES
+    NEM[AEMO nemweb]:::U1F310
+    ARCH[AEMO archive on GitHub]:::U1F4BE
+
+    %% FABRIC WORKSPACE
+    subgraph Fabric:::Workspace
+      direction LR
+      CFG[deploy_config]:::VariableLibrary
+      PIPE[run_pipeline]:::DataPipeline
+      INGEST[ingest]:::Notebook
+      LAND[dbt_landing]:::Lakehouse
+      RUN[run x2]:::Notebook
+      DWH[dbt_dwh]:::Warehouse
+      LH[dbt]:::Lakehouse
+      PARITY[parity]:::Notebook
+      SMD[aemo_dwh]:::SemanticModel
+      SMS[aemo_spark]:::SemanticModel
+    end
+
+    %% FLOWS
+    NEM -.-> INGEST
+    ARCH -.-> INGEST
+    CFG -.-> PIPE
+    PIPE -.-> INGEST
+    INGEST --> LAND
+    LAND --> RUN
+    RUN --> DWH
+    RUN --> LH
+    DWH --> PARITY
+    LH --> PARITY
+    DWH --> SMD
+    LH --> SMS

@@ -1,0 +1,53 @@
+id: 30
+logical_id: helsinki-public-transport
+name: Helsinki Public Transport
+description: >-
+  Watch a city's buses, trams and ferries move in real time. Authored by Kevin Thomas. A
+  notebook polls the public HSL GTFS-RT feed into an Eventstream, an Eventhouse shapes it
+  with update policies, and a DirectQuery semantic model serves it to Power BI. The
+  matching map app ships separately as an Awesome Rayfin template.
+date_added: 08/13/2026
+workload_tags:
+  - Real-Time Intelligence
+  - Power BI
+scenario_tags:
+  - Streaming
+  - Monitoring
+type: Demo
+source:
+  repo_url: https://github.com/KornAlexander/helsinki-public-transport.git
+  repo_ref: v1.0.1
+  workspace_path: workspace/helsinki-public-transport/
+items_in_scope:
+  - Eventhouse
+  - KQLDatabase
+  - Eventstream
+  - Notebook
+  - SemanticModel
+jumpstart_docs_uri: https://github.com/microsoft/awesome-rayfin/tree/main/templates/helsinki-public-transport
+entry_point: 00_start_here.Notebook
+owner_email: alkorn@microsoft.com
+minutes_to_deploy: 3
+minutes_to_complete_jumpstart: 10
+difficulty: Beginner
+last_updated: "2026-08-13"
+mermaid_diagram: |
+  graph LR
+    GTFS[HSL GTFS-RT feed]:::U2601
+    subgraph Fabric:::Workspace
+      direction LR
+      NB[NB_Helsinki_Realtime_Tracker]:::Notebook
+      ES[ES_Helsinki_Transport_Events]:::Eventstream
+      EH[Helsinki_Public_Transport_EH]:::Eventhouse
+      KDB[HSL_EH]:::KQLDatabase
+      START[00_start_here]:::Notebook
+      SM[Helsinki Public Transport]:::SemanticModel
+    end
+    APP[Rayfin app - 2D map + 3D city twin]:::U1F5A5
+    GTFS -.-> NB
+    NB --> ES
+    ES --> EH
+    EH --> KDB
+    KDB --> SM
+    START --> SM
+    SM --> APP

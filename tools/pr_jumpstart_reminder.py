@@ -13,6 +13,8 @@ The output includes a hidden HTML marker so the workflow can post/update a singl
 from __future__ import annotations
 
 import argparse
+import json
+import re
 import sys
 from typing import Any
 
@@ -26,7 +28,7 @@ def _format_items(items: Any) -> str:
     """Render items_in_scope as a Python list literal, e.g. ["Lakehouse", "Notebook"]."""
     if not isinstance(items, list):
         return "[]"
-    return "[" + ", ".join(f'"{str(i)}"' for i in items) + "]"
+    return "[" + ", ".join(json.dumps(str(i)) for i in items) + "]"
 
 
 def build_snippet(manifest: dict) -> str:
@@ -43,19 +45,19 @@ def build_snippet(manifest: dict) -> str:
         "import fabric_jumpstart as jumpstart",
         "",
         "jumpstart._install_from_github(",
-        f'    logical_id="{logical_id}",',
-        f'    repo_url="{repo_url}",',
-        f'    repo_ref="{repo_ref}",',
+        f"    logical_id={json.dumps(logical_id)},",
+        f"    repo_url={json.dumps(repo_url)},",
+        f"    repo_ref={json.dumps(repo_ref)},",
     ]
 
     # Only include workspace_path when it deviates from the "{logical_id}/" default.
     default_workspace_path = f"{logical_id}/"
     if workspace_path and str(workspace_path) != default_workspace_path:
-        lines.append(f'    workspace_path="{workspace_path}",')
+        lines.append(f"    workspace_path={json.dumps(str(workspace_path))},")
 
     lines.extend(
         [
-            f'    entry_point="{entry_point}",',
+            f"    entry_point={json.dumps(entry_point)},",
             f"    items_in_scope={items}"
             ")",
         ]
@@ -65,25 +67,27 @@ def build_snippet(manifest: dict) -> str:
 
 def build_comment(manifest: dict, manifest_path: str) -> str:
     """Build the full Markdown comment body."""
-    name = str(manifest.get("name") or manifest.get("logical_id") or "your jumpstart")
-    logical_id = str(manifest.get("logical_id", ""))
     snippet = build_snippet(manifest)
+    longest_backtick_run = max(
+        (len(run) for run in re.findall(r"`+", snippet)),
+        default=0,
+    )
+    fence = "`" * max(3, longest_backtick_run + 1)
     return f"""{MARKER}
 ### 🚀 Test your new jumpstart before merging
 
-Thanks for contributing **{name}**! This PR adds a new jumpstart manifest
+Thanks for contributing a new jumpstart! This PR adds a manifest
 (`{manifest_path}`). Please verify it installs end-to-end by
 running the following in a Fabric notebook, populated from your manifest:
 
-```python
+{fence}python
 !pip install fabric-jumpstart --quiet
 
 {snippet}
-```
+{fence}
 
 `_install_from_github` deploys directly from your source repo (no registry entry
-required), so it mirrors what end users will experience via
-`jumpstart.install("{logical_id}")` once merged.
+required), so it mirrors what end users will experience once merged.
 
 Reply here confirming a successful install (and share any screenshots) to help
 accelerate the review process. Thanks! 🙌

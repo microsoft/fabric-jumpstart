@@ -21,7 +21,7 @@ items_in_scope:
 - Lakehouse
 - Warehouse
 - Notebook
-jumpstart_docs_uri: https://github.com/microsoft/fabric-warehouse-training-lab/blob/v1.0.1/README.md
+jumpstart_docs_uri: https://jumpstart.fabric.microsoft.com/catalog/warehouse-workshop-labs
 entry_point: generate_tpc-h_data.Notebook
 test_suite: ''
 owner_email: dw-jumpstart@microsoft.com

@@ -1,0 +1,90 @@
+---
+title: Getting Started with Data Warehouse
+toc: true
+---
+
+A hands-on tutorial for SQL developers and data engineers exploring Microsoft
+Fabric Data Warehouse with a generated TPC-H dataset. Practice data ingestion,
+recovery, performance tuning, and auditing, and explore how the SQL analytics
+endpoint works with Lakehouse tables.
+
+<Callout>
+
+Run `generate_tpc-h_data` first. Installation deploys the Fabric items, but
+sample-data generation and the lab exercises must be run manually.
+
+</Callout>
+
+## What Gets Deployed
+
+| Item | Type | Purpose |
+| --- | --- | --- |
+| `generate_tpc-h_data` | Notebook | Entry point. Generates the TPC-H sample data. |
+| `warehouse_training_lab_sample_data` | Lakehouse | Stores the generated Parquet files used by the ingestion exercises. |
+| `warehouse_training_lab` | Notebook | Guides you through the warehouse labs. |
+| `warehouse_training_lab` | Warehouse | Holds the tables used in the SQL exercises. |
+
+## Getting Started
+
+1. Open `generate_tpc-h_data` and confirm that
+   `warehouse_training_lab_sample_data` is its default Lakehouse. Run the
+   dependency-installation cell, then the data-generation cell. The sample files
+   are written to the Lakehouse's `Files/tpch_sf100` folder.
+2. Wait for generation to finish, then open the `warehouse_training_lab`
+   notebook. Select the deployed `warehouse_training_lab` Warehouse as its data
+   item and choose the **T-SQL** runtime. Use this existing Warehouse rather than
+   creating another one.
+3. Begin with **Getting started** and **Lab setup** to create and load the
+   warehouse tables. Continue through the notebook cell by cell rather than
+   selecting **Run all**: some exercises require portal actions, runtime changes,
+   or pauses, and some intentionally produce errors.
+
+<Callout>
+
+Use a dedicated training workspace and sample data only. The recovery exercises
+drop, truncate, and rename tables, and the custom SQL pool exercises change
+workspace-wide settings.
+
+</Callout>
+
+## Labs
+
+1. **Data ingestion**: load files with `COPY INTO`, copy warehouse data with
+   `INSERT INTO ... SELECT`, and query files with `OPENROWSET`.
+2. **Data recovery and transformation**: compare warehouse snapshots, time
+   travel, restore points, and table clones to recover from changes and ETL
+   failures.
+3. **Monitoring and tuning**: use Query Insights to compare query behavior,
+   configure custom SQL pools, and measure the trade-offs of data clustering.
+4. **SQL analytics endpoint**: explore Lakehouse table metadata synchronization
+   and file-size considerations for query performance.
+5. **Securing your warehouse**: enable SQL audit events and inspect audit records
+   for the sample queries.
+
+## Lab-Specific Configuration
+
+- In the Python custom SQL pool examples, replace the sample
+  `warehouse_name = "day_02_warehouse"` with `warehouse_training_lab` and use your
+  Warehouse's actual SQL connection details.
+- The SQL analytics endpoint examples require Lakehouse tables. The generator
+  writes Parquet files under **Files**, not Delta tables under **Tables**; adapt
+  those examples to existing Lakehouse tables and their supported metadata-sync
+  version.
+- Replace the sample audit-log URL with your Warehouse's actual audit location
+  before running the final audit query.
+
+## Requirements
+
+- A capacity-backed Microsoft Fabric workspace supporting Warehouses, Lakehouses,
+  and notebooks.
+- Permissions to create and run the deployed items and read and write the sample
+  data. The custom SQL pool exercises also require permission to change workspace
+  settings.
+- Network access to install the data-generation notebook's Python dependencies.
+- Available capacity, storage, and time for the default TPC-H scale factor of
+  100. Data generation runs separately from deployment and must finish before
+  the warehouse labs begin.
+
+## Resources
+
+- [Lab repository README (v1.0.1)](https://github.com/microsoft/fabric-warehouse-training-lab/blob/v1.0.1/README.md)
